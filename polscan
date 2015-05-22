@@ -1,0 +1,115 @@
+#!/bin/bash
+
+
+BASE=$(dirname $0)
+BASE=$(readlink -e $BASE)
+if [ "$BASE" == "/usr/bin" ]; then
+	CONF_DIR=/etc/polscan/
+	LIB_DIR=/usr/lib/polscan/
+else
+	CONF_DIR=${BASE}/etc/
+	LIB_DIR=${BASE}/lib
+fi
+CONF_FILE=${CONF_DIR}/polscan.conf
+REMOTE_SCANNERS_FILE=${CONF_DIR}/scanners.conf
+
+if [ ! -f $CONF_FILE ]; then
+	echo "ERROR: Could not find $CONF_FILE"
+	exit 1
+fi
+source $CONF_FILE
+
+# 0. Prepare output dir
+if [ "$RESULT_BASE_DIR" == "" ]; then
+	RESULT_BASE_DIR=${BASE}/results
+fi
+RESULT_DIR=$(date +${RESULT_BASE_DIR}/%Y/%m/%d)
+if [ ! -d $RESULT_DIR ]; then
+	mkdir -vp "$RESULT_DIR"
+fi
+
+# 1. Determine host list
+echo "Fetching host list (provider '$HOST_LIST_PROVIDER')..."
+HLP="$LIB_DIR/host-list-providers/$HOST_LIST_PROVIDER"
+if [ ! -f $HLP ]; then
+	echo "ERROR: Could not find host list provider $HLP"
+	exit 1
+fi
+HOST_LIST=$($HLP)
+if [ $? -ne 0 ]; then
+	echo "ERROR: Could not determine '$HOST_LIST_PROVIDER' host list!"
+	exit 1
+fi
+echo "Host list:" $HOST_LIST
+
+REMOTE_SCANNER_LIST=$(grep -v "^ *#" "$REMOTE_SCANNERS_FILE")
+if [ "$REMOTE_SCANNER_LIST" != "" ]; then
+
+	# 2. Build remote scanner script
+	RSS=/tmp/polsan-remote-scanner.$$
+	cat $LIB_DIR/scanner-header.inc >$RSS || exit 1
+	cat $LIB_DIR/scanner-functions.inc >>$RSS || exit 1
+	for scanner in $REMOTE_SCANNER_LIST; do
+		scanner_file=$LIB_DIR/scanners/$scanner
+		if [ ! -f $scanner_file ]; then
+			echo "WARNING: Unknown scanner '$scanner'!"
+		else
+			# To have some sort of namespacing for policies
+			# we use the first word of the full scanner name
+			# as display name and the full name only for result
+			# output...
+			# FIXME: use bash regex
+			full_scanner_name=$(grep "# name:" $scanner_file | sed -e 's/^.*name: *//')
+			scanner_name_prefix=$(echo "$full_scanner_name" | sed -e 's/ .*//')
+			echo "full_scanner_name='$full_scanner_name'" >>$RSS
+			echo "scanner_name=$scanner_name_prefix" >>$RSS
+			cat "$scanner_file" >>$RSS
+		fi
+	done
+
+	# 3. Run remote scanner script
+
+	if [ "$SCAN_LOCALHOST" == 1 ]; then
+		echo "Scanning localhost..."
+		# FIXME: sudo
+		/bin/bash $RSS $(hostname)
+	fi
+
+	echo "Running remote scans..."
+	for remote in $HOST_LIST; do
+		if ! echo $remote | grep -q @; then
+			# Default user if none given from host list
+			remote=$SSH_USER@$remote
+		fi
+
+		current_host=${remote/*@/}
+		
+		if ! echo $remote | grep -q "root@"; then
+			sudo=$SUDO_CMD
+			echo " -> $remote (sudo)"
+		else
+			echo " -> $remote"
+		fi
+
+		output=$(/bin/cat $RSS | $SSH_CMD $remote $sudo "/bin/bash < <(/bin/cat -)" 2>&1)
+		if [ $? -ne 0 ]; then
+			# Scanner should never set return code, if we get one
+			# we have a scripting/connectivity issue that we want
+			# to track under name "polscan"
+			echo "$current_host polscan FAILED: $output"
+		else
+			echo "$output" | tee $RESULT_DIR/$current_host |\
+			sed "s/^/$current_host /" | grep -v " OK: "
+		fi
+	done
+fi
+
+# 4. Run single host scanner scripts
+#echo "Running single host scanners..."
+# FIXME
+SHSS=
+
+rm $RSS
+#rm $SHSS
+
+echo "Done."

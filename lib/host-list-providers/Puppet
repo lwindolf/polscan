@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# name: Puppet
+# description: Puppet master based host list provider. Can be used when running from a Puppet master. Should work with Puppet 2.x and 3.x
+
+puppet cert list --all

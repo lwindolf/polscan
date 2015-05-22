@@ -1,0 +1,8 @@
+#!/bin/bash
+
+
+# name: Custom
+# description: Custom host list method. Runs the command you provide as parameter. This command hash to return one node name per line.
+# param1: (mandatory) shell command, e.g. "knife node list"
+
+`$PARAM1`
