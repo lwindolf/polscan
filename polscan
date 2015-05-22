@@ -92,15 +92,17 @@ if [ "$REMOTE_SCANNER_LIST" != "" ]; then
 		fi
 
 		output=$(/bin/cat $RSS | $SSH_CMD $remote $sudo "/bin/bash < <(/bin/cat -)" 2>&1)
-		if [ $? -ne 0 ]; then
-			# Scanner should never set return code, if we get one
-			# we have a scripting/connectivity issue that we want
-			# to track under name "polscan"
-			echo "$current_host polscan FAILED: $output"
-		else
-			echo "$output" | tee $RESULT_DIR/$current_host |\
-			sed "s/^/$current_host /" | grep -v " OK: "
-		fi
+		(
+			if [ $? -ne 0 ]; then
+				# Scanner should never set return code, if we get one
+				# we have a scripting/connectivity issue that we want
+				# to track under name "polscan"
+				echo "polscan FAILED: $output"
+			else
+				echo "$output"
+			fi
+		) | tee $RESULT_DIR/$current_host |\
+		sed "s/^/$current_host /" | grep -v " OK: "
 	done
 fi
 
