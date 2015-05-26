@@ -5,13 +5,13 @@ echo() {
 
 # Result reporting
 result_ok() {
-	echo "OK: $full_scanner_name"
+	echo "OK: $full_scanner_name $@"
 }
 
 result_failed() {
-	echo "FAILED: $full_scanner_name"
+	echo "FAILED: $full_scanner_name $@"
 }
 
 result_warning() {
-	echo "WARNING: $full_scanner_name"
+	echo "WARNING: $full_scanner_name $@"
 }
