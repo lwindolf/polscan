@@ -1,0 +1,89 @@
+#!/bin/bash
+
+BASE=$(dirname $0)
+BASE=$(readlink -e $BASE)
+if [ "$BASE" == "/usr/bin" ]; then
+	CONF_DIR=/etc/polscan/
+	LIB_DIR=/usr/lib/polscan/
+else
+	CONF_DIR=${BASE}/etc/
+	LIB_DIR=${BASE}/lib
+fi
+CONF_FILE=${CONF_DIR}/polscan.conf
+REMOTE_SCANNERS_FILE=${CONF_DIR}/scanners.conf
+
+if [ ! -f $CONF_FILE ]; then
+	echo "ERROR: Could not find $CONF_FILE"
+	exit 1
+fi
+source $CONF_FILE
+
+# Select result dir
+if [ "$RESULT_BASE_DIR" == "" ]; then
+	RESULT_BASE_DIR=${BASE}/results
+fi
+RESULT_DIR=$(date +${RESULT_BASE_DIR}/%Y/%m/%d)
+if [ ! -d $RESULT_DIR ]; then
+	echo "ERROR: No results found in '$RESULT_DIR'"
+	exit 1
+fi
+if [ ! -d $RESULT_DIR/json ]; then
+	mkdir $RESULT_DIR/json || exit 1
+fi
+cd $RESULT_DIR || exit 1
+
+###############################################################################
+# Helper method to write JSON, solves the issue of forbidden final comma in
+# array lists...
+#
+# $1	file name
+# $2	root key
+###############################################################################
+write_json() {
+	name=$1
+	root=$2
+
+	(
+		echo '{"'$root'":['
+		cat | sed 's/[^[:print:]]//g'
+		echo -n "]}"
+	) | sed 's/,\]/]/' >$RESULT_DIR/json/${name}.json
+}
+
+# Do regroup results by scanner
+scanners=$(
+	egrep -h "^[a-zA-Z0-9][[a-zA-Z0-9]* (OK|WARNING|FAILED): " ./* |\
+	awk '{print $1}' | sort -u
+)
+echo "Found results for:" $scanners
+for s in $scanners; do
+	echo "Writing JSON for $s..."
+	(
+		grep "^$s " * |\
+		sed 's/:/ /' |\
+		while read host scanner severity message; do
+			echo -n '{"host": "'$host'", "severity": "'$severity'", "message": "'${message/\"/\'}'"},'
+		done
+	) | write_json $s 'scanner": "'$s'", "results'
+done
+
+echo "Writing global JSON..."
+(
+	egrep -v " OK: " * |\
+	sed 's/:/ /' |\
+	while read host scanner severity message; do
+		echo -n '{"host": "'$host'", "scanner": "'$scanner'", "severity": "'$severity'", "message": "'${message/\"/\'}'"},'
+	done
+) | write_json all results
+
+echo "Writing statistics JSON..."
+(
+	for s in $scanners; do
+		failed=$(grep -h "^$s FAILED: " * | wc -l)
+		warning=$(grep -h "^$s WARNING: " * | wc -l)
+		count=$(grep -h "^$s " * | wc -l)
+		echo -n '{"scanner": "'$s'", "WARNING": '${warning-0}', "FAILED": '${failed-0}', "count": '${count-0}'},'
+	done
+) | write_json overview overview
+
+echo "Done."
