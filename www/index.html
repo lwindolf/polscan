@@ -1,0 +1,119 @@
+<!doctype html>
+<html>
+	<head>
+		<script type="text/javascript" src="jquery-2.1.4.min.js"></script>
+		<meta charset="utf-8">
+		<style type="text/css">
+			.scanner {
+				background: #ddd;
+				padding: 0 12px;
+				cursor: pointer;
+			}
+			.scanner:hover {
+				background: #ccc;
+			}
+			.failed {
+				background: #f44;
+				padding: 0 6px;
+			}
+			.warning {
+				background: #ff4;
+				padding: 0 6px;
+			}
+			.ok {
+				background: #7f7;
+				padding: 0 6px;
+			}
+			.errorbox {
+				padding: 24px;
+				padding-top:0;
+				margin:12px;
+				background: #f44;
+				border: 3px solid #f22;
+			}
+		</style>
+	</head>
+	<body>
+		<div id='menu'>
+			[<a href="">Overview</a>] [<a href="javascript:loadScannerResults('all')">All Problems</a>]
+		</div>
+
+		<div id='results'>
+		<h2>Policy Scan Overview</h2>
+		</div>
+
+		<script>
+			function error(text) {
+				$('#results').html('<div class="errorbox"><h2>Error</h2> '+text+'</div>');
+			}
+
+			function loadScannerResults(name, filtered) {
+				$('#results').html("<h2>Results '"+name+"'");
+				$("<table id='resultTable'>").appendTo('#results');
+
+				$.getJSON("results/latest/json/"+name+".json", {})
+		        	 .done(function( data ) {
+			   		$.each( data.results, function( i, item ) {
+						if(!filtered || item.severity.indexOf('OK') == -1) {
+
+						var tmp = '<td>' + item.host + '</td>';
+						if(item.scanner)
+							tmp += '<td>' + item.scanner + '</td>';
+						tmp += '<td class="severity">' + item.severity + '</td>' +
+						'<td>' + item.message + '</td>';
+						$( "<tr>" )
+						.html(tmp)
+						.appendTo("#resultTable");
+						}
+					});
+				 	$('.severity').filter(function() {
+						return ($(this).text().indexOf('FAILED') > -1)
+					}).addClass('failed');
+				 	$('.severity').filter(function() {
+						return ($(this).text().indexOf('WARNING') > -1)
+					}).addClass('warning');
+				 	$('.severity').filter(function() {
+						return ($(this).text().indexOf('OK') > -1)
+					}).addClass('ok');
+				})
+				.fail(function(j, t, e) {
+					error('Fetching results for '+name+' failed! ' + t + " " + e);
+				});
+			}
+
+			(function() {
+				$.getJSON("results/latest/json/overview.json", {})
+		        		.done(function( data ) {
+			   			$.each( data.overview, function( i, item ) {
+							var tmp = '<span class="scanner">' +
+							item.scanner +
+							'</span>';
+							if(item.FAILED > 0) {
+								tmp += ' <span class="failed" title="Total failures found">' +
+								item.FAILED +
+								'</span>';
+							}
+							if(item.WARNING > 0) {
+								tmp += ' <span class="warning" title="Total warnings seen">' +
+								item.WARNING +
+								'</span>'
+							}
+							tmp += ' / <span class="count" title="Total checked">' +
+							item.count +
+							'</span>';
+
+						$( "<p>" )
+						.html(tmp)
+						.appendTo( "#results" )
+						.click(function() {
+							loadScannerResults(item.scanner, true);
+						});
+			   			});
+		        		})
+					.fail(function(j, t, e) {
+						error('Fetching overview results failed! ' + t + " " +e);
+					});
+			})();
+		</script>
+	</body>
+</html>
