@@ -1,0 +1,7 @@
+#!/bin/bash
+
+
+# name: MCollective
+# description: List all hosts via 'mco find'
+
+mco find
