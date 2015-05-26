@@ -12,6 +12,7 @@ else
 fi
 CONF_FILE=${CONF_DIR}/polscan.conf
 REMOTE_SCANNERS_FILE=${CONF_DIR}/scanners.conf
+STANDALONE_SCANNERS_FILE=${CONF_DIR}/standalone.conf
 
 if [ ! -f $CONF_FILE ]; then
 	echo "ERROR: Could not find $CONF_FILE"
@@ -23,7 +24,9 @@ source $CONF_FILE
 if [ "$RESULT_BASE_DIR" == "" ]; then
 	RESULT_BASE_DIR=${BASE}/results
 fi
-RESULT_DIR=$(date +${RESULT_BASE_DIR}/%Y/%m/%d)
+DATE=$(date +%Y/%m/%d)
+LATEST=1
+RESULT_DIR="${RESULT_BASE_DIR}/${DATE}"
 if [ ! -d $RESULT_DIR ]; then
 	mkdir -vp "$RESULT_DIR"
 fi
@@ -83,7 +86,7 @@ if [ "$REMOTE_SCANNER_LIST" != "" ]; then
 		fi
 
 		current_host=${remote/*@/}
-		
+
 		if ! echo $remote | grep -q "root@"; then
 			sudo=$SUDO_CMD
 			echo " -> $remote (sudo)"
@@ -101,17 +104,36 @@ if [ "$REMOTE_SCANNER_LIST" != "" ]; then
 			else
 				echo "$output"
 			fi
-		) | tee $RESULT_DIR/$current_host |\
+		) |\
+		grep -v 'Warning: Permanently added.*to the list of known hosts.' |\
+		tee $RESULT_DIR/$current_host |\
 		sed "s/^/$current_host /" | grep -v " OK: "
 	done
 fi
-
-# 4. Run single host scanner scripts
-#echo "Running single host scanners..."
-# FIXME
-SHSS=
-
 rm $RSS
-#rm $SHSS
+
+# 4. Run standalone scanner scripts
+STANDALONE_SCANNER_LIST=$(grep -v "^ *#" "$STANDALONE_SCANNERS_FILE")
+if [ "$STANDALONE_SCANNER_LIST" != "" ]; then
+	echo "Running standalone scanners..."
+	for scanner in $STANDALONE_SCANNER_LIST; do
+		echo " -> Running '$scanner'..."
+		scanner_file=$LIB_DIR/standalone/$scanner
+		full_scanner_name=$(grep "# name:" $scanner_file | sed -e 's/^.*name: *//')
+		scanner_name_prefix=$(echo "$full_scanner_name" | sed -e 's/ .*//')
+		$scanner_file |\
+		while read host data; do
+			echo "$scanner_name_prefix $data" >>$RESULT_DIR/$host
+		done
+	done
+fi
+
+$BASE/polscan_html
+
+if [ $LATEST == 1 ]; then
+	# Link latest results
+	rm "$RESULT_BASE_DIR/latest"
+	cd $RESULT_BASE_DIR && ln -s "$DATE" latest
+fi
 
 echo "Done."
