@@ -1,1 +1,15 @@
 # polscan
+
+polscan (short for Policy Scanner) allows you to make your Linux IT configuration/security/automation policies explicit.
+
+It is easily extensible by combining pre-installed check snippets with custom ones at runtime. To make it easy to use it comes with host discovery solutions for typical automation setups (Chef, Puppet, MCollective) as well as supporting host discovery by monitoring tools (Nagios, Icinga).
+
+How to run it
+-------------
+
+polscan keeps results on a daily basis so it makes sense to set up a daily cron.
+
+Access Results
+--------------
+
+For simplicity all results are store in files in plain text and JSON. The JSON files are used by the static HTML viewer that can be used to inspect the result archive.
