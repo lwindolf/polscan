@@ -45,10 +45,8 @@ write_json() {
 }
 
 # Do regroup results by group and policy
-declare -A group_warnings
-declare -A group_errors
-declare -A policy_warnings
-declare -A policy_errors
+declare -A policies
+declare -A pgroups
 
 groups=$(
 	egrep -h "^[a-zA-Z0-9][[a-zA-Z0-9]* (OK|WARNING|FAILED) " ./* |\
@@ -70,16 +68,26 @@ for g in $groups; do
 done
 
 # Global results
-(
-	while read host group severity details; do
-		policy=${details/|||.*/}
-		policy=${policy/|||/}
-		message=${details/.*|||/}
-		echo -n '{"host": "'$host'", "group": "'$group'", "severity": "'$severity'", "policy": "'$policy'", "message": "'${message/\"/\'}'"},'
-	done < <(
-		ls | xargs -I {} -n1 sed '/^[^ ][^ ]* OK /d; s/^/{} /;' {}
-	)
-) | write_json all results
+tmp=
+while read host group severity details; do
+	policy=${details/#|||/}
+	policy=${policy/|||*/}
+	message=${details/*|||/}
+	tmp=$tmp'{"host": "'$host'", "group": "'$group'", "severity": "'$severity'", "policy": "'$policy'", "message": "'${message/\"/\'}'"},'
+	case $severity in
+		WARNING)
+			pgroups[warn_$group]=$(( ${pgroups[warn_$group]} + 1 ))
+			policies[warn_$policy]=$(( ${policies[warn_$policy]} + 1 ))
+			;;
+		FAILED)
+			pgroups[fail_$group]=$(( ${pgroups[fail_$group]} + 1 ))
+			policies[fail_$policy]=$(( ${policies[fail_$policy]} + 1 ))
+			;;
+	esac
+done < <(
+	ls | xargs -I {} -n1 sed '/^[^ ][^ ]* OK /d; s/^/{} /;' {}
+)
+echo "$tmp" | write_json all results
 
 # Statistics
 (
@@ -91,9 +99,9 @@ done
 	done
 	for s in $(cat ${REMOTE_SCANNERS_FILE}); do
 		group=`get_policy_group "$LIB_DIR/scanners/$s"`
-		name=`get_policy_name "$LIB_DIR/scanners/$s"`
+		policy=`get_policy_name "$LIB_DIR/scanners/$s"`
 		description=`get_policy_description "$LIB_DIR/scanners/$s"`
-		echo -n '{"policy": "'$name'", "parent": "'$group'", "description": "'$description'"},'
+		echo -n '{"policy": "'$policy'", "parent": "'$group'", "description": "'$description'", "WARNING": '${policies[warn_$policy]-0}', "FAILED": '${policies[fail_$policy]-0}'},'
 	done
 ) | write_json overview overview
 
