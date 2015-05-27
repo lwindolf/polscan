@@ -51,7 +51,7 @@
 				$('#results').html("<h2>Results '"+name+"'");
 				$("<table id='resultTable'>").appendTo('#results');
 
-				$.getJSON("results/latest/json/"+name+".json", {})
+				$.getJSON("results/latest/"+name+".json", {})
 		        	 .done(function( data ) {
 			   		$.each( data.results, function( i, item ) {
 						if(!filtered || item.severity.indexOf('OK') == -1) {
@@ -82,7 +82,7 @@
 			}
 
 			(function() {
-				$.getJSON("results/latest/json/overview.json", {})
+				$.getJSON("results/latest/overview.json", {})
 		        		.done(function( data ) {
 			   			$.each( data.overview, function( i, item ) {
 							var tmp = '<span class="scanner">' +

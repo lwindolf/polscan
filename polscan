@@ -27,6 +27,7 @@ fi
 DATE=$(date +%Y/%m/%d)
 LATEST=1
 RESULT_DIR="${RESULT_BASE_DIR}/${DATE}"
+JSON_DIR="${RESULT_BASE_DIR}/json/${DATE}"
 if [ ! -d $RESULT_DIR ]; then
 	mkdir -vp "$RESULT_DIR"
 fi
@@ -133,7 +134,7 @@ $BASE/polscan_html
 if [ $LATEST == 1 ]; then
 	# Link latest results
 	rm "$RESULT_BASE_DIR/latest"
-	cd $RESULT_BASE_DIR && ln -s "$DATE" latest
+	cd $RESULT_BASE_DIR && ln -s "json/$DATE" latest
 fi
 
 echo "Done."
