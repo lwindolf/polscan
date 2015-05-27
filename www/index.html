@@ -31,6 +31,14 @@
 				background: #f44;
 				border: 3px solid #f22;
 			}
+			.description {
+				display:block;
+				font-style:italic;
+				font-size: 80%;
+				color: gray;
+				padding:6px;
+				padding-left:24px;
+			}
 		</style>
 	</head>
 	<body>
@@ -56,11 +64,12 @@
 			   		$.each( data.results, function( i, item ) {
 						if(!filtered || item.severity.indexOf('OK') == -1) {
 
-						var tmp = '<td>' + item.host + '</td>';
-						if(item.scanner)
-							tmp += '<td>' + item.scanner + '</td>';
+						var tmp = '<td class="host">' + item.host + '</td>';
+						if(item.group)
+							tmp += '<td class="group">' + item.group + '</td>';
 						tmp += '<td class="severity">' + item.severity + '</td>' +
-						'<td>' + item.message + '</td>';
+						'<td class="policy">' + item.policy + '</td>';
+						'<td class="message">' + item.message + '</td>';
 						$( "<tr>" )
 						.html(tmp)
 						.appendTo("#resultTable");
@@ -84,30 +93,68 @@
 			(function() {
 				$.getJSON("results/latest/overview.json", {})
 		        		.done(function( data ) {
-			   			$.each( data.overview, function( i, item ) {
-							var tmp = '<span class="scanner">' +
-							item.scanner +
-							'</span>';
-							if(item.FAILED > 0) {
-								tmp += ' <span class="failed" title="Total failures found">' +
-								item.FAILED +
-								'</span>';
-							}
-							if(item.WARNING > 0) {
-								tmp += ' <span class="warning" title="Total warnings seen">' +
-								item.WARNING +
-								'</span>'
-							}
-							tmp += ' / <span class="count" title="Total checked">' +
-							item.count +
-							'</span>';
+						$( "<h3>" ).html("By Groups").appendTo( "#results" )
 
-						$( "<p>" )
-						.html(tmp)
-						.appendTo( "#results" )
-						.click(function() {
-							loadScannerResults(item.scanner, true);
-						});
+			   			$.each( data.overview, function( i, item ) {
+							if(item.group) {
+								var tmp = '<span class="scanner">' +
+								item.group +
+								'</span>';
+								if(item.FAILED > 0) {
+									tmp += ' <span class="failed" title="Total failures found">' +
+									item.FAILED +
+									'</span>';
+								}
+								if(item.WARNING > 0) {
+									tmp += ' <span class="warning" title="Total warnings seen">' +
+									item.WARNING +
+									'</span>'
+								}
+								tmp += ' / <span class="count" title="Total checked">' +
+								item.count +
+								'</span>';
+
+								$( "<p>" )
+								.html(tmp)
+								.appendTo( "#results" )
+								.click(function() {
+									loadScannerResults(item.group, true);
+								});
+							}
+			   			});
+
+						$( "<h3>" ).html("Policy Details").appendTo( "#results" )
+
+			   			$.each( data.overview, function( i, item ) {
+							if(item.policy) {
+								var tmp = '<span class="scanner">' +
+								item.parent +
+								'</span> <span class="scanner">' +
+								item.policy +
+								'</span>';
+								if(item.FAILED > 0) {
+									tmp += ' <span class="failed" title="Total failures found">' +
+									item.FAILED +
+									'</span>';
+								}
+								if(item.WARNING > 0) {
+									tmp += ' <span class="warning" title="Total warnings seen">' +
+									item.WARNING +
+									'</span>'
+								}
+								tmp += ' / <span class="count" title="Total checked">' +
+								item.count +
+								'</span> <span class="description">' +
+								item.description +
+								'</span>';
+
+								$( "<p>" )
+								.html(tmp)
+								.appendTo( "#results" )
+								.click(function() {
+									loadScannerResults(item.parent, true);
+								});
+							}
 			   			});
 		        		})
 					.fail(function(j, t, e) {

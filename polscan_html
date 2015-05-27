@@ -9,28 +9,12 @@ else
 	CONF_DIR=${BASE}/etc/
 	LIB_DIR=${BASE}/lib
 fi
-CONF_FILE=${CONF_DIR}/polscan.conf
-REMOTE_SCANNERS_FILE=${CONF_DIR}/scanners.conf
 
-if [ ! -f $CONF_FILE ]; then
-	echo "ERROR: Could not find $CONF_FILE"
-	exit 1
-fi
-source $CONF_FILE
+DATE=$1		# Allow passing date
 
-# Select result dir
-if [ "$RESULT_BASE_DIR" == "" ]; then
-	RESULT_BASE_DIR=${BASE}/results
-fi
+source $LIB_DIR/polscan-common.inc
 
-if [ "$1" != "" ]; then
-	DATE=$1
-else
-	DATE=$(date +%Y/%m/%d)
-fi
-
-RESULT_DIR="${RESULT_BASE_DIR}/${DATE}"
-JSON_DIR="${RESULT_BASE_DIR}/json/${DATE}"
+# Prepare output dir
 if [ ! -d $RESULT_DIR ]; then
 	echo "ERROR: No results found in '$RESULT_DIR'"
 	exit 1
@@ -46,52 +30,77 @@ cd $RESULT_DIR || exit 1
 #
 # $1	file name
 # $2	root key
+# $3	extra data for root key
 ###############################################################################
 write_json() {
 	name=$1
 	root=$2
 
+	echo "Writing $name.json..."
 	(
-		echo '{"'$root'":['
+		echo '{"date": "'$DATE'", "'$root'":['
 		cat | sed 's/[^[:print:]]//g'
 		echo -n "]}"
-	) | sed 's/,\]/]/' >$JSON_DIR/${name}.json
+	) | sed 's/,\]/]/g' >${JSON_DIR}/${name}.json
 }
 
-# Do regroup results by scanner
-scanners=$(
-	egrep -h "^[a-zA-Z0-9][[a-zA-Z0-9]* (OK|WARNING|FAILED): " ./* |\
+# Do regroup results by group and policy
+declare -A group_warnings
+declare -A group_errors
+declare -A policy_warnings
+declare -A policy_errors
+
+groups=$(
+	egrep -h "^[a-zA-Z0-9][[a-zA-Z0-9]* (OK|WARNING|FAILED) " ./* |\
 	awk '{print $1}' | sort -u
 )
-echo "Found results for:" $scanners
-for s in $scanners; do
-	echo "Writing JSON for $s..."
+echo "Found results for:" $groups
+
+for g in $groups; do
 	(
-		ls | xargs -n1 grep -H "^$s " |\
+		ls | xargs -n1 grep -H "^$g " |\
 		sed 's/:/ /' |\
-		while read host scanner severity message; do
-			echo -n '{"host": "'$host'", "severity": "'$severity'", "message": "'${message/\"/\'}'"},'
+		while read host group severity details; do
+			policy=${details/#|||/}
+			policy=${policy/|||*/}
+			message=${details/*|||/}
+			echo -n '{"host": "'$host'", "severity": "'$severity'", "policy": "'$policy'", "message": "'${message/\"/\'}'"},'
 		done
-	) | write_json $s 'scanner": "'$s'", "results'
+	) | write_json $g 'group": "'$g'", "results'
 done
 
-echo "Writing global JSON..."
+# Global results
 (
-	ls | xargs -n1 egrep -Hv " OK: " |\
-	sed 's/:/ /' |\
-	while read host scanner severity message; do
-		echo -n '{"host": "'$host'", "scanner": "'$scanner'", "severity": "'$severity'", "message": "'${message/\"/\'}'"},'
-	done
+	while read host group severity details; do
+		policy=${details/|||.*/}
+		policy=${policy/|||/}
+		message=${details/.*|||/}
+		echo -n '{"host": "'$host'", "group": "'$group'", "severity": "'$severity'", "policy": "'$policy'", "message": "'${message/\"/\'}'"},'
+	done < <(
+		ls | xargs -I {} -n1 sed '/^[^ ][^ ]* OK /d; s/^/{} /;' {}
+	)
 ) | write_json all results
 
-echo "Writing statistics JSON..."
+# Statistics
 (
-	for s in $scanners; do
-		failed=$(ls | xargs -n1 grep "^$s FAILED: " | wc -l)
-		warning=$(ls | xargs -n1 grep "^$s WARNING: " | wc -l)
-		count=$(ls | xargs -n1 grep "^$s " | wc -l)
-		echo -n '{"scanner": "'$s'", "WARNING": '${warning-0}', "FAILED": '${failed-0}', "count": '${count-0}'},'
+	for g in $groups; do
+		failed=$(ls | xargs -n1 grep "^$g FAILED " | wc -l)
+		warning=$(ls | xargs -n1 grep "^$g WARNING " | wc -l)
+		count=$(ls | xargs -n1 grep "^$g " | wc -l)
+		echo -n '{"group": "'$g'", "WARNING": '${warning-0}', "FAILED": '${failed-0}', "count": '${count-0}'},'
+	done
+	for s in $(cat ${REMOTE_SCANNERS_FILE}); do
+		group=`get_policy_group "$LIB_DIR/scanners/$s"`
+		name=`get_policy_name "$LIB_DIR/scanners/$s"`
+		description=`get_policy_description "$LIB_DIR/scanners/$s"`
+		echo -n '{"policy": "'$name'", "parent": "'$group'", "description": "'$description'"},'
 	done
 ) | write_json overview overview
+
+if [ $LATEST == 1 ]; then
+	# Link latest results
+	rm "$RESULT_BASE_DIR/latest"
+	cd $RESULT_BASE_DIR && ln -s "json/$DATE" latest
+fi
 
 echo "Done."

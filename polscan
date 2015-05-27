@@ -10,24 +10,10 @@ else
 	CONF_DIR=${BASE}/etc/
 	LIB_DIR=${BASE}/lib
 fi
-CONF_FILE=${CONF_DIR}/polscan.conf
-REMOTE_SCANNERS_FILE=${CONF_DIR}/scanners.conf
-STANDALONE_SCANNERS_FILE=${CONF_DIR}/standalone.conf
 
-if [ ! -f $CONF_FILE ]; then
-	echo "ERROR: Could not find $CONF_FILE"
-	exit 1
-fi
-source $CONF_FILE
+source $LIB_DIR/polscan-common.inc
 
 # 0. Prepare output dir
-if [ "$RESULT_BASE_DIR" == "" ]; then
-	RESULT_BASE_DIR=${BASE}/results
-fi
-DATE=$(date +%Y/%m/%d)
-LATEST=1
-RESULT_DIR="${RESULT_BASE_DIR}/${DATE}"
-JSON_DIR="${RESULT_BASE_DIR}/json/${DATE}"
 if [ ! -d $RESULT_DIR ]; then
 	mkdir -vp "$RESULT_DIR"
 fi
@@ -50,24 +36,18 @@ REMOTE_SCANNER_LIST=$(grep -v "^ *#" "$REMOTE_SCANNERS_FILE")
 if [ "$REMOTE_SCANNER_LIST" != "" ]; then
 
 	# 2. Build remote scanner script
-	RSS=/tmp/polsan-remote-scanner.$$
+	RSS=/tmp/polscan-remote-scanner.$$
 	cat $LIB_DIR/scanner-header.inc >$RSS || exit 1
 	cat $LIB_DIR/scanner-functions.inc >>$RSS || exit 1
 	for scanner in $REMOTE_SCANNER_LIST; do
-		scanner_file=$LIB_DIR/scanners/$scanner
-		if [ ! -f $scanner_file ]; then
-			echo "WARNING: Unknown scanner '$scanner'!"
+		file=$LIB_DIR/scanners/$scanner
+		if [ ! -f $file ]; then
+			echo "WARNING: Unknown policy '$scanner'!"
 		else
-			# To have some sort of namespacing for policies
-			# we use the first word of the full scanner name
-			# as display name and the full name only for result
-			# output...
-			# FIXME: use bash regex
-			full_scanner_name=$(grep "# name:" $scanner_file | sed -e 's/^.*name: *//')
-			scanner_name_prefix=$(echo "$full_scanner_name" | sed -e 's/ .*//')
-			echo "full_scanner_name='$full_scanner_name'" >>$RSS
-			echo "scanner_name=$scanner_name_prefix" >>$RSS
-			cat "$scanner_file" >>$RSS
+			group=`get_policy_group "$file"`
+			name=`get_policy_name "$file"`
+			echo "policy_name='$name'; policy_group='$group'" >>$RSS
+			cat "$file" >>$RSS
 		fi
 	done
 
@@ -130,11 +110,5 @@ if [ "$STANDALONE_SCANNER_LIST" != "" ]; then
 fi
 
 $BASE/polscan_html
-
-if [ $LATEST == 1 ]; then
-	# Link latest results
-	rm "$RESULT_BASE_DIR/latest"
-	cd $RESULT_BASE_DIR && ln -s "json/$DATE" latest
-fi
 
 echo "Done."

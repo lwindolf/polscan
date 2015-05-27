@@ -1,17 +1,17 @@
-# Override "echo" to prefix current host and scanner name
+# Override "echo" to prefix current host and policy infos
 echo() {
-	/bin/echo $current_host $scanner_name $@
+	/bin/echo $current_host $policy_group $@
 }
 
 # Result reporting
 result_ok() {
-	echo "OK: $full_scanner_name $@"
+	echo "OK |||$policy_name||| $@"
 }
 
 result_failed() {
-	echo "FAILED: $full_scanner_name $@"
+	echo "FAILED |||$policy_name||| $@"
 }
 
 result_warning() {
-	echo "WARNING: $full_scanner_name $@"
+	echo "WARNING |||$policy_name||| $@"
 }

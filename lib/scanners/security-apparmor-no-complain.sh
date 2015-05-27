@@ -1,6 +1,5 @@
-#!/bin/bash
-
-# name: Security AppArmor no complain
+# group: Security
+# name: AppArmor no complain
 # description: Checks if there are no AppArmor profiles in complain mode
 
 output=$(aa-status 2>/dev/null)
