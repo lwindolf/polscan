@@ -100,11 +100,11 @@ if [ "$STANDALONE_SCANNER_LIST" != "" ]; then
 	for scanner in $STANDALONE_SCANNER_LIST; do
 		echo " -> Running '$scanner'..."
 		scanner_file=$LIB_DIR/standalone/$scanner
-		full_scanner_name=$(grep "# name:" $scanner_file | sed -e 's/^.*name: *//')
-		scanner_name_prefix=$(echo "$full_scanner_name" | sed -e 's/ .*//')
+		group=`get_policy_group "$scanner_file"`
+		policy=`get_policy_name "$scanner_file"`
 		$scanner_file |\
 		while read host data; do
-			echo "$scanner_name_prefix $data" >>$RESULT_DIR/$host
+			echo "$group |||$policy||| $data" >>$RESULT_DIR/$host
 		done
 	done
 fi
