@@ -9,7 +9,7 @@ release=${release/\.*/}
 case $vendor in
 	Debian)
 		if [ "${release-0}" -lt 7 ]; then
-			check_warning "$vendor $release needs to be updated"
+			result_warning "$vendor $release needs to be updated"
 		fi
 		;;
 esac
