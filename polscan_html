@@ -92,15 +92,20 @@ echo "$tmp" | write_json all results
 # Statistics
 (
 	for g in $groups; do
+		echo "- $g" >&2
 		failed=$(ls | xargs -n1 grep "^$g FAILED " | wc -l)
 		warning=$(ls | xargs -n1 grep "^$g WARNING " | wc -l)
 		count=$(ls | xargs -n1 grep "^$g " | wc -l)
 		echo -n '{"group": "'$g'", "WARNING": '${warning-0}', "FAILED": '${failed-0}', "count": '${count-0}'},'
 	done
-	for s in $(cat ${REMOTE_SCANNERS_FILE}); do
-		group=`get_policy_group "$LIB_DIR/scanners/$s"`
-		policy=`get_policy_name "$LIB_DIR/scanners/$s"`
-		description=`get_policy_description "$LIB_DIR/scanners/$s"`
+	for s in $(
+		cat ${REMOTE_SCANNERS_FILE} | sed "s/^/scanners\//"
+		cat ${STANDALONE_SCANNERS_FILE} | sed "s/^/standalone\//"
+	); do
+		echo "- $s" >&2
+		group=`get_policy_group "$LIB_DIR/$s"`
+		policy=`get_policy_name "$LIB_DIR/$s"`
+		description=`get_policy_description "$LIB_DIR/$s"`
 		echo -n '{"policy": "'$policy'", "parent": "'$group'", "description": "'$description'", "WARNING": '${policies[warn_$policy]-0}', "FAILED": '${policies[fail_$policy]-0}'},'
 	done
 ) | write_json overview overview
