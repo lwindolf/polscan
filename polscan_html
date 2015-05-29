@@ -73,7 +73,11 @@ while read host group severity details; do
 	policy=${details/#|||/}
 	policy=${policy/|||*/}
 	message=${details/*|||/}
-	tmp=$tmp'{"host": "'$host'", "group": "'$group'", "severity": "'$severity'", "policy": "'$policy'", "message": "'${message/\"/\'}'"},'
+	case $severity in
+		OK|WARNING|FAILED)
+			tmp=$tmp'{"host": "'$host'", "group": "'$group'", "severity": "'$severity'", "policy": "'$policy'", "message": "'${message/\"/\'}'"},'
+			;;
+	esac
 	case $severity in
 		WARNING)
 			pgroups[warn_$group]=$(( ${pgroups[warn_$group]} + 1 ))
@@ -87,7 +91,7 @@ while read host group severity details; do
 done < <(
 	ls | xargs -I {} -n1 sed '/^[^ ][^ ]* OK /d; s/^/{} /;' {}
 )
-echo "$tmp" | write_json all results
+echo -n "$tmp" | write_json all results
 
 # Statistics
 (
