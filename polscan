@@ -56,7 +56,7 @@ if [ "$REMOTE_SCANNER_LIST" != "" ]; then
 	if [ "$SCAN_LOCALHOST" == 1 ]; then
 		echo "Scanning localhost..."
 		# FIXME: sudo
-		/bin/bash $RSS $(hostname)
+		/bin/bash $RSS > ${RESULT_DIR}/localhost
 	fi
 
 	echo "Running remote scans..."
@@ -87,7 +87,7 @@ if [ "$REMOTE_SCANNER_LIST" != "" ]; then
 			fi
 		) |\
 		grep -v 'Warning: Permanently added.*to the list of known hosts.' \
-		> $RESULT_DIR/$current_host
+		> ${RESULT_DIR}/$current_host
 	done
 fi
 rm $RSS
