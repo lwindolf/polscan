@@ -3,6 +3,8 @@
 	<head>
 		<script type="text/javascript" src="jquery-2.1.4.min.js"></script>
 		<script type="text/javascript" src="jquery.tablesorter.min.js"></script>
+		<link rel="stylesheet" href="jquery-ui.min.css">
+		<script src="jquery-ui.min.js"></script>
 		<meta charset="utf-8">
 		<style type="text/css">
 			body {
@@ -82,8 +84,11 @@
 			[<a href="">Overview</a>] [<a href="javascript:loadScannerResults('all')">All Problems</a>]
 		</div>
 
+		<h2 id='resultTitle'/></h2>
+
+		<p>Date <input type='text' id='datepicker' size='10'/></p>
+
 		<div id='results'>
-		<h2>Policy Scan Overview</h2>
 		</div>
 
 		<script>
@@ -92,7 +97,8 @@
 			}
 
 			function loadScannerResults(name, filtered) {
-				$('#results').html("<h2>Results '"+name+"'");
+				$('#resultTitle').html("Results '"+name+"'");
+				$('#results').html('');
 				$("<table id='resultTable'> class='tablesorter'").html("<thead><tr><th>Host</th><th>Policy</th><th>Details</th></thead>")
 				.appendTo('#results');
 
@@ -120,8 +126,21 @@
 			}
 
 			(function() {
-				$.getJSON("results/latest/overview.json", {})
+				onDateSelect();
+			})();
+
+			function onDateSelect(day) {
+				var url;
+
+				if(day)
+					url = "results/json/"+day+"/overview.json";
+				else
+					url = "results/latest/overview.json";
+
+				$.getJSON(url, {})
 		        		.done(function( data ) {
+						$('#resultTitle').html("Policy Scan Overview");
+						$('#results').html('');
 						$( "<h3>" ).html("By Groups").appendTo( "#results" )
 						$( "<div id='groups' class='section'>" ).appendTo( "#results" )
 
@@ -193,12 +212,17 @@
 									loadScannerResults(item.parent, true);
 								});
 							}
+							$("#datepicker").val(data.date);
+							$("#datepicker").datepicker({
+								dateFormat: "yy/mm/dd",
+								onSelect: onDateSelect
+							});
 			   			});
 		        		})
 					.fail(function(j, t, e) {
 						error('Fetching overview results failed! ' + t + " " +e);
 					});
-			})();
+			}
 		</script>
 	</body>
 </html>
