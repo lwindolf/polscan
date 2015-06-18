@@ -127,18 +127,24 @@
 
 			   			$.each( data.overview, function( i, item ) {
 							if(item.group) {
+								var compliant = 1;
 								var tmp = '<span class="scanner">' +
 								item.group +
 								'</span>';
 								if(item.FAILED > 0) {
+									compliant = 0;
 									tmp += ' <span class="FAILED" title="Total failures found">' +
 									item.FAILED +
 									'</span>';
 								}
 								if(item.WARNING > 0) {
+									compliant = 0;
 									tmp += ' <span class="WARNING" title="Total warnings seen">' +
 									item.WARNING +
 									'</span>'
+								}
+								if(compliant) {
+									tmp += ' <span class="OK" title="100% compliance for this policy">compliant</span>';
 								}
 
 								$( "<p>" )
@@ -155,20 +161,26 @@
 
 			   			$.each( data.overview, function( i, item ) {
 							if(item.policy) {
+								var compliant = 1;
 								var tmp = '<span class="scanner">' +
 								item.parent +
 								'</span> <span class="scanner">' +
 								item.policy +
 								'</span>';
 								if(item.FAILED > 0) {
+									compliant = 0;
 									tmp += ' <span class="FAILED" title="Total failures found">' +
 									item.FAILED +
 									'</span>';
 								}
 								if(item.WARNING > 0) {
+									compliant = 0;
 									tmp += ' <span class="WARNING" title="Total warnings seen">' +
 									item.WARNING +
 									'</span>'
+								}
+								if(compliant) {
+									tmp += ' <span class="OK" title="100% compliance for this policy">compliant</span>';
 								}
 								tmp += '<span class="description">' +
 								item.description +
