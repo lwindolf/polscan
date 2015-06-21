@@ -97,9 +97,14 @@
 			}
 
 			function loadScannerResults(name, filtered) {
+ 				var group = '';
+				if (name == 'all')
+					group = '<th>Group</th>';
+
 				$('#resultTitle').html("Results '"+name+"'");
 				$('#results').html('');
-				$("<table id='resultTable'> class='tablesorter'").html("<thead><tr><th>Host</th><th>Policy</th><th>Details</th></thead>")
+				$("<table id='resultTable' class='tablesorter'>")
+				.html("<thead><tr><th>Host</th>"+group+"<th>Policy</th><th>Details</th></thead>")
 				.appendTo('#results');
 
 				$.getJSON("results/latest/"+name+".json", {})
