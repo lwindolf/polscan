@@ -16,7 +16,7 @@ if [ "$result_short" == "" ]; then
 else
 	ip=${result_short/ */}
 	if ! echo "$local_ips" | grep -q "$ip"; then
-		result_failed "$short doesn't resolve to local IP ($ip)"
+		result_warning "$short doesn't resolve to a NIC IP ($ip)"
 	fi
 fi
 
@@ -25,6 +25,6 @@ if [ "$result_fqdn" == "" ]; then
 else
 	ip=${result_fqdn/ */}
 	if ! echo "$local_ips" | grep -q "$ip"; then
-		result_failed "$fqdn doesn't resolve to local IP ($ip)"
+		result_warning "$fqdn doesn't resolve to a NIC IP ($ip)"
 	fi
 fi
