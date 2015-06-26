@@ -4,7 +4,7 @@
 # description: All mount points need to be persistent.
 
 fstab=$(grep -v '^#' /etc/fstab | awk '{print $2}')
-mountpoints=$(mount | egrep -v '(proc|type rpc|fuse|on /dev|on /sys|on /run|on /cgroup)' | awk '{if($2 == "on") {print $3}}')
+mountpoints=$(mount | egrep -v '(proc|type rpc|type tmpfs|fuse|on /dev|on /sys|on /run|on /cgroup)' | awk '{if($2 == "on") {print $3}}')
 non_persistent=
 
 for m in $mountpoints
