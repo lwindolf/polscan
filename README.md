@@ -22,6 +22,6 @@ For simplicity all results are store in files in plain text and JSON. The JSON f
 
 To quickly expose the static results in any webservers document root run the following commands from the directory you installed polscan into:
 
-   cp -r www /var/www/polscan
-   mkdir /var/www/polscan/results
-   ln -s /var/www/polscan/results results
+    cp -r www /var/www/polscan
+    mkdir /var/www/polscan/results
+    ln -s /var/www/polscan/results results
