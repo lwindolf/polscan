@@ -4,7 +4,7 @@
 
 output=$(aa-status 2>/dev/null)
 if [ "$output" != "" ]; then
-	if ! echo "$output" | grep -q "0 profiles are in complain mode"; then
+	if ! /bin/echo "$output" | grep -q "0 profiles are in complain mode"; then
 		result_warning
 	fi
 fi

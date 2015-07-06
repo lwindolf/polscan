@@ -7,7 +7,7 @@ if ! grep -q "^  status: failed" /var/lib/puppet/state/last_run_report.yaml; the
 	unmanaged=$(
 		for f in $authorized_keys_files; do
 			if ! grep -q "resource: File\[$f\]" /var/lib/puppet/state/last_run_report.yaml 2>/dev/null; then
-			echo $f
+			/bin/echo $f
 		fi
 	done
 	)

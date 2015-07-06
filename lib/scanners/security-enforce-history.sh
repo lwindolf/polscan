@@ -13,7 +13,7 @@ readonly\\ HISTFILESIZE
 readonly\\ HISTIGNORE
 readonly\\ HISTCONTROL"
 
-echo "$patterns" | while read p; do
+/bin/echo "$patterns" | while read p; do
 	if ! grep -q "$p" /etc/profile /etc/bash.bashrc; then
 		result_warning "Missing setting. Check for '$p' failed."
 	fi

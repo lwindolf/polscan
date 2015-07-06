@@ -15,7 +15,7 @@ if [ "$result_short" == "" ]; then
 	result_failed "NSS doesn't resolve '$short'"
 else
 	ip=${result_short/ */}
-	if ! echo "$local_ips" | grep -q "$ip"; then
+	if ! /bin/echo "$local_ips" | grep -q "$ip"; then
 		result_warning "$short doesn't resolve to a NIC IP ($ip)"
 	fi
 fi
@@ -24,7 +24,7 @@ if [ "$result_fqdn" == "" ]; then
 	result_failed "NSS doesn't resolve '$fqdn'"
 else
 	ip=${result_fqdn/ */}
-	if ! echo "$local_ips" | grep -q "$ip"; then
+	if ! /bin/echo "$local_ips" | grep -q "$ip"; then
 		result_warning "$fqdn doesn't resolve to a NIC IP ($ip)"
 	fi
 fi
