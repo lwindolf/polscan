@@ -102,7 +102,7 @@
 					group = '<th>Group</th>';
 
 				$('#resultTitle').html("Results '"+name+"'");
-				$('#results').html('');
+				$('#results').html('Search <input type="text" size="40" id="search"/> <input type="button" value="Go" onclick="onSearch();"/><br/><br/>');
 				$("<table id='resultTable' class='tablesorter'>")
 				.html("<thead><tr><th>Host</th>"+group+"<th>Policy</th><th>Details</th></thead>")
 				.appendTo('#results');
@@ -133,6 +133,15 @@
 			(function() {
 				onDateSelect();
 			})();
+
+                        function onSearch() {
+                                var searchText = $('#search').val();
+
+                                $("td").parent().hide();
+                                $("td").filter(function() {
+                                        return $(this).text().indexOf(searchText) !== -1;
+                                }).parent().show();
+                        }
 
 			function onDateSelect(day) {
 				var url;
