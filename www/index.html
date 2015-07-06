@@ -17,12 +17,12 @@
 				border-radius: 6px;
 				padding:12px 24px;
 			}
-			.scanner {
+			.group, .policy {
 				background: #ddd;
 				padding: 0 12px;
 				cursor: pointer;
 			}
-			.scanner:hover {
+			.group:hover, .policy:hover {
 				background: #ccc;
 			}
 			.FAILED {
@@ -96,7 +96,7 @@
 				$('#results').html('<div class="errorbox"><h2>Error</h2> '+text+'</div>');
 			}
 
-			function loadScannerResults(name, filtered) {
+			function loadScannerResults(name, searchValue, filtered) {
  				var group = '';
 				if (name == 'all')
 					group = '<th>Group</th>';
@@ -124,6 +124,8 @@
 						}
 					});
 					$("#resultTable").tablesorter();
+					$("#search").val(searchValue);
+					onSearch();
 				})
 				.fail(function(j, t, e) {
 					error('Fetching results for '+name+' failed! ' + t + " " + e);
@@ -134,14 +136,14 @@
 				onDateSelect();
 			})();
 
-                        function onSearch() {
-                                var searchText = $('#search').val();
+			function onSearch() {
+				var searchText = $('#search').val();
 
-                                $("td").parent().hide();
-                                $("td").filter(function() {
-                                        return $(this).text().indexOf(searchText) !== -1;
-                                }).parent().show();
-                        }
+				$("td").parent().hide();
+				$("td").filter(function() {
+					return $(this).text().indexOf(searchText) !== -1;
+				}).parent().show();
+			}
 
 			function onDateSelect(day) {
 				var url;
@@ -161,7 +163,7 @@
 			   			$.each( data.overview, function( i, item ) {
 							if(item.group) {
 								var compliant = 1;
-								var tmp = '<span class="scanner">' +
+								var tmp = '<span class="group">' +
 								item.group +
 								'</span>';
 								if(item.FAILED > 0) {
@@ -182,10 +184,8 @@
 
 								$( "<p>" )
 								.html(tmp)
-								.appendTo( "#groups" )
-								.click(function() {
-									loadScannerResults(item.group, true);
-								});
+								.appendTo( "#groups" );
+
 							}
 			   			});
 
@@ -195,9 +195,9 @@
 			   			$.each( data.overview, function( i, item ) {
 							if(item.policy) {
 								var compliant = 1;
-								var tmp = '<span class="scanner">' +
+								var tmp = '<span class="group">' +
 								item.parent +
-								'</span> <span class="scanner">' +
+								'</span> <span class="policy">' +
 								item.policy +
 								'</span>';
 								if(item.FAILED > 0) {
@@ -221,10 +221,8 @@
 
 								$( "<p>" )
 								.html(tmp)
-								.appendTo( "#policies" )
-								.click(function() {
-									loadScannerResults(item.parent, true);
-								});
+								.appendTo( "#policies" );
+
 							}
 							$("#datepicker").val(data.date);
 							$("#datepicker").datepicker({
@@ -232,6 +230,12 @@
 								onSelect: onDateSelect
 							});
 			   			});
+						$(".group").click(function() {
+							loadScannerResults($(this).html(), "", true);
+						});
+						$(".policy").click(function() {
+							loadScannerResults("all", $(this).html(), true);
+						});
 		        		})
 					.fail(function(j, t, e) {
 						error('Fetching overview results failed! ' + t + " " +e);
