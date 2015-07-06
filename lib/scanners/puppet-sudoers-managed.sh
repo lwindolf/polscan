@@ -19,7 +19,7 @@ if ! grep -q "^  status: failed" /var/lib/puppet/state/last_run_report.yaml; the
 	fi
 fi
 
-tmp=$(egrep -v "^#|^Defaults|^[[:space:]]*$|^root[[:space:]]|^%sudo[[:space:]]" /etc/sudoers)
+tmp=$(egrep -v "^#|^Defaults|^[[:space:]]*$|^(root|admin|%sudo)[[:space:]]" /etc/sudoers)
 if [ "$tmp" != "" ]; then
 	result_failed "Unexpected entries in /etc/sudoers (all entries should be Puppet managed and in separate files in /etc/sudoers.d/): $tmp"
 fi
