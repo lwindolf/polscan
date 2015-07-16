@@ -126,6 +126,13 @@
 					$("#resultTable").tablesorter();
 					$("#search").val(searchValue);
 					onSearch();
+
+					$(".group").click(function() {
+						loadScannerResults($(this).html(), "", true);
+					});
+					$(".policy").click(function() {
+						loadScannerResults("all", $(this).html(), true);
+					});
 				})
 				.fail(function(j, t, e) {
 					error('Fetching results for '+name+' failed! ' + t + " " + e);
