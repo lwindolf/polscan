@@ -3,5 +3,5 @@
 # description: Uses 'sestatus' to check if SELinux is enabled.
 
 if ! sestatus 2>/dev/null | grep -q enabled; then
-	check_failed "sestatus does not report 'enabled'"
+	result_failed "sestatus does not report 'enabled'"
 fi
