@@ -5,8 +5,8 @@
 # tags: CCE-27090-0 CCE-26972-0
 
 # FIXME: Complete list of remote FS
-missing_nodev=$(mount | egrep 'nfs|gluster' | grep -v 'nodev|nfsd')
-missing_nosuid=$(mount | egrep 'nfs|gluster' | grep -v 'nosuid|nfsd')
+missing_nodev=$(mount | egrep 'type (nfs|gluster)' | egrep -v 'nodev|nfsd')
+missing_nosuid=$(mount | egrep 'type (nfs|gluster)' | egrep -v 'nosuid|nfsd')
 
 if [ "$missing_nodev" != "" ]; then
 	result_failed "Remote FS mount without nodev option: $missing_nodev"
