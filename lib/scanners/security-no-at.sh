@@ -3,7 +3,6 @@
 # description: The atd daemon must not be installed
 # tags: CCE-27249-2
 
-dpkg -l at | grep '^ii' >/dev/null 2>&1
-if [ $? -eq 0 ]; then
+if dpkg -l at 2>/dev/null | grep -q '^ii'; then
 	result_failed "Package at is installed"
 fi
