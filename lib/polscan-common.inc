@@ -15,6 +15,14 @@ if [ "$RESULT_BASE_DIR" == "" ]; then
 	RESULT_BASE_DIR=${BASE}/results
 fi
 
+# Syntax: polscan [-l <host list>] [<date>]
+
+if [ "$1" == "-l" ]; then
+	shift
+	HOST_LIST=$1
+	shift
+fi
+
 LATEST=0
 if [ "$1" == "" ]; then
 	DATE=$(date +%Y/%m/%d)

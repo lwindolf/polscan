@@ -11,6 +11,7 @@ else
 	LIB_DIR=${BASE}/lib
 fi
 
+# Command line parsing, setup environment
 source $LIB_DIR/polscan-common.inc
 
 # 0. Prepare output dir
@@ -18,8 +19,8 @@ if [ ! -d $RESULT_DIR ]; then
 	mkdir -vp "$RESULT_DIR"
 fi
 
-# 1. If none given determine host list
-if [ "$1" == "" ]; then 
+# 1. If none given determine host list automatically
+if [ "$HOST_LIST" == "" ]; then 
 	echo "Fetching host list (provider '$HOST_LIST_PROVIDER')..."
 	HLP="$LIB_DIR/host-list-providers/$HOST_LIST_PROVIDER"
 	if [ ! -f $HLP ]; then
@@ -31,8 +32,6 @@ if [ "$1" == "" ]; then
 		echo "ERROR: Could not determine '$HOST_LIST_PROVIDER' host list!"
 		exit 1
 	fi
-else
-	HOST_LIST="$1"
 fi
 echo "Host list:" $HOST_LIST
 
