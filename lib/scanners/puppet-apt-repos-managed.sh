@@ -4,7 +4,8 @@
 
 if [ -d /var/lib/puppet/state ]; then
 	if ! grep -q "^  status: failed" /var/lib/puppet/state/last_run_report.yaml 2>/dev/null; then 
-		repo_files=$(ls /etc/apt/sources.list /etc/apt/sources.list.d/* 2>/dev/null)
+		# Note: puppetlabs-apt module has file resources with just the file name...
+		repo_files=$(cd /etc/apt/sources.list.d/ && ls | grep -v '^default_debian*')
 		unmanaged=$(
 			for f in $repo_files; do
 				if ! grep -q "resource: File\[$f\]" /var/lib/puppet/state/last_run_report.yaml 2>/dev/null; then
@@ -14,7 +15,7 @@ if [ -d /var/lib/puppet/state ]; then
 		)
 
 		if [ "$unmanaged" != "" ]; then
-			result_failed "Unmanaged files found:" $unmanaged
+			result_failed "Unmanaged files found in /etc/apt/sources.list.d/:" $unmanaged
 		else
 			result_ok
 		fi
