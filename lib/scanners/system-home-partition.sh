@@ -6,5 +6,5 @@
 if mount | grep -q " on /home "; then
 	result_ok
 else
-	result_failed "/home is a mounted path"
+	result_failed "/home is not a mounted path"
 fi

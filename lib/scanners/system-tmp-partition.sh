@@ -6,5 +6,5 @@
 if mount | grep -q " on /tmp "; then
 	result_ok
 else
-	result_failed "/tmp is a mounted path"
+	result_failed "/tmp is not a mounted path"
 fi

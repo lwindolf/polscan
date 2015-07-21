@@ -6,5 +6,5 @@
 if mount | grep -q " on /var "; then
 	result_ok
 else
-	result_failed "/var is a mounted path"
+	result_failed "/var is not a mounted path"
 fi
