@@ -15,7 +15,8 @@ polscan keeps results on a daily basis so it makes sense to set up a daily cron.
 
 Or just run it from the source directory
 
-    ./polscan
+    ./polscan                          # To re-scan all hosts
+    ./polscan -l 'server1 server2'     # To scan specific hosts
 
 Access Results
 --------------
