@@ -47,6 +47,7 @@ write_json() {
 # Do regroup results by group and policy
 declare -A policies
 declare -A pgroups
+declare -A pall
 
 groups=$(
 	egrep -h "^[a-zA-Z0-9][[a-zA-Z0-9]* (OK|WARNING|FAILED) " ./* |\
@@ -80,10 +81,12 @@ while read host group severity details; do
 	esac
 	case $severity in
 		WARNING)
+			pall[warn]=$(( ${pall[warn]} + 1))
 			pgroups[warn_$group]=$(( ${pgroups[warn_$group]} + 1 ))
 			policies[warn_$policy]=$(( ${policies[warn_$policy]} + 1 ))
 			;;
 		FAILED)
+			pall[fail]=$(( ${pall[fail]} + 1))
 			pgroups[fail_$group]=$(( ${pgroups[fail_$group]} + 1 ))
 			policies[fail_$policy]=$(( ${policies[fail_$policy]} + 1 ))
 			;;
@@ -112,7 +115,7 @@ echo -n "$tmp" | write_json all results
 		description=`get_policy_description "$LIB_DIR/$s"`
 		echo -n '{"policy": "'$policy'", "parent": "'$group'", "description": "'$description'", "WARNING": '${policies[warn_$policy]-0}', "FAILED": '${policies[fail_$policy]-0}'},'
 	done
-) | write_json overview overview
+) | write_json overview 'WARNING": '${pall[warn]}', "FAILED": '${pall[fail]}', "overview'
 
 if [ $LATEST == 1 ]; then
 	# Link latest results
