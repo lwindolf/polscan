@@ -2,9 +2,11 @@
 
 *polscan* (short for "Policy Scanner") allows you to make your Linux IT configuration/security/automation policies explicit.
 
-It is easily extensible by combining pre-installed check snippets with custom ones at runtime. To make it easy to use it comes with host discovery solutions for typical automation setups (Chef, Puppet, MCollective) as well as supporting host discovery by monitoring tools (Nagios, Icinga).
+It is easily extensible by combining pre-installed check snippets with custom ones at runtime. To make it easy to use it comes with host discovery solutions for typical automation setups (Chef, Puppet, MCollective) as well as supporting host discovery by monitoring tools (Nagios, Icinga). Here is how it looks like:
 
-polscan is currently limited to Debian and for simplicity tries not to implement any distro-specific dependencies.
+![screenshot](http://lzone.de/images/polscan-screenshot1.png)
+
+Note: polscan is intentionally limited to Debian and for simplicity tries not to implement any distro-specific dependencies.
 
 How to run it
 -------------
