@@ -55,19 +55,6 @@ groups=$(
 )
 echo "Found results for:" $groups
 
-for g in $groups; do
-	(
-		ls | xargs -n1 grep -H "^$g " |\
-		sed 's/:/ /' |\
-		while read host group severity details; do
-			policy=${details/#|||/}
-			policy=${policy/|||*/}
-			message=${details/*|||/}
-			echo -n '{"host": "'$host'", "severity": "'$severity'", "policy": "'$policy'", "message": "'${message//\"/\'}'"},'
-		done
-	) | write_json $g 'group": "'$g'", "results'
-done
-
 # Global results
 tmp=
 while read host group severity details; do
@@ -96,14 +83,26 @@ done < <(
 )
 echo -n "$tmp" | write_json all results
 
+# Per group results
+for g in $groups; do
+	(
+		ls | xargs -n1 grep -H "^$g " |\
+		sed 's/:/ /' |\
+		while read host group severity details; do
+			policy=${details/#|||/}
+			policy=${policy/|||*/}
+			message=${details/*|||/}
+			echo -n '{"host": "'$host'", "severity": "'$severity'", "policy": "'$policy'", "message": "'${message//\"/\'}'"},'
+		done
+	) | write_json $g 'group": "'$g'", "WARNING": '${pgroups[warn_$g]-0}', "FAILED": '${pgroups[fail_$g]-0}', "results'
+done
+
 # Statistics
 (
 	for g in $groups; do
 		echo "- $g" >&2
-		failed=$(ls | xargs -n1 grep "^$g FAILED " | wc -l)
-		warning=$(ls | xargs -n1 grep "^$g WARNING " | wc -l)
 		count=$(ls | xargs -n1 grep "^$g " | wc -l)
-		echo -n '{"group": "'$g'", "WARNING": '${warning-0}', "FAILED": '${failed-0}', "count": '${count-0}'},'
+		echo -n '{"group": "'$g'", "WARNING": '${pgroups[warn_$g]-0}', "FAILED": '${pgroups[fail_$g]-0}', "count": '${count-0}'},'
 	done
 	for s in $(
 		cat ${REMOTE_SCANNERS_FILE} | sed "s/^/scanners\//"
@@ -115,7 +114,7 @@ echo -n "$tmp" | write_json all results
 		description=`get_policy_description "$LIB_DIR/$s"`
 		echo -n '{"policy": "'$policy'", "parent": "'$group'", "description": "'$description'", "WARNING": '${policies[warn_$policy]-0}', "FAILED": '${policies[fail_$policy]-0}'},'
 	done
-) | write_json overview 'WARNING": '${pall[warn]}', "FAILED": '${pall[fail]}', "overview'
+) | write_json overview 'WARNING": '${pall[warn]-0}', "FAILED": '${pall[fail]-0}', "overview'
 
 if [ $LATEST == 1 ]; then
 	# Link latest results

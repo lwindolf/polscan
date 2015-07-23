@@ -78,6 +78,10 @@
 			th.headerSortDown:after {
 				content: " ↓";
 			}
+			.search {
+				clear:both;
+				margin-bottom:12px;
+			}
 			.badge {
 				width: 150px;
 				float: left;
@@ -124,10 +128,11 @@
 					group = '<th>Group</th>';
 
 				$('#resultTitle').html("Results '"+name+"'");
-				$('#results').html('Search <input type="text" size="40" id="search"/> <input type="button" value="Go" onclick="onSearch();"/><br/><br/>');
+				$('#results').html('<div class="search">Search <input type="text" size="40" id="search"/> <input type="button" value="Go" onclick="onSearch();"/></div>');
 				$("<table id='resultTable' class='tablesorter'>")
 				.html("<thead><tr><th>Host</th>"+group+"<th>Policy</th><th>Details</th></thead>")
 				.appendTo('#results');
+				$('<tbody>').appendTo('#resultTable');
 
 				$.getJSON("results/latest/"+name+".json", {})
 		        	 .done(function( data ) {
