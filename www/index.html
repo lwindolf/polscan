@@ -10,6 +10,8 @@
 			body {
 				font-family: Helvetica;
 				background:#eee;
+				margin:0;
+				padding:0;
 			}
 			.section {
 				background:white;
@@ -53,6 +55,36 @@
 				padding:6px;
 				padding-left:24px;
 			}
+			#logo {
+				background: #555;
+				color: #eee;
+				padding:6px 12px;
+				font-size:150%;
+				font-weight:bold;
+			}
+			#menu {
+				background: #353535;
+				padding:12px;
+			}
+			#menu a {
+				color: #ddd;
+				text-decoration:none;
+				border:1px solid #666;
+				border-bottom: 1px solid #000;
+				border-right: 1px solid #000;
+				background: #555;
+				padding-left:12px;
+				padding-right:12px;
+				margin-right:12px;
+				border-radius: 4px;
+			}
+			#menu a:hover {
+				color: white;
+				background: #777;
+			}
+			#results, #timebar {
+				padding: 12px;
+			}
 			#resultTable {
 				border: 1px solid #aaa;
 				font-size:12pt;
@@ -82,19 +114,36 @@
 				clear:both;
 				margin-bottom:12px;
 			}
+			.badges {
+				border:1px solid #aaa;
+				border-radius:6px;
+				float:left;
+				margin-bottom:12px;
+				background:white;
+			}
+			.badgesTitle {
+				text-align:center;
+				font-size:120%;
+				font-weight:bold;
+				margin-top:6px;
+				overflow: hidden;
+				width: 250px;
+			}
 			.badge {
-				width: 150px;
+				width: 75px;
 				float: left;
 				padding:12px;
 				margin:12px;
-				margin-left:0;
-				border: 1px solid #444;
+				text-align:center;
+				border-radius:6px;
 			}
 			.badge.warning {
 				background: #ff4;
+				border: 2px solid #ee3;
 			}
 			.badge.problems {
 				background: #F44;
+				border: 2px solid #e33;
 				color:white;
 			}
 			.badge .count {
@@ -106,13 +155,15 @@
 		</style>
 	</head>
 	<body>
+		<div id='logo'>
+			Polscan
+		</div>
 		<div id='menu'>
-			[<a href="">Overview</a>] [<a href="javascript:loadScannerResults('all')">All Problems</a>]
+			<a href="">Overview</a>
+			<a href="javascript:loadScannerResults('all')">All Problems</a>
 		</div>
 
-		<h2 id='resultTitle'/></h2>
-
-		<p>Date <input type='text' id='datepicker' size='10'/></p>
+		<div id='timebar'>Date <input type='text' id='datepicker' size='10'/></div>
 
 		<div id='results'>
 		</div>
@@ -127,7 +178,6 @@
 				if (name == 'all')
 					group = '<th>Group</th>';
 
-				$('#resultTitle').html("Results '"+name+"'");
 				$('#results').html('<div class="search">Search <input type="text" size="40" id="search"/> <input type="button" value="Go" onclick="onSearch();"/></div>');
 				$("<table id='resultTable' class='tablesorter'>")
 				.html("<thead><tr><th>Host</th>"+group+"<th>Policy</th><th>Details</th></thead>")
@@ -136,8 +186,12 @@
 
 				$.getJSON("results/latest/"+name+".json", {})
 		        	 .done(function( data ) {
+
 					if(data.FAILED && data.WARNING)
-						$("<div class='badge problems'><span class='count'>" + data.FAILED + "</span> Problems</div><div class='badge warning'><span class='count'>"  + data.WARNING + '</span> Warnings</div>').prependTo("#results");
+						$("<div class='badges'><div class='badgesTitle'>Group "+name+"</div><div class='badge problems'><span class='count'>" + data.FAILED + "</span> Problems</div><div class='badge warning'><span class='count'>"  + data.WARNING + '</span> Warnings</div></div>').prependTo("#results");
+					else
+						$("<div class='badges'><div class='badgesTitle'><small>Filter</small><br/>"+searchValue+"</div><div class='badge problems'><span class='count'>" + "?</span> Problems</div><div class='badge warning'><span class='count'>"  + '?</span> Warnings</div></div>').prependTo("#results");
+
 			   		$.each( data.results, function( i, item ) {
 						if(!filtered || item.severity.indexOf('OK') == -1) {
 
@@ -191,9 +245,8 @@
 
 				$.getJSON(url, {})
 		        		.done(function( data ) {
-						$('#resultTitle').html("Policy Scan Overview");
 						$('#results').html('');
-						$("<div class='badge problems'><span class='count'>" + data.FAILED + "</span> Problems</div><div class='badge warning'><span class='count'>"  + data.WARNING + '</span> Warnings</div>').appendTo("#results");
+						$("<div class='badges'><div class='badgesTitle'>All Issues</div><div class='badge problems'><span class='count'>" + data.FAILED + "</span> Problems</div><div class='badge warning'><span class='count'>"  + data.WARNING + '</span> Warnings</div></div>').appendTo("#results");
 						$( "<h3>" ).html("By Groups").appendTo( "#results" )
 
 						$( "<div id='groups' class='section'>" ).appendTo( "#results" )
