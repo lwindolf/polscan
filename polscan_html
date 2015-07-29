@@ -116,6 +116,37 @@ done
 	done
 ) | write_json overview 'WARNING": '${pall[warn]-0}', "FAILED": '${pall[fail]-0}', "overview'
 
+# 30 days per-policy histogram
+declare -A policy_names
+declare -A histogram
+i=0
+while [ $i -le 30 ]; 
+do
+	day=$(date -d "$i days ago" +%Y/%m/%d)
+	if [ -d "$RESULT_BASE_DIR/$day" ]; then
+		echo $day
+		while read nr policy;
+		do
+			policy_names[${policy// /_}]=$policy
+			histogram["${policy// /_}_failed_${day}"]=$nr
+		done < <(rgrep 'FAILED |||' "$RESULT_BASE_DIR/$day" |sed 's/.*|||\(.*\)|||.*/\1/' | sort | uniq -c)
+	fi
+	i=$(( $i + 1 ))
+done
+
+for p in ${!policy_names[*]}
+do
+	echo -n "{'policy': '${policy_names[$p]}', 'FAILED': ["
+	i=0
+	while [ $i -le 30 ]; 
+	do
+		day=$(date -d "$i days ago" +%Y/%m/%d)
+		echo -n "${histogram[${p}_failed_$day]-0}, "
+		i=$(( $i + 1 ))
+	done
+	echo "]},"
+done | sed "s/, \]/\]/" | write_json histogram histogram
+
 if [ $LATEST == 1 ]; then
 	# Link latest results
 	rm "$RESULT_BASE_DIR/latest"
