@@ -226,6 +226,17 @@
 				onDateSelect();
 			})();
 
+                        function shortenNumber(nr) {
+                                if(nr > 1000)
+                                        return Math.floor(nr/1000)+"k";
+                                else
+                                        return nr;
+                        }
+
+			function createBadges(id, failed, warning) {
+				$("<div class='badges'><div class='badgesTitle'>All Issues</div><div class='badge problems'><span class='count'>" + shortenNumber(failed) + "</span> Problems</div><div class='badge warning'><span class='count'>"  + shortenNumber(warning) + '</span> Warnings</div></div>').appendTo(id);
+			}
+
 			function onSearch() {
 				var searchText = $('#search').val();
 
@@ -246,7 +257,7 @@
 				$.getJSON(url, {})
 		        		.done(function( data ) {
 						$('#results').html('');
-						$("<div class='badges'><div class='badgesTitle'>All Issues</div><div class='badge problems'><span class='count'>" + data.FAILED + "</span> Problems</div><div class='badge warning'><span class='count'>"  + data.WARNING + '</span> Warnings</div></div>').appendTo("#results");
+						createBadges('#results', data.FAILED, data.WARNING);
 						$( "<h3>" ).html("By Groups").appendTo( "#results" )
 
 						$( "<div id='groups' class='section'>" ).appendTo( "#results" )
