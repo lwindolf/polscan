@@ -41,7 +41,7 @@ write_json() {
 		echo '{"date": "'$DATE'", "'$root'":['
 		cat | sed 's/[^[:print:]]//g'
 		echo -n "]}"
-	) | sed 's/,\]/]/g' >${JSON_DIR}/${name}.json
+	) | sed -e 's/,\]/]/g' >${JSON_DIR}/${name}.json
 }
 
 # Do regroup results by group and policy
@@ -118,25 +118,41 @@ done
 
 # 30 days per-policy histogram
 declare -A policy_names
+declare -A group_names
 declare -A histogram
+declare -A histogram_labels
+
+group_names['all']='all'
 i=0
 while [ $i -le 30 ]; 
 do
 	day=$(date -d "$i days ago" +%Y/%m/%d)
+	histogram_labels[$i]=$day
 	if [ -d "$RESULT_BASE_DIR/$day" ]; then
 		echo $day
-		while read nr policy;
+		while read nr group policy;
 		do
+			group_names[${group// /_}]=$group
 			policy_names[${policy// /_}]=$policy
 			histogram["${policy// /_}_failed_${day}"]=$nr
-		done < <(rgrep 'FAILED |||' "$RESULT_BASE_DIR/$day" |sed 's/.*|||\(.*\)|||.*/\1/' | sort | uniq -c)
+			histogram["group_${group// /_}_failed_${day}"]=$(( 1 + ${histogram["group_${group// /_}_failed_${day}"]-0} ))
+			histogram["group_all_failed_${day}"]=$(( 1 + ${histogram["group_all_failed_${day}"]-0} ))
+		done < <(rgrep 'FAILED |||' "$RESULT_BASE_DIR/$day" |sed 's/.*:\(.*\) FAILED |||\(.*\)|||.*/\1 \2/' | sort | uniq -c)
 	fi
 	i=$(( $i + 1 ))
 done
 
+labels=$(
+	for l in ${!histogram_labels[*]}
+	do
+		echo -n "\"${histogram_labels[$l]}\","
+	done
+)
+
+(
 for p in ${!policy_names[*]}
 do
-	echo -n "{'policy': '${policy_names[$p]}', 'FAILED': ["
+	echo -n '{"policy": "'${policy_names[$p]}'", "FAILED": ['
 	i=0
 	while [ $i -le 30 ]; 
 	do
@@ -145,7 +161,21 @@ do
 		i=$(( $i + 1 ))
 	done
 	echo "]},"
-done | sed "s/, \]/\]/" | write_json histogram histogram
+done
+
+for p in ${!group_names[*]}
+do
+	echo -n '{"group": "'${group_names[$p]}'", "FAILED": ['
+	i=0
+	while [ $i -le 30 ]; 
+	do
+		day=$(date -d "$i days ago" +%Y/%m/%d)
+		echo -n "${histogram[group_${p}_failed_$day]-0}, "
+		i=$(( $i + 1 ))
+	done
+	echo "]},"
+done
+) | sed -e "s/, \]/\]/" -e '$s/,$//' | write_json histogram "labels\": [${labels}], \"histogram"
 
 if [ $LATEST == 1 ]; then
 	# Link latest results
