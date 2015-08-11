@@ -228,7 +228,7 @@
 						loadScannerResults("all", $(this).html(), true);
 					});
 
-					createHistogram('results/latest/', name);
+					createHistogram('results/latest/', searchValue?searchValue:name);
 				})
 				.fail(function(j, t, e) {
 					error('Fetching results for '+name+' failed! ' + t + " " + e);
@@ -261,7 +261,7 @@
 				}).parent().show();
 			}
 
-			function createHistogram(baseUrl, group) {
+			function createHistogram(baseUrl, id) {
 				$.getJSON(baseUrl + "histogram.json", {})
 	        		.done(function( data ) {
 					var chartData = {
@@ -271,7 +271,7 @@
 					// Find ouf values
 					var valueIndex;
 					$.each(data.histogram, function(i, set) {
-						if(set.group && set.group == group) {
+						if(set.id && set.id == id) {
 							console.log("Found histogram data set at "+i);
 							valueIndex = i;
 						}
@@ -283,7 +283,7 @@
 						});
 						chartData.datasets[0] = {
 							data: data.histogram[valueIndex].FAILED,
-							label: group,
+							label: id,
 							strokeColor: "rgba(220,50,50,0.7)",
 							fillColor: "rgba(220,150,150,0.2)"
 						}
