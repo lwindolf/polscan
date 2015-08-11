@@ -3,6 +3,7 @@
 	<head>
 		<script type="text/javascript" src="jquery-2.1.4.min.js"></script>
 		<script type="text/javascript" src="jquery.tablesorter.min.js"></script>
+		<script type="text/javascript" src="Chart.min.js"></script>
 		<link rel="stylesheet" href="jquery-ui.min.css">
 		<script src="jquery-ui.min.js"></script>
 		<meta charset="utf-8">
@@ -115,19 +116,22 @@
 				clear:both;
 				margin-bottom:12px;
 			}
-			.badges {
+			.badges, .chart {
 				border:1px solid #aaa;
 				border-radius:6px;
 				float:left;
 				margin-bottom:12px;
+				margin-right:12px;
 				background:white;
 			}
-			.badgesTitle {
+			.badgesTitle, .chartTitle {
 				text-align:center;
 				font-size:120%;
 				font-weight:bold;
 				margin-top:6px;
 				overflow: hidden;
+			}
+			.badgesTitle {
 				width: 250px;
 			}
 			.badge {
@@ -152,6 +156,9 @@
 			}
 			h3 {
 				clear:both;
+			}
+			#histogramChart {
+				margin:12px;
 			}
 		</style>
 	</head>
@@ -253,100 +260,140 @@
 			}
 
 			function onDateSelect(day) {
-				var url;
+				var baseUrl;
 
 				if(day)
-					url = "results/json/"+day+"/overview.json";
+					baseUrl = "results/json/"+day+"/";
 				else
-					url = "results/latest/overview.json";
+					baseUrl = "results/latest/";
 
-				$.getJSON(url, {})
-		        		.done(function( data ) {
-						$('#results').html('');
-						createBadges('#results', data.FAILED, data.WARNING);
-						$("<h3>").html("By Groups").appendTo("#results")
-						$("<div id='groups' class='section'>").appendTo("#results")
+				$.getJSON(baseUrl + "overview.json", {})
+	        		.done(function( data ) {
+					$('#results').html('');
+					$("<div id='row1'>").appendTo("#results")
+					createBadges('#row1', data.FAILED, data.WARNING);
+					$("<h3>").html("By Groups").appendTo("#results")
+					$("<div id='groups' class='section'>").appendTo("#results")
 
-			   			$.each(data.overview, function(i, item) {
-							if(item.group) {
-								var compliant = 1;
-								var tmp = '<span class="group">' +
-								item.group +
+		   			$.each(data.overview, function(i, item) {
+						if(item.group) {
+							var compliant = 1;
+							var tmp = '<span class="group">' +
+							item.group +
+							'</span>';
+							if(item.FAILED > 0) {
+								compliant = 0;
+								tmp += ' <span class="FAILED" title="Total failures found">' +
+								item.FAILED +
 								'</span>';
-								if(item.FAILED > 0) {
-									compliant = 0;
-									tmp += ' <span class="FAILED" title="Total failures found">' +
-									item.FAILED +
-									'</span>';
-								}
-								if(item.WARNING > 0) {
-									compliant = 0;
-									tmp += ' <span class="WARNING" title="Total warnings seen">' +
-									item.WARNING +
-									'</span>'
-								}
-								if(compliant) {
-									tmp += ' <span class="OK" title="100% compliance for this policy">compliant</span>';
-								}
-
-								$( "<p>" )
-								.html(tmp)
-								.appendTo( "#groups" );
-
 							}
-			   			});
-
-						$( "<h3>" ).html("Policy Details").appendTo( "#results" )
-						$( "<div id='policies' class='section'>" ).appendTo( "#results" )
-
-			   			$.each( data.overview, function( i, item ) {
-							if(item.policy) {
-								var compliant = 1;
-								var tmp = '<span class="group">' +
-								item.parent +
-								'</span> <span class="policy">' +
-								item.policy +
-								'</span>';
-								if(item.FAILED > 0) {
-									compliant = 0;
-									tmp += ' <span class="FAILED" title="Total failures found">' +
-									item.FAILED +
-									'</span>';
-								}
-								if(item.WARNING > 0) {
-									compliant = 0;
-									tmp += ' <span class="WARNING" title="Total warnings seen">' +
-									item.WARNING +
-									'</span>'
-								}
-								if(compliant) {
-									tmp += ' <span class="OK" title="100% compliance for this policy">compliant</span>';
-								}
-								tmp += '<span class="description">' +
-								item.description +
-								'</span>';
-
-								$( "<p>" )
-								.html(tmp)
-								.appendTo( "#policies" );
-
+							if(item.WARNING > 0) {
+								compliant = 0;
+								tmp += ' <span class="WARNING" title="Total warnings seen">' +
+								item.WARNING +
+								'</span>'
 							}
-							$("#datepicker").val(data.date);
-							$("#datepicker").datepicker({
-								dateFormat: "yy/mm/dd",
-								onSelect: onDateSelect
-							});
-			   			});
-						$(".group").click(function() {
-							loadScannerResults($(this).html(), "", true);
+							if(compliant) {
+								tmp += ' <span class="OK" title="100% compliance for this policy">compliant</span>';
+							}
+
+							$( "<p>" )
+							.html(tmp)
+							.appendTo( "#groups" );
+
+						}
+		   			});
+
+					$( "<h3>" ).html("Policy Details").appendTo( "#results" )
+					$( "<div id='policies' class='section'>" ).appendTo( "#results" )
+
+		   			$.each( data.overview, function( i, item ) {
+						if(item.policy) {
+							var compliant = 1;
+							var tmp = '<span class="group">' +
+							item.parent +
+							'</span> <span class="policy">' +
+							item.policy +
+							'</span>';
+							if(item.FAILED > 0) {
+								compliant = 0;
+								tmp += ' <span class="FAILED" title="Total failures found">' +
+								item.FAILED +
+								'</span>';
+							}
+							if(item.WARNING > 0) {
+								compliant = 0;
+								tmp += ' <span class="WARNING" title="Total warnings seen">' +
+								item.WARNING +
+								'</span>'
+							}
+							if(compliant) {
+								tmp += ' <span class="OK" title="100% compliance for this policy">compliant</span>';
+							}
+							tmp += '<span class="description">' +
+							item.description +
+							'</span>';
+
+							$( "<p>" )
+							.html(tmp)
+							.appendTo( "#policies" );
+
+						}
+						$("#datepicker").val(data.date);
+						$("#datepicker").datepicker({
+							dateFormat: "yy/mm/dd",
+							onSelect: onDateSelect
 						});
-						$(".policy").click(function() {
-							loadScannerResults("all", $(this).html(), true);
-						});
-		        		})
-					.fail(function(j, t, e) {
-						error('Fetching overview results failed! ' + t + " " +e);
+		   			});
+					$(".group").click(function() {
+						loadScannerResults($(this).html(), "", true);
 					});
+					$(".policy").click(function() {
+						loadScannerResults("all", $(this).html(), true);
+					});
+	        		})
+				.fail(function(j, t, e) {
+					error('Fetching overview results failed! ' + t + " " +e);
+				});
+
+				$.getJSON(baseUrl + "histogram.json", {})
+	        		.done(function( data ) {
+					var chartData = {
+						labels: [],
+						datasets: []
+					};
+					// Find ouf values
+					var valueIndex;
+					$.each(data.histogram, function(i, set) {
+						if(set.group && set.group == "all") {
+							console.log("Found histogram data set at "+i);
+							valueIndex = i;
+						}
+					});
+
+					if(valueIndex) {
+						$.each(data.labels, function(i, name) {
+							chartData.labels[i] = name;
+						});
+						chartData.datasets[0] = {
+							data: data.histogram[valueIndex].FAILED,
+							label: "all",
+							strokeColor: "rgba(220,50,50,0.7)",
+							fillColor: "rgba(220,150,150,0.2)"
+						}
+						$('#row1').append('<div class="chart"><div class="chartTitle">Issue Trends</div><canvas id="histogramChart" width="600" height="200"></canvas></div>');
+						var ctx = $("#histogramChart").get(0).getContext("2d");
+						var myLineChart = new Chart(ctx).Line(chartData, {
+							animation: false,
+							showTooltips: false	// FIXME: disabled as long there is the bug of multiple dates being shown at the same time
+						});
+					} else {
+						console.log("Could not find value set for "+all);
+					}
+	        		})
+				.fail(function(j, t, e) {
+					error('Fetching histogram data failed! ' + t + " " +e);
+				});
 			}
 		</script>
 	</body>
