@@ -153,12 +153,12 @@ labels=$(
 for p in ${!policy_names[*]}
 do
 	echo -n '{"policy": "'${policy_names[$p]}'", "FAILED": ['
-	i=0
-	while [ $i -le 30 ]; 
+	i=30
+	while [ $i -ge 0 ]; 
 	do
 		day=$(date -d "$i days ago" +%Y/%m/%d)
 		echo -n "${histogram[${p}_failed_$day]-0}, "
-		i=$(( $i + 1 ))
+		i=$(( $i - 1 ))
 	done
 	echo "]},"
 done
@@ -166,12 +166,12 @@ done
 for p in ${!group_names[*]}
 do
 	echo -n '{"group": "'${group_names[$p]}'", "FAILED": ['
-	i=0
-	while [ $i -le 30 ]; 
+	i=30
+	while [ $i -ge 0 ]; 
 	do
 		day=$(date -d "$i days ago" +%Y/%m/%d)
 		echo -n "${histogram[group_${p}_failed_$day]-0}, "
-		i=$(( $i + 1 ))
+		i=$(( $i - 1 ))
 	done
 	echo "]},"
 done
