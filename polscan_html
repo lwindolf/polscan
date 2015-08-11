@@ -135,8 +135,8 @@ do
 			group_names[${group// /_}]=$group
 			policy_names[${policy// /_}]=$policy
 			histogram["${policy// /_}_failed_${day}"]=$nr
-			histogram["group_${group// /_}_failed_${day}"]=$(( 1 + ${histogram["group_${group// /_}_failed_${day}"]-0} ))
-			histogram["group_all_failed_${day}"]=$(( 1 + ${histogram["group_all_failed_${day}"]-0} ))
+			histogram["group_${group// /_}_failed_${day}"]=$(( $nr + ${histogram["group_${group// /_}_failed_${day}"]-0} ))
+			histogram["group_all_failed_${day}"]=$(( $nr + ${histogram["group_all_failed_${day}"]-0} ))
 		done < <(rgrep 'FAILED |||' "$RESULT_BASE_DIR/$day" |sed 's/.*:\(.*\) FAILED |||\(.*\)|||.*/\1 \2/' | sort | uniq -c)
 	fi
 	i=$(( $i + 1 ))
