@@ -192,11 +192,6 @@
 				$.getJSON("results/latest/"+name+".json", {})
 		        	 .done(function( data ) {
 					$("#loadmessage").hide();
-					if(data.FAILED && data.WARNING)
-						createBadges('#row1', data.FAILED, data.WARNING, name);
-					else
-						$("<div class='badges'><div class='badgesTitle'><small>Filter</small><br/>"+searchValue+"</div><div class='badge problems'><span class='count'>" + "?</span> Problems</div><div class='badge warning'><span class='count'>"  + '?</span> Warnings</div></div>').appendTo("#row1");
-
 					$('#results').append('<div class="search">Search <input type="text" size="40" id="search"/> <input type="button" value="Go" onclick="onSearch();"/></div>');
 					$("<table id='resultTable' class='tablesorter'>")
 					.html("<thead><tr><th>Host</th>"+group+"<th>Policy</th><th>Details</th></thead>")
@@ -204,8 +199,7 @@
 					$('<tbody>').appendTo('#resultTable');
 
 			   		$.each( data.results, function( i, item ) {
-						if(!filtered || item.severity.indexOf('OK') == -1) {
-
+						if(!filtered || item.severity != 'OK') {
 						var tmp = '<td class="host">' + item.host + '</td>';
 						if(item.group)
 							tmp += '<td class="group">' + item.group + '</td>';
@@ -220,6 +214,12 @@
 					$("#resultTable").tablesorter();
 					$("#search").val(searchValue);
 					onSearch();
+
+					var failed = $('td.policy.FAILED:visible').length;
+					var warning = $('td.policy.WARNING:visible').length;
+					//createBadges('#row1', failed, warning, name);
+					$("<div class='badges'><div class='badgesTitle'><small>Filter</small><br/>"+searchValue+"</div><div class='badge problems'><span class='count'>" + failed + "</span> Problems</div><div class='badge warning'><span class='count'>"  + warning + '</span> Warnings</div></div>').appendTo("#row1");
+
 
 					$(".group").click(function() {
 						loadScannerResults($(this).html(), "", true);
