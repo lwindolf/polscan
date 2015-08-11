@@ -171,7 +171,7 @@
 
 		<script>
 			function error(text) {
-				$('#results').html('<div class="errorbox"><h2>Error</h2> '+text+'</div>');
+				$('#results').prepend('<div class="errorbox"><h2>Error</h2> '+text+'</div>');
 			}
 
 			function loadScannerResults(name, searchValue, filtered) {
