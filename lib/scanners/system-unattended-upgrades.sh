@@ -14,7 +14,7 @@ else
 	for pattern in $patterns
 	do
 		if ! rgrep -q "$pattern" /etc/apt/apt.conf.d/; then
-			echo result_failed "Pattern >>>$pattern<<< not found /etc/apt/apt.conf.d/"
+			result_failed "Pattern >>>$pattern<<< not found /etc/apt/apt.conf.d/"
 		fi
 	done
 fi
