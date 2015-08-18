@@ -1,11 +1,7 @@
 # group: Security
 # name: No IPv6 forwarding
-# description: IPv6 forwarding is to be disabled on all systems, except whitelisted ones
+# description: IPv6 forwarding is to be disabled
 
-WHITELIST=	# FIXME: expose as parameter
-
-if ! /bin/echo "$WHITELIST" | grep -q $HOST; then
-	if /sbin/sysctl "net.ipv6" | grep -q "\.forwarding = 1" 2>/dev/null; then
-		result_failed "IPv6 forwarding is enabled"
-	fi
+if /sbin/sysctl net.ipv6 | grep -q "\.forwarding = 1" 2>/dev/null; then
+	result_failed "IPv6 forwarding is enabled"
 fi

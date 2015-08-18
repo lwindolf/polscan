@@ -1,4 +1,3 @@
-
 # group: System
 # name: No APT errors
 # description: Checks if all APT dependencies are fine (using 'apt-get check')

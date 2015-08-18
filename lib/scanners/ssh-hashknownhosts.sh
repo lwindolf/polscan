@@ -1,4 +1,3 @@
-
 # group: SSH
 # name: HashKnownHosts
 # description: Checks /etc/ssh/ssh_config for HashKnownHosts yes

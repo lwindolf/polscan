@@ -1,4 +1,3 @@
-
 # group: System
 # name: NTPd with -x
 # description: Checks ntpd is running with -x option. This is useful to survive leap second effects.
