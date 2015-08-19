@@ -192,11 +192,6 @@
 				$.getJSON("results/latest/"+name+".json", {})
 		        	 .done(function( data ) {
 					$("#loadmessage").hide();
-					if(data.FAILED && data.WARNING)
-						createBadges('#row1', data.FAILED, data.WARNING, name);
-					else
-						$("<div class='badges'><div class='badgesTitle'><small>Filter</small><br/>"+searchValue+"</div><div class='badge problems'><span class='count'>" + "?</span> Problems</div><div class='badge warning'><span class='count'>"  + '?</span> Warnings</div></div>').appendTo("#row1");
-
 					$('#results').append('<div class="search">Search <input type="text" size="40" id="search"/> <input type="button" value="Go" onclick="onSearch();"/></div>');
 					$("<table id='resultTable' class='tablesorter'>")
 					.html("<thead><tr><th>Host</th>"+group+"<th>Policy</th><th>Details</th></thead>")
@@ -204,8 +199,7 @@
 					$('<tbody>').appendTo('#resultTable');
 
 			   		$.each( data.results, function( i, item ) {
-						if(!filtered || item.severity.indexOf('OK') == -1) {
-
+						if(!filtered || item.severity != 'OK') {
 						var tmp = '<td class="host">' + item.host + '</td>';
 						if(item.group)
 							tmp += '<td class="group">' + item.group + '</td>';
@@ -221,6 +215,12 @@
 					$("#search").val(searchValue);
 					onSearch();
 
+					var failed = $('td.policy.FAILED:visible').length;
+					var warning = $('td.policy.WARNING:visible').length;
+					//createBadges('#row1', failed, warning, name);
+					$("<div class='badges'><div class='badgesTitle'><small>Filter</small><br/>"+searchValue+"</div><div class='badge problems'><span class='count'>" + failed + "</span> Problems</div><div class='badge warning'><span class='count'>"  + warning + '</span> Warnings</div></div>').appendTo("#row1");
+
+
 					$(".group").click(function() {
 						loadScannerResults($(this).html(), "", true);
 					});
@@ -228,7 +228,7 @@
 						loadScannerResults("all", $(this).html(), true);
 					});
 
-					createHistogram('results/latest/', name);
+					createHistogram('results/latest/', searchValue?searchValue:name);
 				})
 				.fail(function(j, t, e) {
 					error('Fetching results for '+name+' failed! ' + t + " " + e);
@@ -261,7 +261,7 @@
 				}).parent().show();
 			}
 
-			function createHistogram(baseUrl, group) {
+			function createHistogram(baseUrl, id) {
 				$.getJSON(baseUrl + "histogram.json", {})
 	        		.done(function( data ) {
 					var chartData = {
@@ -271,7 +271,7 @@
 					// Find ouf values
 					var valueIndex;
 					$.each(data.histogram, function(i, set) {
-						if(set.group && set.group == group) {
+						if(set.id && set.id == id) {
 							console.log("Found histogram data set at "+i);
 							valueIndex = i;
 						}
@@ -283,7 +283,7 @@
 						});
 						chartData.datasets[0] = {
 							data: data.histogram[valueIndex].FAILED,
-							label: group,
+							label: id,
 							strokeColor: "rgba(220,50,50,0.7)",
 							fillColor: "rgba(220,150,150,0.2)"
 						}

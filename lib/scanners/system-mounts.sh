@@ -1,4 +1,3 @@
-
 # group: System
 # name: Persistent Mounts
 # description: All mount points need to be persistent.
