@@ -1,6 +1,7 @@
 # group: Security
 # name: No telnetd
 # description: Ensures that telnetd is not installed
+# tags: CCE-27073-6 CCE-26836-7 AC-17(8) CM-7
 # solution-cmd: apt-get purge telnetd
 
 if dpkg -l telnetd 2>/dev/null | grep -q '^ii'; then
