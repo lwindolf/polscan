@@ -4,7 +4,13 @@
 
 It is easily extensible by combining pre-installed check snippets with custom ones at runtime. To make it easy to use it comes with host discovery solutions for typical automation setups (Chef, Puppet, MCollective) as well as supporting host discovery by monitoring tools (Nagios, Icinga). Here is how it looks like:
 
+*Overview Page*
+
 ![screenshot](http://lzone.de/images/polscan-screenshot1.png)
+
+*Result Details*
+
+![screenshot](http://lzone.de/images/polscan-screenshot2.png)
 
 Note: polscan is intentionally limited to Debian and for simplicity tries not to implement any distro-specific dependencies.
 
