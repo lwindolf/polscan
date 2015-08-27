@@ -217,8 +217,18 @@
 
 					var failed = $('td.policy.FAILED:visible').length;
 					var warning = $('td.policy.WARNING:visible').length;
-					//createBadges('#row1', failed, warning, name);
-					$("<div class='badges'><div class='badgesTitle'><small>Filter</small><br/>"+searchValue+"</div><div class='badge problems'><span class='count'>" + failed + "</span> Problems</div><div class='badge warning'><span class='count'>"  + warning + '</span> Warnings</div></div>').appendTo("#row1");
+					var badgeTitle;
+					if(name == "all") {
+						if(searchValue)
+							badgeTitle = "<small>Filter</small><br/> " + searchValue;
+						else
+							badgeTitle = "All Issues";
+					} else {
+						badgeTitle = "<small>Group</small><br/> " + name;
+					}
+
+					//createBadges('#row1', failed, warning, badgeTitle);
+					$("<div class='badges'><div class='badgesTitle'>" + badgeTitle + "</div><div class='badge problems'><span class='count'>" + failed + "</span> Problems</div><div class='badge warning'><span class='count'>"  + warning + '</span> Warnings</div></div>').appendTo("#row1");
 
 
 					$(".group").click(function() {
