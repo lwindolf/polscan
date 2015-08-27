@@ -1,6 +1,6 @@
 # group: Security
 # name: Apache ServerTokens
-# description: An Apache production webserver should not give details in the "Server:" header
+# description: An Apache production webserver should not give details in the 'Server:' header
 # tags: SV-36672r1_rule
 # solution-cmd: a2enconf security
 
