@@ -4,10 +4,10 @@
 # tags: SV-36672r1_rule
 # solution-cmd: a2enconf security
 
-if [ -d /etc/apache2 ]; then
-	if ! rgrep -q "ServerTokens[[:space:]][[:space:]]*Prod" /etc/apache2/*-enabled; then
-		result_failed "ServerTokens is not set to 'Prod'"
-	else
-		result_ok
+for dir in /etc/apache2 /usr/local/apache2/conf /usr/local/apache/conf; do
+	if [ -d $dir ]; then
+		if ! rgrep -q "ServerTokens[[:space:]][[:space:]]*Prod" $dir/*-enabled; then
+			result_failed "ServerTokens is not set to 'Prod'"
+		fi
 	fi
-fi
+done
