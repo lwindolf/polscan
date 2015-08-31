@@ -84,7 +84,7 @@ if [ "$REMOTE_SCANNER_LIST" != "" ]; then
 				# Scanner should never set return code, if we get one
 				# we have a scripting/connectivity issue that we want
 				# to track under name "polscan"
-				echo "polscan FAILED: $output"
+				echo "Polscan FAILED |||Polscan remote scan||| $output"
 			else
 				echo "$output"
 			fi
