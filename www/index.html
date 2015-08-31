@@ -183,6 +183,14 @@
 				$('#errors').html('<div class="errorbox"><h2>Error</h2> '+text+'</div>');
 			}
 
+			function onCopyHosts() {
+                                $('#hostlist').html('<textarea style="width:100%">');
+                                $('td.host:visible').each(function() {
+                                        $('#hostlist textarea').append($(this).html() + " ");
+                                });
+                                $('#hostlist').show();
+                        }
+
 			function loadScannerResults(name, searchValue, filtered) {
  				var group = '';
 				if (name == 'all')
@@ -192,7 +200,7 @@
 				$.getJSON("results/latest/"+name+".json", {})
 		        	 .done(function( data ) {
 					$("#loadmessage").hide();
-					$('#results').append('<div class="search">Search <input type="text" size="40" id="search"/> <input type="button" value="Go" onclick="onSearch();"/></div>');
+					$('#results').append('<div class="search">Search <input type="text" size="40" id="search"/> <input type="button" value="Go" onclick="onSearch();"/><input type="button" value="Get Hosts" title="Click here to get a text field with a whitespace separated list of all hosts in the result list" onclick="onCopyHosts();"/><div id="hostlist"/></div>');
 					$("<table id='resultTable' class='tablesorter'>")
 					.html("<thead><tr><th>Host</th>"+group+"<th>Policy</th><th>Details</th></thead>")
 					.appendTo('#results');
