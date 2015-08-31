@@ -63,6 +63,8 @@ if [ "$REMOTE_SCANNER_LIST" != "" ]; then
 	fi
 
 	echo "Running remote scans..."
+	i=1
+	host_count=$(echo $HOST_LIST | wc -l)
 	for remote in $HOST_LIST; do
 		if ! echo $remote | grep -q @; then
 			# Default user if none given from host list
@@ -73,7 +75,7 @@ if [ "$REMOTE_SCANNER_LIST" != "" ]; then
 
 		if ! echo $remote | grep -q "root@"; then
 			sudo=$SUDO_CMD
-			echo " -> $remote (sudo)"
+			echo " -> $remote (sudo) [$i/$host_count]"
 		else
 			echo " -> $remote"
 		fi
@@ -91,6 +93,7 @@ if [ "$REMOTE_SCANNER_LIST" != "" ]; then
 		) |\
 		grep -v 'Warning: Permanently added.*to the list of known hosts.' \
 		> ${RESULT_DIR}/$current_host
+		i=$(( $i + 1 ))
 	done
 fi
 rm $RSS
