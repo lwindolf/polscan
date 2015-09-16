@@ -28,6 +28,7 @@ if [ "$1" == "" ]; then
 	DATE=$(date +%Y/%m/%d)
 	LATEST=1
 fi
+ONE_DAY_AGO=$(date -d "$DATE 1 day ago" +%Y/%m/%d)
 
 RESULT_DIR="${RESULT_BASE_DIR}/${DATE}"
 JSON_DIR="${RESULT_BASE_DIR}/json/${DATE}"

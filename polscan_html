@@ -163,6 +163,12 @@ do
 done
 ) | sed -e "s/, \]/\]/" -e '$s/,$//' | write_json histogram "labels\": [${labels}], \"histogram"
 
+if [ -d "$RESULT_BASE_DIR/$ONE_DAY_AGO/" ]; then
+        diff=$(diff -u <(cd "$RESULT_BASE_DIR/$ONE_DAY_AGO" && grep "|||" * | sort) <(cd "$RESULT_BASE_DIR/$DATE" && grep "|||" * | sort) | grep "^[-+]" | grep -v " OK |||")
+        new_today=$(echo "$diff" | grep "^+")
+        solved_today=$(echo "$diff" | grep "^-")
+fi
+
 if [ $LATEST == 1 ]; then
 	# Link latest results
 	rm "$RESULT_BASE_DIR/latest"
