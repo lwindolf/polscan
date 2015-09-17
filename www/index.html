@@ -25,13 +25,9 @@
 				margin-right:12px;
 				margin-bottom:12px;
 			}
-			#col1 {
-				max-width:50%;
+			#col1, #col2 {
 				float:left;
-			}
-			#col2 {
-				max-width:50%;
-				float:left;
+				width:50%;
 			}
 			.group, .policy {
 				background: #ddd;
@@ -108,8 +104,6 @@
 				font-size:11pt;
 				border-collapse: collapse;
 				clear: both;
-				table-layout: fixed;
-				width: 100%;
 			}
 			.resultTable th {
 				background: #ddd;
@@ -131,6 +125,16 @@
 			}
 			th.headerSortDown:after {
 				content: " ↓";
+			}
+			.overviewBox .resultTable {
+				width: 100%;
+			}
+			.overviewBox td.message {
+				width:100%;
+				max-width: 0;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
 			}
 			.search {
 				clear:both;
@@ -455,11 +459,11 @@
 				});
 
 				$("<div id='new' class='overviewBox'>").appendTo("#col2")
-				$("#new").html("<h3>New Issues</h3>");
+				$("#new").html("<h3>New Issues Today</h3><i>Loading</i>");
 
 				$.getJSON(baseUrl + "new.json", {})
 	        		.done(function( data ) {
-					$("#new").html("<h3>New Issues ("+data.results.length+")</h3>");
+					$("#new").html("<h3>New Issues Today ("+data.results.length+")</h3>");
 					// Truncate issues to give only a teaser...
 					var tmp = data.results;
 					if(data.results.length > 20)
@@ -474,7 +478,7 @@
 				});
 
 				$("<div id='solved' class='overviewBox'>").appendTo("#col2")
-				$("#solved").append("<h3>Issues Gone / Solved</h3>");
+				$("#solved").append("<h3>Issues Gone / Solved</h3><i>Loading...</i>");
 
 				$.getJSON(baseUrl + "solved.json", {})
 	        		.done(function( data ) {
