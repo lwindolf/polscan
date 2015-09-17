@@ -165,8 +165,30 @@ done
 
 if [ -d "$RESULT_BASE_DIR/$ONE_DAY_AGO/" ]; then
         diff=$(diff -u <(cd "$RESULT_BASE_DIR/$ONE_DAY_AGO" && grep "|||" * | sort) <(cd "$RESULT_BASE_DIR/$DATE" && grep "|||" * | sort) | grep "^[-+]" | grep -v " OK |||")
-        new_today=$(echo "$diff" | grep "^+")
-        solved_today=$(echo "$diff" | grep "^-")
+        new_today=$(echo "$diff" | grep "^+[^+]")
+        solved_today=$(echo "$diff" | grep "^-[^-]")
+
+	(
+		echo "$new_today" | sed "s/^+//" |\
+		sed 's/:/ /' |\
+		while read host group severity details; do
+			policy=${details/#|||/}
+			policy=${policy/|||*/}
+			message=${details/*|||/}
+			echo -n '{"host": "'$host'", "severity": "'$severity'", "policy": "'$policy'", "message": "'${message//\"/\'}'"},'
+		done
+	) | write_json new results
+
+	(
+		echo "$solved_today" | sed "s/^-//" |\
+		sed 's/:/ /' |\
+		while read host group severity details; do
+			policy=${details/#|||/}
+			policy=${policy/|||*/}
+			message=${details/*|||/}
+			echo -n '{"host": "'$host'", "severity": "'$severity'", "policy": "'$policy'", "message": "'${message//\"/\'}'"},'
+		done
+	) | write_json solved results
 fi
 
 if [ $LATEST == 1 ]; then
