@@ -26,12 +26,12 @@
 				margin-bottom:12px;
 			}
 			#col1 {
-				width:50%;
+				max-width:50%;
 				float:left;
 			}
 			#col2 {
-				width:50%;
-				float:right;
+				max-width:50%;
+				float:left;
 			}
 			.group, .policy {
 				background: #ddd;
@@ -40,6 +40,10 @@
 			}
 			.group:hover, .policy:hover {
 				background: #ccc;
+			}
+			#solved .FAILED, #solved .WARNING {
+				background: #99f;
+				color: black;
 			}
 			.FAILED {
 				background: #f44;
@@ -104,6 +108,8 @@
 				font-size:11pt;
 				border-collapse: collapse;
 				clear: both;
+				table-layout: fixed;
+				width: 100%;
 			}
 			.resultTable th {
 				background: #ddd;
@@ -112,6 +118,7 @@
 			.resultTable td {
 				padding: 6px 12px;
 				border: 1px solid #aaa;
+				word-wrap: break-word;
 			}
 			tr:nth-child(even) {
 				background:#eee;
@@ -355,8 +362,8 @@
 
 				clean();
 				$("<div id='overviewBoxContainer'>").appendTo("#results")
-				$("<div id='col1'>").appendTo("#overviewBoxContainer")
 				$("<div id='col2'>").appendTo("#overviewBoxContainer")
+				$("<div id='col1'>").appendTo("#overviewBoxContainer")
 
 				$.getJSON(baseUrl + "overview.json", {})
 	        		.done(function( data ) {
