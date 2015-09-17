@@ -175,7 +175,7 @@ if [ -d "$RESULT_BASE_DIR/$ONE_DAY_AGO/" ]; then
 			policy=${details/#|||/}
 			policy=${policy/|||*/}
 			message=${details/*|||/}
-			echo -n '{"host": "'$host'", "severity": "'$severity'", "policy": "'$policy'", "message": "'${message//\"/\'}'"},'
+			echo -n '{"host": "'$host'", "group": "'$group'", "severity": "'$severity'", "policy": "'$policy'", "message": "'${message//\"/\'}'"},'
 		done
 	) | write_json new results
 
@@ -186,7 +186,7 @@ if [ -d "$RESULT_BASE_DIR/$ONE_DAY_AGO/" ]; then
 			policy=${details/#|||/}
 			policy=${policy/|||*/}
 			message=${details/*|||/}
-			echo -n '{"host": "'$host'", "severity": "'$severity'", "policy": "'$policy'", "message": "'${message//\"/\'}'"},'
+			echo -n '{"host": "'$host'", "group": "'$group'", "severity": "'$severity'", "policy": "'$policy'", "message": "'${message//\"/\'}'"},'
 		done
 	) | write_json solved results
 fi

@@ -14,11 +14,24 @@
 				margin:0;
 				padding:0;
 			}
-			.section {
+			#overviewBoxContainer {
+				clear:both;
+			}
+			.overviewBox {
 				background:white;
 				border: 1px solid #ccc;
 				border-radius: 6px;
 				padding:12px 24px;
+				margin-right:12px;
+				margin-bottom:12px;
+			}
+			#col1 {
+				width:50%;
+				float:left;
+			}
+			#col2 {
+				width:50%;
+				float:right;
 			}
 			.group, .policy {
 				background: #ddd;
@@ -86,17 +99,17 @@
 			#results, #timebar {
 				padding: 12px;
 			}
-			#resultTable {
+			.resultTable {
 				border: 1px solid #aaa;
 				font-size:11pt;
 				border-collapse: collapse;
 				clear: both;
 			}
-			#resultTable th {
+			.resultTable th {
 				background: #ddd;
 				border: 1px solid #aaa;
 			}
-			#resultTable td {
+			.resultTable td {
 				padding: 6px 12px;
 				border: 1px solid #aaa;
 			}
@@ -195,23 +208,18 @@
                                 $('#hostlist').show();
                         }
 
-			function loadScannerResults(name, searchValue, filtered) {
- 				var group = '';
-				if (name == 'all')
+			function createResultTable(name, id, data, filtered) {
+				var group = '';
+				if (name == 'all' || name == 'new' || name == 'solved')
 					group = '<th>Group</th>';
 
-				clean();
-				$.getJSON("results/latest/"+name+".json", {})
-		        	 .done(function( data ) {
-					$("#loadmessage").hide();
-					$('#results').append('<div class="search">Search <input type="text" size="40" id="search"/> <input type="button" value="Go" onclick="onSearch();"/><input type="button" value="Get Hosts" title="Click here to get a text field with a whitespace separated list of all hosts in the result list" onclick="onCopyHosts();"/><div id="hostlist"/></div>');
-					$("<table id='resultTable' class='tablesorter'>")
-					.html("<thead><tr><th>Host</th>"+group+"<th>Policy</th><th>Details</th></thead>")
-					.appendTo('#results');
-					$('<tbody>').appendTo('#resultTable');
+				$("<table id='resultTable"+name+"' class='resultTable tablesorter'>")
+				.html("<thead><tr><th>Host</th>"+group+"<th>Policy</th><th>Details</th></thead>")
+				.appendTo(id);
+				$('<tbody>').appendTo('#resultTable'+name);
 
-			   		$.each( data.results, function( i, item ) {
-						if(!filtered || item.severity != 'OK') {
+			   	$.each(data, function( i, item ) {
+					if(!filtered || item.severity != 'OK') {
 						var tmp = '<td class="host">' + item.host + '</td>';
 						if(item.group)
 							tmp += '<td class="group">' + item.group + '</td>';
@@ -220,10 +228,19 @@
 						'<td class="message">' + item.message + '</td>';
 						$( "<tr>" )
 						.html(tmp)
-						.appendTo("#resultTable");
-						}
-					});
-					$("#resultTable").tablesorter();
+						.appendTo("#resultTable"+name);
+					}
+				});
+				$("#resultTable"+name).tablesorter();
+			}
+
+			function loadScannerResults(name, searchValue, filtered) {
+				clean();
+				$.getJSON("results/latest/"+name+".json", {})
+		        	 .done(function( data ) {
+					$("#loadmessage").hide();
+					$('#results').append('<div class="search">Search <input type="text" size="40" id="search"/> <input type="button" value="Go" onclick="onSearch();"/><input type="button" value="Get Hosts" title="Click here to get a text field with a whitespace separated list of all hosts in the result list" onclick="onCopyHosts();"/><div id="hostlist"/></div>');
+					createResultTable(name, '#results', data.results, filtered);
 					$("#search").val(searchValue);
 					onSearch();
 
@@ -336,13 +353,17 @@
 				else
 					baseUrl = "results/latest/";
 
+				clean();
+				$("<div id='overviewBoxContainer'>").appendTo("#results")
+				$("<div id='col1'>").appendTo("#overviewBoxContainer")
+				$("<div id='col2'>").appendTo("#overviewBoxContainer")
+
 				$.getJSON(baseUrl + "overview.json", {})
 	        		.done(function( data ) {
-					clean();
 					createBadges('#row1', data.FAILED, data.WARNING);
 					$("#loadmessage").hide();
-					$("#results").append("<h3>By Groups");
-					$("<div id='groups' class='section'>").appendTo("#results")
+					$("<div id='groups' class='overviewBox col1'>").appendTo("#col1")
+					$("#groups").append("<h3>By Groups</h3>");
 
 		   			$.each(data.overview, function(i, item) {
 						if(item.group) {
@@ -373,8 +394,8 @@
 						}
 		   			});
 
-					$( "<h3>" ).html("Policy Details").appendTo( "#results" )
-					$( "<div id='policies' class='section'>" ).appendTo( "#results" )
+					$( "<div id='policies' class='overviewBox'>" ).appendTo( "#col1" )
+					$( "<h3>Policy Details</h3>").appendTo( "#policies" )
 
 		   			$.each( data.overview, function( i, item ) {
 						if(item.policy) {
@@ -414,6 +435,7 @@
 							onSelect: onDateSelect
 						});
 		   			});
+
 					$(".group").click(function() {
 						loadScannerResults($(this).html(), "", true);
 					});
@@ -423,6 +445,45 @@
 	        		})
 				.fail(function(j, t, e) {
 					error('Fetching overview results failed! ' + t + " " +e);
+				});
+
+				$("<div id='new' class='overviewBox'>").appendTo("#col2")
+				$("#new").html("<h3>New Issues</h3>");
+
+				$.getJSON(baseUrl + "new.json", {})
+	        		.done(function( data ) {
+					$("#new").html("<h3>New Issues ("+data.results.length+")</h3>");
+					// Truncate issues to give only a teaser...
+					var tmp = data.results;
+					if(data.results.length > 20)
+						tmp = data.results.splice(20, data.results.length - 20);
+					createResultTable('new', '#new', tmp, '');
+
+					if(data.results.length > 20)
+						$("<p>Note: Only the first 20 issues where shown!</p>").appendTo("#new");
+				})
+				.fail(function(j, t, e) {
+					$("#new").append('Not available.');
+				});
+
+				$("<div id='solved' class='overviewBox'>").appendTo("#col2")
+				$("#solved").append("<h3>Issues Gone / Solved</h3>");
+
+				$.getJSON(baseUrl + "solved.json", {})
+	        		.done(function( data ) {
+					$("#solved").html("<h3>Solved Issues ("+data.results.length+")</h3>");
+					// Truncate issues to give only a teaser...
+					var tmp = data.results;
+					if(data.results.length > 20)
+						tmp = data.results.splice(20, data.results.length - 20);
+
+					createResultTable('solved', '#solved', tmp, '');
+
+					if(data.results.length > 20)
+						$("<p>Note: Only the first 20 issues where shown!</p>").appendTo("#solved");
+				})
+				.fail(function(j, t, e) {
+					$("#solved").append('Not available.');
 				});
 
 				createHistogram(baseUrl, 'all');
