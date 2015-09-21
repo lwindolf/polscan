@@ -170,7 +170,7 @@ if [ -d "$RESULT_BASE_DIR/$ONE_DAY_AGO/" ]; then
 
 	(
 		echo "$new_today" | sed "s/^+//" |\
-		sed 's/:/ /' |\
+		sed 's/:/ /' | grep -v "^$" |\
 		while read host group severity details; do
 			policy=${details/#|||/}
 			policy=${policy/|||*/}
@@ -181,7 +181,7 @@ if [ -d "$RESULT_BASE_DIR/$ONE_DAY_AGO/" ]; then
 
 	(
 		echo "$solved_today" | sed "s/^-//" |\
-		sed 's/:/ /' |\
+		sed 's/:/ /' | grep -v "^$" |\
 		while read host group severity details; do
 			policy=${details/#|||/}
 			policy=${policy/|||*/}
