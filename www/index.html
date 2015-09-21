@@ -299,7 +299,7 @@
 			function createBadges(id, failed, warning, name) {
 				if(!name)
 					name = "All Issues";
-				$("<div class='badges'><div class='badgesTitle'>"+name+"</div><div class='badge problems'><span class='count'>" + shortenNumber(failed) + "</span> Problems</div><div class='badge warning'><span class='count'>"  + shortenNumber(warning) + '</span> Warnings</div></div>').appendTo(id);
+				$("<div class='badges'><div class='badgesTitle'>"+name+"</div><div class='badge problems'><span class='count' title='"+failed+"'>" + shortenNumber(failed) + "</span> Problems</div><div class='badge warning'><span class='count' title='"+warning+"'>"  + shortenNumber(warning) + '</span> Warnings</div></div>').appendTo(id);
 			}
 
 			function onSearch() {
