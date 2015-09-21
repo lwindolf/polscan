@@ -13,7 +13,7 @@ if [[ $kernel_version =~ ^2.6.32- ]]; then
 		if [ "$uptime_days" -lt 208 -a "$uptime_days" -gt 190 ]; then
 			result_failed "Uptime is $uptime_days. Please reboot!"
 		else
-			result_warning "Buggy kernel active ($kernel_version). Upgrade to 2.6.32-41 or later! Uptime: $uptime_days days."
+			result_warning "Buggy kernel active ($kernel_version). Upgrade to 2.6.32-41 or later!"
 		fi
 	fi
 fi
