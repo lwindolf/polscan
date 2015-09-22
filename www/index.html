@@ -192,7 +192,10 @@
 		</div>
 		<div id='menu'>
 			<a href="">Overview</a>
-			<a href="javascript:loadScannerResults('all')">All Problems</a>
+
+			<a href="javascript:loadScannerResults('all')">All Findings</a>
+			<a href="javascript:loadScannerResults('new')">New</a>
+			<a href="javascript:loadScannerResults('solved')">Solved</a>
 		</div>
 
 		<div id='timebar'>Date <input type='text' id='datepicker' size='10'/></div>
@@ -262,7 +265,7 @@
 						if(searchValue)
 							badgeTitle = "<small>Filter</small><br/> " + searchValue;
 						else
-							badgeTitle = "All Issues";
+							badgeTitle = "Overall";
 					} else {
 						badgeTitle = "<small>Group</small><br/> " + name;
 					}
@@ -298,7 +301,7 @@
 
 			function createBadges(id, failed, warning, name) {
 				if(!name)
-					name = "All Issues";
+					name = "Overall";
 				$("<div class='badges'><div class='badgesTitle'>"+name+"</div><div class='badge problems'><span class='count' title='"+failed+"'>" + shortenNumber(failed) + "</span> Problems</div><div class='badge warning'><span class='count' title='"+warning+"'>"  + shortenNumber(warning) + '</span> Warnings</div></div>').appendTo(id);
 			}
 
@@ -459,12 +462,12 @@
 				});
 
 				$("<div id='new' class='overviewBox'>").appendTo("#col2")
-				$("#new").html("<h3>New Issues Today</h3>");
+				$("#new").html("<h3>New Findings</h3>");
 				$("#new").append("<div class='msg'><i>Loading</i></div>");
 
 				$.getJSON(baseUrl + "new.json", {})
 	        		.done(function( data ) {
-					$("#new").html("<h3>New Issues Today ("+data.results.length+")</h3>");
+					$("#new").html("<h3>New Findings ("+data.results.length+")</h3>");
 					// Truncate issues to give only a teaser...
 					var tmp = data.results;
 					if(data.results.length > 20)
@@ -479,12 +482,12 @@
 				});
 
 				$("<div id='solved' class='overviewBox'>").appendTo("#col2")
-				$("#solved").append("<h3>Issues Gone / Solved</h3>");
+				$("#solved").append("<h3>Solved / Gone</h3>");
 				$("#solved").append("<div class='msg'><i>Loading</i></div>");
 
 				$.getJSON(baseUrl + "solved.json", {})
 	        		.done(function( data ) {
-					$("#solved").html("<h3>Solved Issues ("+data.results.length+")</h3>");
+					$("#solved").html("<h3>Solved / Gone ("+data.results.length+")</h3>");
 					// Truncate issues to give only a teaser...
 					var tmp = data.results;
 					if(data.results.length > 20)
