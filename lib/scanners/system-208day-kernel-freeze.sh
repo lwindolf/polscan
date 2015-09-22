@@ -11,7 +11,7 @@ if [[ $kernel_version =~ ^2.6.32- ]]; then
 	if [[ $patch_level -lt 41 ]]; then
 		uptime_days=$(/usr/bin/uptime | sed 's/.* \([0-9][0-9]*\) days.*/\1/')
 		if [ "$uptime_days" -lt 208 -a "$uptime_days" -gt 190 ]; then
-			result_failed "Uptime is $uptime_days. Please reboot!"
+			result_failed "Uptime is >190. Please reboot!"
 		else
 			result_warning "Buggy kernel active ($kernel_version). Upgrade to 2.6.32-41 or later!"
 		fi
