@@ -1,3 +1,8 @@
+Note: polscan is licensed GPLv3, with the exception for the JS libraries in 
+subdir "www": Chart.js, jQuery, jQueryUI and TableSorter which are all MIT 
+licensed.
+
+
                     GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 
