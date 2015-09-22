@@ -246,6 +246,13 @@
 					}
 				});
 				$("#resultTable"+name).tablesorter();
+
+				$("#resultTable"+name+" .group").click(function() {
+					loadScannerResults($(this).html(), "", true);
+				});
+				$("#resultTable"+name+" .policy").click(function() {
+					loadScannerResults("all", $(this).html(), true);
+				});
 			}
 
 			function loadScannerResults(name, searchValue, filtered) {
@@ -272,14 +279,6 @@
 
 					//createBadges('#row1', failed, warning, badgeTitle);
 					$("<div class='badges'><div class='badgesTitle'>" + badgeTitle + "</div><div class='badge problems'><span class='count'>" + failed + "</span> Problems</div><div class='badge warning'><span class='count'>"  + warning + '</span> Warnings</div></div>').appendTo("#row1");
-
-
-					$(".group").click(function() {
-						loadScannerResults($(this).html(), "", true);
-					});
-					$(".policy").click(function() {
-						loadScannerResults("all", $(this).html(), true);
-					});
 
 					createHistogram('results/latest/', searchValue?searchValue:name);
 				})
@@ -467,7 +466,7 @@
 
 				$.getJSON(baseUrl + "new.json", {})
 	        		.done(function( data ) {
-					$("#new").html("<h3>New Findings ("+data.results.length+")</h3>");
+					$("#new").html("<h3><a href=\"javascript:loadScannerResults('new')\">New Findings ("+data.results.length+")</a></h3>");
 					// Truncate issues to give only a teaser...
 					var tmp = data.results;
 					if(data.results.length > 20)
@@ -487,7 +486,7 @@
 
 				$.getJSON(baseUrl + "solved.json", {})
 	        		.done(function( data ) {
-					$("#solved").html("<h3>Solved / Gone ("+data.results.length+")</h3>");
+					$("#solved").html("<h3><a href=\"javascript:loadScannerResults('solved')\">Solved / Gone ("+data.results.length+")</a></h3>");
 					// Truncate issues to give only a teaser...
 					var tmp = data.results;
 					if(data.results.length > 20)
