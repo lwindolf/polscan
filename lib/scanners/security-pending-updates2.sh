@@ -4,7 +4,7 @@
 
 pkgs=$(apt-show-versions 2>/dev/null | grep 'security upgradable' | cut -d: -f 1)
 if [ "$pkgs" != "" ]; then
-	result_warning "Security upgrades pending: $pkgs"
+	result_warning "Security upgrades pending:" $pkgs
 else
 	result_ok
 fi
