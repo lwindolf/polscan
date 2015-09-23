@@ -336,9 +336,16 @@
 						chartData.datasets[0] = {
 							data: data.histogram[valueIndex].FAILED,
 							label: id,
-							strokeColor: "rgba(220,50,50,0.7)",
-							fillColor: "rgba(220,150,150,0.2)"
+							strokeColor: "rgba(220,50,50,1)",
+							fillColor: "rgba(250,250,250,0.2)"
 						}
+						chartData.datasets[1] = {
+							data: data.histogram[valueIndex].WARNING,
+							label: id,
+							strokeColor: "#cc0",
+							fillColor: "rgba(250,250,250,0.2)"
+						}
+
 						$('#row1').append('<div class="chart"><div class="chartTitle">Issue Trends</div><canvas id="histogramChart" width="600" height="200"></canvas></div>');
 						var ctx = $("#histogramChart").get(0).getContext("2d");
 						var myLineChart = new Chart(ctx).Line(chartData, {

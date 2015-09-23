@@ -145,14 +145,14 @@ do
 	histogram_labels[$i]=$day
 	if [ -d "$RESULT_BASE_DIR/$day" ]; then
 		echo $day
-		while read nr group policy;
+		while read nr group severity policy;
 		do
 			histogram_ids["group_${group// /_}"]=$group
 			histogram_ids["policy_${policy// /_}"]=$policy
-			histogram["policy_${policy// /_}_failed_${day}"]=$nr
-			histogram["group_${group// /_}_failed_${day}"]=$(( $nr + ${histogram["group_${group// /_}_failed_${day}"]-0} ))
-			histogram["all_failed_${day}"]=$(( $nr + ${histogram["all_failed_${day}"]-0} ))
-		done < <(rgrep 'FAILED |||' "$RESULT_BASE_DIR/$day" |sed 's/.*:\(.*\) FAILED |||\(.*\)|||.*/\1 \2/' | sort | uniq -c)
+			histogram["policy_${policy// /_}_${severity}_${day}"]=$nr
+			histogram["group_${group// /_}_${severity}_${day}"]=$(( $nr + ${histogram["group_${group// /_}_${severity}_${day}"]-0} ))
+			histogram["all_${severity}_${day}"]=$(( $nr + ${histogram["all_${severity}_${day}"]-0} ))
+		done < <(egrep -r '(FAILED|WARNING) |||' "$RESULT_BASE_DIR/$day" |sed 's/.*:\([^ ]*\) \([^ ]*\) |||\(.*\)|||.*/\1 \2 \3/' | sort | uniq -c)
 	fi
 	i=$(( $i + 1 ))
 done
@@ -167,17 +167,22 @@ labels=$(
 (
 for p in ${!histogram_ids[*]}
 do
-	echo -n '{"id": "'${histogram_ids[$p]}'", "FAILED": ['
-	i=30
-	while [ $i -ge 0 ]; 
+	echo -n ',{"id": "'${histogram_ids[$p]}'",'
+	for severity in FAILED WARNING
 	do
-		day=$(date -d "$i days ago" +%Y/%m/%d)
-		echo -n "${histogram[${p}_failed_$day]-0}, "
-		i=$(( $i - 1 ))
+		echo -n ' "'$severity'": ['
+		i=30
+		while [ $i -ge 0 ]; 
+		do
+			day=$(date -d "$i days ago" +%Y/%m/%d)
+			echo -n "${histogram[${p}_${severity}_$day]-0}, "
+			i=$(( $i - 1 ))
+		done
+		echo -n "],"
 	done
-	echo "]},"
+	echo "}"
 done
-) | sed -e "s/, \]/\]/" -e '$s/,$//' | write_json histogram "labels\": [${labels}], \"histogram"
+) | sed "1s/^,//;s/\],\}/\]\}/;s/, \]/\]/g" | write_json histogram "labels\": [${labels}], \"histogram"
 
 if [ -d "$RESULT_BASE_DIR/$ONE_DAY_AGO/" ]; then
         diff=$(diff -u <(cd "$RESULT_BASE_DIR/$ONE_DAY_AGO" && grep "|||" * | sort) <(cd "$RESULT_BASE_DIR/$DATE" && grep "|||" * | sort) | grep "^[-+]" | grep -v " OK |||")
