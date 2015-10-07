@@ -195,9 +195,9 @@
 		<div id='menu'>
 			<a href="">Overview</a>
 
-			<a href="javascript:loadScannerResults('all')">All Findings</a>
-			<a href="javascript:loadScannerResults('new')">New</a>
-			<a href="javascript:loadScannerResults('solved')">Solved</a>
+			<a href="#all">All Findings</a>
+			<a href="#new">New</a>
+			<a href="#solved">Solved</a>
 		</div>
 
 		<div id='timebar'>Date <input type='text' id='datepicker' size='10'/></div>
@@ -263,6 +263,8 @@
 			}
 
 			function loadScannerResults(name, searchValue, filtered) {
+				window.location.hash = name;
+
 				if(resultCache[name])
 					showScannerResults(resultCache[name], name, searchValue, filtered);
 
@@ -301,8 +303,20 @@
 				createHistogram('results/latest/', searchValue?searchValue:name);
 			}
 
+			function onLocationHashChange() {
+				var name = window.location.hash.substring(1);
+				if(name == "") 
+					onDateSelect();
+				else
+					loadScannerResults(name);
+			}
+
 			(function() {
-				onDateSelect();
+				onLocationHashChange();
+
+				// Allow some simple navigation by browser history 
+				// for scanner results
+				$(window).on('hashchange', onLocationHashChange);
 			})();
 
                         function shortenNumber(nr) {
