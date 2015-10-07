@@ -34,7 +34,7 @@
 				padding: 0 12px;
 				cursor: pointer;
 			}
-			.group:hover, .policy:hover {
+			.host:hover, .group:hover, .policy:hover {
 				background: #ccc;
 			}
 			#solved .FAILED, #solved .WARNING {
@@ -253,6 +253,9 @@
 					loadScannerResults($(this).html(), "", true);
 				});
 				$("#resultTable"+name+" .policy").click(function() {
+					loadScannerResults("all", $(this).html(), true);
+				});
+				$("#resultTable"+name+" .host").click(function() {
 					loadScannerResults("all", $(this).html(), true);
 				});
 			}
