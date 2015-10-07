@@ -3,7 +3,7 @@
 # description: There shall be no 'blocked for more than xxx seconds' in dmesg
 # solution: Solution often depends on the application blocked, rarely on the HW. Clear dmesg buffer to acknowledge.
 
-logged=$(/bin/dmesg | grep 'blocked for more than [0-9]* seconds')
+logged=$(/bin/dmesg | grep 'blocked for more than [0-9]* seconds' | tail -10)
 if [ "$logged" == "" ]; then
 	result_ok
 else
