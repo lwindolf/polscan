@@ -96,6 +96,11 @@
 				color: white;
 				background: #777;
 			}
+			#menu a.current {
+				color: #444;
+				font-weight:bold;
+				background: #eee;
+			}
 			#results, #timebar {
 				padding: 12px;
 			}
@@ -193,7 +198,7 @@
 			Polscan
 		</div>
 		<div id='menu'>
-			<a href="">Overview</a>
+			<a href="#">Overview</a>
 
 			<a href="#all">All Findings</a>
 			<a href="#new">New</a>
@@ -309,6 +314,10 @@
 					onDateSelect();
 				else
 					loadScannerResults(name);
+
+				// Highlight correct menu item...
+				$("#menu a.current").removeClass("current");
+				$("#menu a[href='#"+name+"']").addClass("current");
 			}
 
 			(function() {
