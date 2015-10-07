@@ -165,6 +165,8 @@
 				margin:12px;
 				text-align:center;
 				border-radius:6px;
+				background: #eee;
+				border: 2px solid #ccc;
 			}
 			.badge.warning {
 				background: #ff4;
@@ -277,9 +279,7 @@
 						badgeTitle = "<small>Group</small><br/> " + name;
 					}
 
-					//createBadges('#row1', failed, warning, badgeTitle);
-					$("<div class='badges'><div class='badgesTitle'>" + badgeTitle + "</div><div class='badge problems'><span class='count'>" + failed + "</span> Problems</div><div class='badge warning'><span class='count'>"  + warning + '</span> Warnings</div></div>').appendTo("#row1");
-
+					createBadges('#row1', failed, warning, badgeTitle);
 					createHistogram('results/latest/', searchValue?searchValue:name);
 				})
 				.fail(function(j, t, e) {
@@ -301,7 +301,17 @@
 			function createBadges(id, failed, warning, name) {
 				if(!name)
 					name = "Overall";
-				$("<div class='badges'><div class='badgesTitle'>"+name+"</div><div class='badge problems'><span class='count' title='"+failed+"'>" + shortenNumber(failed) + "</span> Problems</div><div class='badge warning'><span class='count' title='"+warning+"'>"  + shortenNumber(warning) + '</span> Warnings</div></div>').appendTo(id);
+				$("<div class='badges'><div class='badgesTitle'>" +
+				  name +
+				  "</div><div class='badge" +
+				  ((failed>0)?" problems":"") +
+				  "'><span class='count' title='"+failed+"'>" +
+				  shortenNumber(failed) +
+				  "</span> Problems</div><div class='badge" +
+				  ((warning>0)?" warning":"") +
+				  "'><span class='count' title='"+warning+"'>" +
+				  shortenNumber(warning) +
+				  '</span> Warnings</div></div>').appendTo(id);
 			}
 
 			function onSearch() {
