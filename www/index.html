@@ -316,7 +316,7 @@
 				var params = window.location.hash.substring(1).split('---');
 
 				if(!params[0]) 
-					onDateSelect();
+					loadOverview();
 				else
 					loadScannerResults(params[0], params[1]?decodeURI(params[1]):null, params.len > 1);
 
@@ -430,6 +430,11 @@
 
 				if(day)
 					baseUrl = "results/json/"+day+"/";
+
+				onLocationHashChange();
+			}
+
+			function loadOverview() {
 
 				clean();
 				$("<div id='overviewBoxContainer'>").appendTo("#results")
