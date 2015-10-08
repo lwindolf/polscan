@@ -263,15 +263,14 @@
 					setLocationHash($(this).html());
 				});
 				$("#resultTable"+name+" .policy").click(function() {
-					loadScannerResults("all", $(this).html(), true);
+					setLocationHash('all---' + $(this).html());
 				});
 				$("#resultTable"+name+" .host").click(function() {
-					loadScannerResults("all", $(this).html(), true);
+					setLocationHash('all---' + $(this).html());
 				});
 			}
 
 			function loadScannerResults(name, searchValue, filtered) {
-				setLocationHash(name);
 
 				if(resultCache[baseUrl + name]) {
 					showScannerResults(resultCache[baseUrl + name], name, searchValue, filtered);
@@ -315,22 +314,23 @@ console.log("histogram1");
 			}
 
 			function onLocationHashChange() {
-				var name = window.location.hash.substring(1);
+				var params = window.location.hash.substring(1).split('---');
 
-				if("" == name) 
+				if(!params[0]) 
 					onDateSelect();
 				else
-					loadScannerResults(name);
+					loadScannerResults(params[0], params[1]?decodeURI(params[1]):null, params.len > 1);
 
 				// Highlight correct menu item...
 				$("#menu a.current").removeClass("current");
 				$("#menu a[href='#"+name+"']").addClass("current");
 			}
 
-			function setLocationHash(id) {
-				$(window).off('hashchange');
-				window.location.hash = id;
-				$(window).on('hashchange', onLocationHashChange);
+			function setLocationHash(id, search) {
+				if (search)
+					window.location.hash = id + "---" + search;
+				else
+					window.location.hash = id;
 			}
 
 			(function() {
@@ -519,7 +519,7 @@ console.log("histogram1");
 						setLocationHash($(this).html());
 					});
 					$(".policy").click(function() {
-						loadScannerResults("all", $(this).html(), true);
+						setLocationHash('all---' + $(this).html());
 					});
 	        		})
 				.fail(function(j, t, e) {
