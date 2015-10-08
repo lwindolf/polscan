@@ -214,9 +214,12 @@
 
 		<script>
 			var resultCache = new Array();
+			var baseUrl = "results/latest/";
+			var loading = 0;
 
 			function error(text) {
 				$('#errors').html('<div class="errorbox"><h2>Error</h2> '+text+'</div>');
+				$('#errors').show();
 			}
 
 			function onCopyHosts() {
@@ -257,7 +260,7 @@
 				$("#resultTable"+name).tablesorter();
 
 				$("#resultTable"+name+" .group").click(function() {
-					loadScannerResults($(this).html(), "", true);
+					setLocationHash($(this).html());
 				});
 				$("#resultTable"+name+" .policy").click(function() {
 					loadScannerResults("all", $(this).html(), true);
@@ -268,17 +271,20 @@
 			}
 
 			function loadScannerResults(name, searchValue, filtered) {
-				window.location.hash = name;
+				setLocationHash(name);
 
-				if(resultCache[name])
-					showScannerResults(resultCache[name], name, searchValue, filtered);
+				if(resultCache[baseUrl + name]) {
+					showScannerResults(resultCache[baseUrl + name], name, searchValue, filtered);
+					return;
+				}
 
-				$.getJSON("results/latest/"+name+".json", {})
+				$.getJSON(baseUrl + name + ".json", {})
 		        	 .done(function( data ) {
-					resultCache[name] = data;
+					resultCache[baseUrl + name] = data;
 					showScannerResults(data, name, searchValue, filtered);
 				})
 				.fail(function(j, t, e) {
+					clean();
 					error('Fetching results for '+name+' failed! ' + t + " " + e);
 				});
 			}
@@ -286,7 +292,6 @@
 			function showScannerResults(data, name, searchValue, filtered) {
 				clean();
 
-				$("#loadmessage").hide();
 				$('#results').append('<div class="search">Search <input type="text" size="40" id="search"/> <input type="button" value="Go" onclick="onSearch();"/><input type="button" value="Get Hosts" title="Click here to get a text field with a whitespace separated list of all hosts in the result list" onclick="onCopyHosts();"/><div id="hostlist"/></div>');
 				createResultTable(name, '#results', data.results, filtered);
 				$("#search").val(searchValue);
@@ -305,12 +310,14 @@
 				}
 
 				createBadges('#row1', failed, warning, badgeTitle);
-				createHistogram('results/latest/', searchValue?searchValue:name);
+console.log("histogram1");
+				createHistogram(searchValue?searchValue:name);
 			}
 
 			function onLocationHashChange() {
 				var name = window.location.hash.substring(1);
-				if(name == "") 
+
+				if("" == name) 
 					onDateSelect();
 				else
 					loadScannerResults(name);
@@ -318,6 +325,12 @@
 				// Highlight correct menu item...
 				$("#menu a.current").removeClass("current");
 				$("#menu a[href='#"+name+"']").addClass("current");
+			}
+
+			function setLocationHash(id) {
+				$(window).off('hashchange');
+				window.location.hash = id;
+				$(window).on('hashchange', onLocationHashChange);
 			}
 
 			(function() {
@@ -360,7 +373,7 @@
 				}).parent().show();
 			}
 
-			function createHistogram(baseUrl, id) {
+			function createHistogram(id) {
 				$.getJSON(baseUrl + "histogram.json", {})
 	        		.done(function( data ) {
 					var chartData = {
@@ -409,17 +422,15 @@
 			}
 
 			function clean() {
-				$('#errors').html('');
 				$('#results').html('<div id="row1"></div><div id="loadmessage"><i>Loading ...</i></div>');
+				$('#errors').hide();
+				$('#loadmessage').hide();
 			}
 
 			function onDateSelect(day) {
-				var baseUrl;
 
 				if(day)
 					baseUrl = "results/json/"+day+"/";
-				else
-					baseUrl = "results/latest/";
 
 				clean();
 				$("<div id='overviewBoxContainer'>").appendTo("#results")
@@ -505,7 +516,7 @@
 		   			});
 
 					$(".group").click(function() {
-						loadScannerResults($(this).html(), "", true);
+						setLocationHash($(this).html());
 					});
 					$(".policy").click(function() {
 						loadScannerResults("all", $(this).html(), true);
@@ -521,7 +532,7 @@
 
 				$.getJSON(baseUrl + "new.json", {})
 	        		.done(function( data ) {
-					$("#new").html("<h3><a href=\"javascript:loadScannerResults('new')\">New Findings ("+data.results.length+")</a></h3>");
+					$("#new").html("<h3><a href='#new'>New Findings ("+data.results.length+")</a></h3>");
 					// Truncate issues to give only a teaser...
 					var tmp = data.results;
 					if(data.results.length > 20)
@@ -541,7 +552,7 @@
 
 				$.getJSON(baseUrl + "solved.json", {})
 	        		.done(function( data ) {
-					$("#solved").html("<h3><a href=\"javascript:loadScannerResults('solved')\">Solved / Gone ("+data.results.length+")</a></h3>");
+					$("#solved").html("<h3><a href='#solved'>Solved / Gone ("+data.results.length+")</a></h3>");
 					// Truncate issues to give only a teaser...
 					var tmp = data.results;
 					if(data.results.length > 20)
@@ -556,7 +567,7 @@
 					$("#solved .msg").html('Not available. You probably did not scan yesterday.');
 				});
 
-				createHistogram(baseUrl, 'all');
+				createHistogram('all');
 			}
 		</script>
 	</body>
