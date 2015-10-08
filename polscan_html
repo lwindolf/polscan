@@ -142,8 +142,8 @@ i=0
 while [ $i -le 30 ]; 
 do
 	day=$(date -d "$i days ago" +%Y/%m/%d)
-	histogram_labels[$i]=$day
 	if [ -d "$RESULT_BASE_DIR/$day" ]; then
+		histogram_labels[$i]=$day
 		echo $day
 		while read nr group severity policy;
 		do
@@ -161,7 +161,7 @@ labels=$(
 	for l in ${!histogram_labels[*]}
 	do
 		echo -n "\"${histogram_labels[$l]}\","
-	done
+	done | sort
 )
 
 (
@@ -175,7 +175,9 @@ do
 		while [ $i -ge 0 ]; 
 		do
 			day=$(date -d "$i days ago" +%Y/%m/%d)
-			echo -n "${histogram[${p}_${severity}_$day]-0}, "
+			if [ -d "$RESULT_BASE_DIR/$day" ]; then
+				echo -n "${histogram[${p}_${severity}_$day]-0}, "
+			fi
 			i=$(( $i - 1 ))
 		done
 		echo -n "],"
