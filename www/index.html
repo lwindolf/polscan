@@ -216,6 +216,8 @@
 			var resultCache = new Array();
 			var baseUrl = "results/latest/";
 			var loading = 0;
+			var warning = 0;
+			var failed = 0;
 
 			function error(text) {
 				$('#errors').html('<div class="errorbox"><h2>Error</h2> '+text+'</div>');
@@ -245,9 +247,17 @@
 				$('<tbody>').appendTo('#resultTable'+name);
 
 				var rows = "";
+				warning = 0;
+				failed = 0;
 			   	$.each(data, function( i, item ) {
 					if(!filtered || item.severity != 'OK') {
-						var rows = '<tr><td class="host">' + item.host + '</td>';
+
+						if(item.severity == 'FAILED')
+							failed++;
+						if(item.severity == 'WARNING')
+							warning++;
+
+						rows += '<tr><td class="host">' + item.host + '</td>';
 						if(item.group)
 							rows += '<td class="group">' + item.group + '</td>';
 						rows +=
@@ -255,8 +265,11 @@
 						'<td class="message">' + item.message + '</td></tr>';
 					}
 				});
-				$("#resultTable"+name).append(rows);
+				console.log("Parsing done.");
+				$("#resultTable"+name+" tbody").append(rows);
+				console.log("Table setup done.");
 				$("#resultTable"+name).tablesorter();
+				console.log("Table sorting done.");
 
 				$("#resultTable"+name+" .group").click(function() {
 					setLocationHash($(this).html());
@@ -271,13 +284,16 @@
 
 			function loadScannerResults(name, searchValue, filtered) {
 
+				console.log("Loading results start");
 				if(resultCache[baseUrl + name]) {
+					console.log("Using JSON from cache.");
 					showScannerResults(resultCache[baseUrl + name], name, searchValue, filtered);
 					return;
 				}
 
 				$.getJSON(baseUrl + name + ".json", {})
 		        	 .done(function( data ) {
+					console.log("JSON network fetch done.");
 					resultCache[baseUrl + name] = data;
 					showScannerResults(data, name, searchValue, filtered);
 				})
@@ -289,14 +305,12 @@
 
 			function showScannerResults(data, name, searchValue, filtered) {
 				clean();
-
 				$('#results').append('<div class="search">Search <input type="text" size="40" id="search"/> <input type="button" value="Go" onclick="onSearch();"/><input type="button" value="Get Hosts" title="Click here to get a text field with a whitespace separated list of all hosts in the result list" onclick="onCopyHosts();"/><div id="hostlist"/></div>');
 				createResultTable(name, '#results', data.results, filtered);
 				$("#search").val(searchValue);
-				onSearch();
+				if(searchValue)
+					onSearch();
 
-				var failed = $('td.policy.FAILED:visible').length;
-				var warning = $('td.policy.WARNING:visible').length;
 				var badgeTitle;
 				if(name == "all") {
 					if(searchValue)
@@ -365,7 +379,7 @@
 			function onSearch() {
 				var searchText = $('#search').val();
 
-				$("td").parent().hide();
+				$("tr").hide();
 				$("td").filter(function() {
 					return $(this).text().indexOf(searchText) !== -1;
 				}).parent().show();
