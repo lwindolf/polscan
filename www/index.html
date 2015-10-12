@@ -244,19 +244,18 @@
 				.appendTo(id);
 				$('<tbody>').appendTo('#resultTable'+name);
 
+				var rows = "";
 			   	$.each(data, function( i, item ) {
 					if(!filtered || item.severity != 'OK') {
-						var tmp = '<td class="host">' + item.host + '</td>';
+						var rows = '<tr><td class="host">' + item.host + '</td>';
 						if(item.group)
-							tmp += '<td class="group">' + item.group + '</td>';
-						tmp +=
+							rows += '<td class="group">' + item.group + '</td>';
+						rows +=
 						'<td class="policy '+item.severity+'">' + item.policy + '</td>' +
-						'<td class="message">' + item.message + '</td>';
-						$( "<tr>" )
-						.html(tmp)
-						.appendTo("#resultTable"+name);
+						'<td class="message">' + item.message + '</td></tr>';
 					}
 				});
+				$("#resultTable"+name).append(rows);
 				$("#resultTable"+name).tablesorter();
 
 				$("#resultTable"+name+" .group").click(function() {
