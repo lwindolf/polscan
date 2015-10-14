@@ -224,6 +224,10 @@
 				$('#errors').show();
 			}
 
+			function onSearch() {
+				setLocationHash('all---'+$('#search').val());
+			}
+
 			function onCopyHosts() {
                                 $('#hostlist').html('<textarea style="width:100%">');
                                 var hosts = $('td.host:visible').get();
@@ -236,7 +240,7 @@
                                 $('#hostlist').show();
                         }
 
-			function createResultTable(name, id, data, filtered) {
+			function createResultTable(name, id, data, searchValue, reduced) {
 				var group = '';
 				if (name == 'all' || name == 'new' || name == 'solved')
 					group = '<th>Group</th>';
@@ -250,22 +254,28 @@
 				warning = 0;
 				failed = 0;
 			   	$.each(data, function( i, item ) {
-					if(!filtered || item.severity != 'OK') {
+					if(reduced && item.severity == 'OK')
+						return;
 
-						if(item.severity == 'FAILED')
-							failed++;
-						if(item.severity == 'WARNING')
-							warning++;
+					if(searchValue &&
+					   !((item.host.indexOf(searchValue) != -1) ||
+					     (item.policy.indexOf(searchValue) != -1) ||
+					     (item.message.indexOf(searchValue) != -1)))
+						return;
 
-						rows += '<tr><td class="host">' + item.host + '</td>';
-						if(item.group)
-							rows += '<td class="group">' + item.group + '</td>';
-						rows +=
-						'<td class="policy '+item.severity+'">' + item.policy + '</td>' +
-						'<td class="message">' + item.message + '</td></tr>';
-					}
+					if(item.severity == 'FAILED')
+						failed++;
+					if(item.severity == 'WARNING')
+						warning++;
+
+					rows += '<tr><td class="host">' + item.host + '</td>';
+					if(item.group)
+						rows += '<td class="group">' + item.group + '</td>';
+					rows +=
+					'<td class="policy '+item.severity+'">' + item.policy + '</td>' +
+					'<td class="message">' + item.message + '</td></tr>';
 				});
-				console.log("Parsing done.");
+				console.log("Parsing done (filter: "+reduced+").");
 				$("#resultTable"+name+" tbody").append(rows);
 				console.log("Table setup done.");
 				$("#resultTable"+name).tablesorter();
@@ -282,12 +292,12 @@
 				});
 			}
 
-			function loadScannerResults(name, searchValue, filtered) {
+			function loadScannerResults(name, searchValue, reduced) {
 
-				console.log("Loading results start");
+				console.log("Loading results start (search="+searchValue+" reduced="+reduced+")");
 				if(resultCache[baseUrl + name]) {
 					console.log("Using JSON from cache.");
-					showScannerResults(resultCache[baseUrl + name], name, searchValue, filtered);
+					showScannerResults(resultCache[baseUrl + name], name, searchValue, reduced);
 					return;
 				}
 
@@ -295,7 +305,7 @@
 		        	 .done(function( data ) {
 					console.log("JSON network fetch done.");
 					resultCache[baseUrl + name] = data;
-					showScannerResults(data, name, searchValue, filtered);
+					showScannerResults(data, name, searchValue, reduced);
 				})
 				.fail(function(j, t, e) {
 					clean();
@@ -303,13 +313,11 @@
 				});
 			}
 
-			function showScannerResults(data, name, searchValue, filtered) {
+			function showScannerResults(data, name, searchValue, reduced) {
 				clean();
 				$('#results').append('<div class="search">Search <input type="text" size="40" id="search"/> <input type="button" value="Go" onclick="onSearch();"/><input type="button" value="Get Hosts" title="Click here to get a text field with a whitespace separated list of all hosts in the result list" onclick="onCopyHosts();"/><div id="hostlist"/></div>');
-				createResultTable(name, '#results', data.results, filtered);
+				createResultTable(name, '#results', data.results, searchValue, reduced);
 				$("#search").val(searchValue);
-				if(searchValue)
-					onSearch();
 
 				var badgeTitle;
 				if(name == "all") {
@@ -327,11 +335,10 @@
 
 			function onLocationHashChange() {
 				var params = window.location.hash.substring(1).split('---');
-
 				if(!params[0]) 
 					loadOverview();
 				else
-					loadScannerResults(params[0], params[1]?decodeURI(params[1]):null, params.len > 1);
+					loadScannerResults(params[0], params[1]?decodeURI(params[1]):null, params.length > 1);
 
 				// Highlight correct menu item...
 				$("#menu a.current").removeClass("current");
@@ -374,15 +381,6 @@
 				  "'><span class='count' title='"+warning+"'>" +
 				  shortenNumber(warning) +
 				  '</span> Warnings</div></div>').appendTo(id);
-			}
-
-			function onSearch() {
-				var searchText = $('#search').val();
-
-				$("tr").hide();
-				$("td").filter(function() {
-					return $(this).text().indexOf(searchText) !== -1;
-				}).parent().show();
 			}
 
 			function createHistogram(id) {
