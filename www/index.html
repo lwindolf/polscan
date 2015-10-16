@@ -14,6 +14,9 @@
 				margin:0;
 				padding:0;
 			}
+			select {
+				max-width:250px;
+			}
 			#overviewBoxContainer {
 				clear:both;
 			}
@@ -214,6 +217,7 @@
 
 		<script>
 			var resultCache = new Array();
+			var groupBy = new Array();
 			var baseUrl = "results/latest/";
 			var loading = 0;
 			var warning = 0;
@@ -240,6 +244,9 @@
                                 $('#hostlist').show();
                         }
 
+			function onGroupByChange() {
+			}
+
 			function createResultTable(name, id, data, searchValue, reduced) {
 				var group = '';
 				if (name == 'all' || name == 'new' || name == 'solved')
@@ -250,6 +257,7 @@
 				.appendTo(id);
 				$('<tbody>').appendTo('#resultTable'+name);
 
+				groupBy = new Array();
 				var rows = "";
 				warning = 0;
 				failed = 0;
@@ -274,12 +282,38 @@
 					rows +=
 					'<td class="policy '+item.severity+'">' + item.policy + '</td>' +
 					'<td class="message">' + item.message + '</td></tr>';
+			
+					// Fill array of possible groupings
+					//
+					// A group is indicated by a colon in the detail message
+					// followed by any whitespace or comma separated list.
+					var pos = item.message.indexOf(':');
+					if(pos != -1) {
+						var groupByStr = item.message.substring(0, pos); 
+						if(groupBy[groupByStr] === undefined) {
+							groupBy[groupByStr] = 1;
+						} else {
+							groupBy[groupByStr]++;
+						}
+					}
 				});
 				console.log("Parsing done (filter: "+reduced+").");
 				$("#resultTable"+name+" tbody").append(rows);
 				console.log("Table setup done.");
 				$("#resultTable"+name).tablesorter();
 				console.log("Table sorting done.");
+
+				if(groupBy.length >= 0) {
+					var groupingEnabled = false;
+					for(key in groupBy) {
+						if(groupBy[key] > 3 && key.length > 3) {
+							groupingEnabled = true;
+							$('#groupById').append("<option name='"+key+"'>"+key+" ("+groupBy[key]+")</option>");
+						}
+					}
+					if(groupingEnabled)
+						$('#groupById').removeAttr('disabled');
+				}
 
 				$("#resultTable"+name+" .group").click(function() {
 					setLocationHash($(this).html());
@@ -315,7 +349,14 @@
 
 			function showScannerResults(data, name, searchValue, reduced) {
 				clean();
-				$('#results').append('<div class="search">Search <input type="text" size="40" id="search"/> <input type="button" value="Go" onclick="onSearch();"/><input type="button" value="Get Hosts" title="Click here to get a text field with a whitespace separated list of all hosts in the result list" onclick="onCopyHosts();"/><div id="hostlist"/></div>');
+				$('#results').append('<div class="search">' +
+					'Search <input type="text" size="40" id="search"/> ' +
+					'<input type="button" value="Go" onclick="onSearch();"/> ' +
+					'<input type="button" value="Get Hosts" title="Click here to get a text field with a whitespace separated list of all hosts in the result list" onclick="onCopyHosts();"/> ' + 
+					'<br/>Group Hosts By <select id="groupById" disabled><option name="none" selected></option></select> ' +
+					'<input type="button" value="Go" onclick="onGroupByChange();"/> ' +
+					'<div id="hostlist"/>' +
+					'</div>');
 				createResultTable(name, '#results', data.results, searchValue, reduced);
 				$("#search").val(searchValue);
 
