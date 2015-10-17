@@ -121,6 +121,7 @@
 				padding: 6px 12px;
 				border: 1px solid #aaa;
 				word-wrap: break-word;
+				vertical-align: top;
 			}
 			tr:nth-child(even) {
 				background:#eee;
@@ -246,14 +247,18 @@
                         }
 
 			function onGroupByChange() {
-				var searchValue = $('#groupById option:selected').text();
-				createGroupTable(currentResultSet, '#results', searchValue);
+				createGroupTable(
+					currentResultSet,
+					'#results', 
+					$('#search').val(),
+					$('#groupById option:selected').text()
+				);
 			}
 
-			function createGroupTable(name, id, searchValue) {
+			function createGroupTable(name, id, searchValue, groupByValue) {
 				$('.resultTable').remove();
 				$("<table id='resultTable"+name+"' class='resultTable tablesorter'>")
-				.html("<thead><tr><th>"+searchValue+"</th><th>Hosts</th></thead>")
+				.html("<thead><tr><th>"+groupByValue+"</th><th>Count</th><th>Hosts</th></thead>")
 				.appendTo(id);
 				$('<tbody>').appendTo('#resultTable'+name);
 
@@ -261,12 +266,18 @@
 				var hosts = new Array();
 				var values = new Array();
 			   	$.each(resultCache[baseUrl + name].results, function( i, item ) {
-					if(item.message.indexOf(searchValue) == -1)
+					if(item.message.indexOf(groupByValue) == -1)
+						return;
+
+					if(searchValue &&
+					   !((item.host.indexOf(searchValue) != -1) ||
+					     (item.policy.indexOf(searchValue) != -1) ||
+					     (item.message.indexOf(searchValue) != -1)))
 						return;
 
 					// Split message after colon by commata (if there is at 
 					// least one or by spaces...
-					var listStr = item.message.substring(searchValue.length + 1);
+					var listStr = item.message.substring(groupByValue.length + 1);
 					var list;
 
 					if(listStr.indexOf(',') != -1)
@@ -293,6 +304,7 @@
 				for(var key in values) {
 					$("#resultTable"+name+" tbody").append(
 						'<tr><td class="groupByValue">' + key + '</td>' +
+						'<td class="count">' + hosts[key].length + '</td>' +
 					        '<td class="hosts">' + hosts[key].join(' ') + '</td></tr>');
 				}
 				console.log("Grouping done.");
