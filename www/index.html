@@ -217,6 +217,7 @@
 
 		<script>
 			var resultCache = new Array();
+			var currentResultSet;
 			var groupBy = new Array();
 			var baseUrl = "results/latest/";
 			var loading = 0;
@@ -245,6 +246,58 @@
                         }
 
 			function onGroupByChange() {
+				var searchValue = $('#groupById option:selected').text();
+				createGroupTable(currentResultSet, '#results', searchValue);
+			}
+
+			function createGroupTable(name, id, searchValue) {
+				$('.resultTable').remove();
+				$("<table id='resultTable"+name+"' class='resultTable tablesorter'>")
+				.html("<thead><tr><th>"+searchValue+"</th><th>Hosts</th></thead>")
+				.appendTo(id);
+				$('<tbody>').appendTo('#resultTable'+name);
+
+				console.log("Grouping hosts by '"+searchValue+"'");
+				var hosts = new Array();
+				var values = new Array();
+			   	$.each(resultCache[baseUrl + name].results, function( i, item ) {
+					if(item.message.indexOf(searchValue) == -1)
+						return;
+
+					// Split message after colon by commata (if there is at 
+					// least one or by spaces...
+					var listStr = item.message.substring(searchValue.length + 1);
+					var list;
+
+					if(listStr.indexOf(',') != -1)
+						list = listStr.split(/\s*,\s*/);
+					else
+						list = listStr.split(/\s+/);
+
+					for(var key in list) {
+						if(list[key] == "")
+							continue;
+
+						if(values[list[key]] === undefined)
+							values[list[key]] = 1;
+
+						if(hosts[list[key]] === undefined) {
+							hosts[list[key]] = new Array([item.host]);
+						} else {
+							hosts[list[key]].push(item.host);
+						}
+					}
+				});
+
+				var rows = new Array(values.length);
+				for(var key in values) {
+					$("#resultTable"+name+" tbody").append(
+						'<tr><td class="groupByValue">' + key + '</td>' +
+					        '<td class="hosts">' + hosts[key].join(' ') + '</td></tr>');
+				}
+				console.log("Grouping done.");
+				$("#resultTable"+name).tablesorter();
+				console.log("Table sorting done.");
 			}
 
 			function createResultTable(name, id, data, searchValue, reduced) {
@@ -308,7 +361,8 @@
 					for(key in groupBy) {
 						if(groupBy[key] > 3 && key.length > 3) {
 							groupingEnabled = true;
-							$('#groupById').append("<option name='"+key+"'>"+key+" ("+groupBy[key]+")</option>");
+							$('#groupById').append("<option>"+key+"</option>");
+							//$('#groupById').append("<option>"+key+" ("+groupBy[key]+")</option>");
 						}
 					}
 					if(groupingEnabled)
@@ -338,6 +392,7 @@
 				$.getJSON(baseUrl + name + ".json", {})
 		        	 .done(function( data ) {
 					console.log("JSON network fetch done.");
+					currentResultSet = name;
 					resultCache[baseUrl + name] = data;
 					showScannerResults(data, name, searchValue, reduced);
 				})
