@@ -302,10 +302,13 @@
 
 				var rows = new Array(values.length);
 				for(var key in values) {
+					var hostlinks = "";
+					for(var h in hosts[key])
+						hostlinks += "<a href='javascript:setLocationHash(\"all---"+hosts[key][h]+"\");'>"+hosts[key][h]+"</a> ";
 					$("#resultTable"+name+" tbody").append(
 						'<tr><td class="groupByValue">' + key + '</td>' +
 						'<td class="count">' + hosts[key].length + '</td>' +
-					        '<td class="hosts">' + hosts[key].join(' ') + '</td></tr>');
+					        '<td class="hosts">' + hostlinks + '</td></tr>');
 				}
 				console.log("Grouping done.");
 				$("#resultTable"+name).tablesorter();
