@@ -50,6 +50,9 @@
 				background: #99f;
 				color: black;
 			}
+			.severity {
+				font-size:0;
+			}
 			.FAILED {
 				background: #f44;
 				padding: 0 6px;
@@ -128,6 +131,9 @@
 				border: 1px solid #aaa;
 				word-wrap: break-word;
 				vertical-align: top;
+			}
+			.resultTable .policy {
+				font-size:110%;
 			}
 			tr:nth-child(even) {
 				background:#eee;
@@ -317,7 +323,7 @@
 					        '<td class="hosts">' + hostlinks + '</td></tr>');
 				}
 				console.log("Grouping done.");
-				$("#resultTable"+name).tablesorter();
+				$("#resultTable"+name).tablesorter({sortList: [[1,1]]});
 				console.log("Table sorting done.");
 			}
 
@@ -327,7 +333,7 @@
 					group = '<th>Group</th>';
 
 				$("<table id='resultTable"+name+"' class='resultTable tablesorter'>")
-				.html("<thead><tr><th>Host</th>"+group+"<th>Policy</th><th>Details</th></thead>")
+				.html("<thead><tr><th>Host</th>"+group+"<th>Policy</th><th title='Severity'>&nbsp;</th><th>Details</th></thead>")
 				.appendTo(id);
 				$('<tbody>').appendTo('#resultTable'+name);
 
@@ -336,6 +342,8 @@
 				warning = 0;
 				failed = 0;
 			   	$.each(data, function( i, item ) {
+					var severity = 0;
+
 					if(reduced && item.severity == 'OK')
 						return;
 
@@ -345,16 +353,21 @@
 					     (item.message.indexOf(searchValue) != -1)))
 						return;
 
-					if(item.severity == 'FAILED')
+					if(item.severity == 'FAILED') {
 						failed++;
-					if(item.severity == 'WARNING')
+						severity = 2;
+					}
+					if(item.severity == 'WARNING') {
 						warning++;
+						severity = 1;
+					}
 
 					rows += '<tr><td class="host">' + item.host + '</td>';
 					if(item.group)
 						rows += '<td class="group">' + item.group + '</td>';
 					rows +=
-					'<td class="policy '+item.severity+'">' + item.policy + '</td>' +
+					'<td class="policy">' + item.policy + '</td>' +
+					'<td class="severity '+item.severity+'">'+severity+'</td>' +
 					'<td class="message">' + item.message + '</td></tr>';
 			
 					// Fill array of possible groupings
@@ -374,7 +387,7 @@
 				console.log("Parsing done (filter: "+reduced+").");
 				$("#resultTable"+name+" tbody").append(rows);
 				console.log("Table setup done.");
-				$("#resultTable"+name).tablesorter();
+				$("#resultTable"+name).tablesorter({sortList: [[0,0]]});
 				console.log("Table sorting done.");
 
 				if(groupBy.length >= 0) {
