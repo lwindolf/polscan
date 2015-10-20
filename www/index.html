@@ -32,7 +32,7 @@
 				float:left;
 				width:50%;
 			}
-			.group, .policy {
+			#groups .group, #policies .policy {
 				background: #ddd;
 				cursor: pointer;
 				padding: 6px;
@@ -40,7 +40,7 @@
 				margin:6px;
 				display:inline-block;
 			}
-			.groupName {
+			#groups .name {
 				margin: 6px;
 			}
 			.host:hover, .group:hover, .policy:hover {
@@ -579,7 +579,7 @@
 		   			$.each(data.overview, function(i, item) {
 						if(item.group) {
 							var compliant = 1;
-							var tmp = '<span class="groupName">' +
+							var tmp = '<span class="name">' +
 							item.group +
 							'</span>';
 							if(item.FAILED > 0) {
@@ -611,7 +611,7 @@
 		   			$.each( data.overview, function( i, item ) {
 						if(item.policy && (item.FAILED + item.WARNING > 0)) {
 							var compliant = 1;
-							var tmp = '<div class="policy" title="'+item.description+'">' + item.parent + ' ::: ' + item.policy;
+							var tmp = '<div class="policy" title="'+item.description+'">' + item.parent + ' ::: <span class="name">' + item.policy + '</span>';
 							if(item.FAILED > 0) {
 								compliant = 0;
 								tmp += ' <span class="FAILED" title="Total failures found">' +
@@ -638,10 +638,10 @@
 						});
 		   			});
 
-					$(".group").click(function() {
+					$(".group").find(".name").click(function() {
 						setLocationHash($(this).html());
 					});
-					$(".policy").click(function() {
+					$(".policy").find(".name").click(function() {
 						setLocationHash('all---' + $(this).html());
 					});
 	        		})
