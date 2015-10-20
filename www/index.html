@@ -34,8 +34,14 @@
 			}
 			.group, .policy {
 				background: #ddd;
-				padding: 0 12px;
 				cursor: pointer;
+				padding: 6px;
+				border-radius: 6px;
+				margin:6px;
+				display:inline-block;
+			}
+			.groupName {
+				margin: 6px;
 			}
 			.host:hover, .group:hover, .policy:hover {
 				background: #ccc;
@@ -65,12 +71,12 @@
 				border: 3px solid #f22;
 			}
 			.description {
-				display:block;
+				//display:block;
+				display:none;
 				font-style:italic;
 				font-size: 80%;
 				color: gray;
 				padding:6px;
-				padding-left:24px;
 			}
 			#logo {
 				background: #555;
@@ -573,7 +579,7 @@
 		   			$.each(data.overview, function(i, item) {
 						if(item.group) {
 							var compliant = 1;
-							var tmp = '<span class="group">' +
+							var tmp = '<span class="groupName">' +
 							item.group +
 							'</span>';
 							if(item.FAILED > 0) {
@@ -592,7 +598,7 @@
 								tmp += ' <span class="OK" title="100% compliance for this policy">compliant</span>';
 							}
 
-							$( "<p>" )
+							$( "<div class='group'>" )
 							.html(tmp)
 							.appendTo( "#groups" );
 
@@ -600,16 +606,12 @@
 		   			});
 
 					$( "<div id='policies' class='overviewBox'>" ).appendTo( "#col1" )
-					$( "<h3>Policy Details</h3>").appendTo( "#policies" )
+					$( "<h3>Findings per Policy</h3>").appendTo( "#policies" )
 
 		   			$.each( data.overview, function( i, item ) {
-						if(item.policy) {
+						if(item.policy && (item.FAILED + item.WARNING > 0)) {
 							var compliant = 1;
-							var tmp = '<span class="group">' +
-							item.parent +
-							'</span> <span class="policy">' +
-							item.policy +
-							'</span>';
+							var tmp = '<div class="policy" title="'+item.description+'">' + item.parent + ' ::: ' + item.policy;
 							if(item.FAILED > 0) {
 								compliant = 0;
 								tmp += ' <span class="FAILED" title="Total failures found">' +
@@ -625,13 +627,8 @@
 							if(compliant) {
 								tmp += ' <span class="OK" title="100% compliance for this policy">compliant</span>';
 							}
-							tmp += '<span class="description">' +
-							item.description +
-							'</span>';
-
-							$( "<p>" )
-							.html(tmp)
-							.appendTo( "#policies" );
+							tmp += '</div>';
+							$("#policies").append(tmp);
 
 						}
 						$("#datepicker").val(data.date);
