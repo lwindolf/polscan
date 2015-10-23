@@ -6,7 +6,7 @@
 # source: https://bugs.launchpad.net/ubuntu/+source/procps/+bug/50093
 # source: http://wiki.debian.org/BridgeNetworkConnections
 
-modified=$(/bin/egrep -vh "^ *#|^ *$" /etc/sysctl.conf /etc/sysctl.d/*.conf | sed "s/ *= */ = /" 2>/dev/null)
+modified=$(/bin/egrep -vh "^ *#|^ *$" /etc/sysctl.conf /etc/sysctl.d/*.conf 2>/dev/null | sed "s/ *= */ = /" 2>/dev/null)
 all=$(/sbin/sysctl -a 2>/dev/null)
 results=
 
