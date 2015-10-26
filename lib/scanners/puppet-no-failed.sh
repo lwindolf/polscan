@@ -9,7 +9,7 @@ if [ -f $puppet_report ]; then
 	while read f; do
 		# Ugly YAML parsing by backtracking resource...
 		resources="$resources,$(nl $puppet_report | grep -B100 "$f" | grep 'resource:' | sed 's/.*resource://;s/"//g' | tail -1)"
-	done < <(/bin/echo "$failed")
+	done < <(/bin/echo "$failed" | grep -v "^$")
 
 	if [ "$resources" != "" ]; then
 		result_failed "Failed resources:" ${resources/,/}
