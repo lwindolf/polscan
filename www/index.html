@@ -207,6 +207,16 @@
 			#histogramChart {
 				margin:12px;
 			}
+			#hostmap {
+				overflow:auto;
+			}
+			.hostMapBox {
+				width:12px;
+				float:left;
+				margin:3px;
+				font-size:80%;
+				text-align:center;
+			}
 		</style>
 	</head>
 	<body>
@@ -215,6 +225,7 @@
 		</div>
 		<div id='menu'>
 			<a href="#">Overview</a>
+			<a href="#hostmap">Host Map</a>
 
 			<a href="#all">All Findings</a>
 			<a href="#new">New</a>
@@ -268,13 +279,15 @@
 			}
 
 			function createGroupTable(name, id, searchValue, groupByValue) {
+				$('.resultTable').empty();
 				$('.resultTable').remove();
 				$("<table id='resultTable"+name+"' class='resultTable tablesorter'>")
 				.html("<thead><tr><th>"+groupByValue+"</th><th>Count</th><th>Hosts</th></thead>")
 				.appendTo(id);
-				$('<tbody>').appendTo('#resultTable'+name);
+				$('<tbody id="groupedData">').appendTo('#resultTable'+name);
 
 				console.log("Grouping hosts by '"+searchValue+"'");
+				console.time("grouping");
 				var hosts = new Array();
 				var values = new Array();
 			   	$.each(resultCache[baseUrl + name].results, function( i, item ) {
@@ -311,20 +324,33 @@
 						}
 					}
 				});
+				console.timeEnd("grouping");
 
-				var rows = new Array(values.length);
+				console.time("table");
+				console.time("tablebuild");
+				var rows = new Array(250);
 				for(var key in values) {
 					var hostlinks = "";
 					for(var h in hosts[key])
 						hostlinks += "<a href='javascript:setLocationHash(\"all---"+hosts[key][h]+"\");'>"+hosts[key][h]+"</a> ";
-					$("#resultTable"+name+" tbody").append(
-						'<tr><td class="groupByValue">' + key + '</td>' +
-						'<td class="count">' + hosts[key].length + '</td>' +
-					        '<td class="hosts">' + hostlinks + '</td></tr>');
+					rows.push('<tr><td class="groupByValue">' + key + '</td>' +
+						  '<td class="count">' + hosts[key].length + '</td>' +
+					          '<td class="hosts">' + hostlinks + '</td></tr>');
+					// Avoid OOM
+					if(rows.length >= 250) {
+						document.getElementById('groupedData').innerHTML += rows.join(" ");
+						rows = new Array(250);
+				console.timeEnd("tablebuild");
+				console.time("tablebuild");
+					}
 				}
-				console.log("Grouping done.");
+				document.getElementById('groupedData').innerHTML += rows.join(" ");
+				console.timeEnd("tablebuild");
+				console.timeEnd("table");
+
+				console.time("sorting");
 				$("#resultTable"+name).tablesorter({sortList: [[1,1]]});
-				console.log("Table sorting done.");
+				console.timeEnd("sorting");
 			}
 
 			function createResultTable(name, id, data, searchValue, reduced) {
@@ -414,21 +440,24 @@
 				});
 			}
 
-			function loadScannerResults(name, searchValue, reduced) {
+			/* Generic JSON fetcher. Returns already loaded stuff from
+			   result cache array.
 
-				console.log("Loading results start (search="+searchValue+" reduced="+reduced+")");
+			   FIXME: Avoid OOM we navigation through days
+			 */
+			function getData(name, callback) {
 				if(resultCache[baseUrl + name]) {
-					console.log("Using JSON from cache.");
-					showScannerResults(resultCache[baseUrl + name], name, searchValue, reduced);
+					console.log("Using "+name+".json from cache");
+					callback(resultCache[baseUrl + name]);
 					return;
 				}
 
 				$.getJSON(baseUrl + name + ".json", {})
-		        	 .done(function( data ) {
+		        	 .done(function(data) {
 					console.log("JSON network fetch done.");
 					currentResultSet = name;
 					resultCache[baseUrl + name] = data;
-					showScannerResults(data, name, searchValue, reduced);
+					callback(data);
 				})
 				.fail(function(j, t, e) {
 					clean();
@@ -436,37 +465,72 @@
 				});
 			}
 
-			function showScannerResults(data, name, searchValue, reduced) {
-				clean();
-				$('#results').append('<div class="search">' +
-					'Search <input type="text" size="40" id="search"/> ' +
-					'<input type="button" value="Go" onclick="onSearch();"/> ' +
-					'<input type="button" value="Get Hosts" title="Click here to get a text field with a whitespace separated list of all hosts in the result list" onclick="onCopyHosts();"/> ' + 
-					'<br/>Group Hosts By <select id="groupById" disabled><option name="none" selected></option></select> ' +
-					'<input type="button" value="Go" onclick="onGroupByChange();"/> ' +
-					'<div id="hostlist"/>' +
-					'</div>');
-				createResultTable(name, '#results', data.results, searchValue, reduced);
-				$("#search").val(searchValue);
+			function loadHostMap() {
+				getData('all', function(data) {
+					clean();
+					$('#results').append('<div class="overviewBox" id="hostmap"><small>Each box represents a host color coded with highest finding severity. The number indicates the number of findings. Hover over a box to see the hostname!</small><br/></div>');
 
-				var badgeTitle;
-				if(name == "all") {
-					if(searchValue)
-						badgeTitle = "<small>Filter</small><br/> " + searchValue;
-					else
-						badgeTitle = "Overall";
-				} else {
-					badgeTitle = "<small>Group</small><br/> " + name;
-				}
+					var hosts = new Array();
+					var hostStates = new Array();
+					$.each(data.results, function(i, item) {
+						if(!hosts[item.host]) {
+	console.log("adding to hostmap "+item.host);
+							hosts[item.host] = 1;
+							hostStates[item.host] = item.severity;
+						} else {
+							hosts[item.host]++;
+							if(item.severity == 'FAILED')
+								hostStates[item.host] = 'FAILED';
+							else if(hostStates[item.host] == 'OK')
+								hostStates[item.host] = item.severity;
+						}
+					});
 
-				createBadges('#row1', failed, warning, badgeTitle);
-				createHistogram(searchValue?searchValue:name);
+					var html = "";
+					for(var h in hosts) {
+						html += "<div title='"+h+"' class='hostMapBox "+hostStates[h]+"'>"+hosts[h]+"</div> ";
+					}
+					$('#hostmap').append(html);
+				});
+			}
+
+			function loadScannerResults(name, searchValue, reduced) {
+
+				console.log("Loading results start (search="+searchValue+" reduced="+reduced+")");
+				getData(name, function(data) {
+					clean();
+					$('#results').append('<div class="search">' +
+						'Search <input type="text" size="40" id="search"/> ' +
+						'<input type="button" value="Go" onclick="onSearch();"/> ' +
+						'<input type="button" value="Get Hosts" title="Click here to get a text field with a whitespace separated list of all hosts in the result list" onclick="onCopyHosts();"/> ' + 
+						'<br/>Group Hosts By <select id="groupById" disabled><option name="none" selected></option></select> ' +
+						'<input type="button" value="Go" onclick="onGroupByChange();"/> ' +
+						'<div id="hostlist"/>' +
+						'</div>');
+					createResultTable(name, '#results', data.results, searchValue, reduced);
+					$("#search").val(searchValue);
+	
+					var badgeTitle;
+					if(name == "all") {
+						if(searchValue)
+							badgeTitle = "<small>Filter</small><br/> " + searchValue;
+						else
+							badgeTitle = "Overall";
+					} else {
+						badgeTitle = "<small>Group</small><br/> " + name;
+					}
+	
+					createBadges('#row1', failed, warning, badgeTitle);
+					createHistogram(searchValue?searchValue:name);
+				});
 			}
 
 			function onLocationHashChange() {
 				var params = window.location.hash.substring(1).split('---');
 				if(!params[0]) 
 					loadOverview();
+				else if(params[0] == "hostmap")
+					loadHostMap();
 				else
 					loadScannerResults(params[0], params[1]?decodeURI(params[1]):null, params.length > 1);
 
