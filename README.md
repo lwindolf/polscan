@@ -1,6 +1,10 @@
 # polscan
 
-*polscan* (short for "Policy Scanner") allows you to make your DevOps server configuration/security/automation policies explicit.
+*polscan* (short for "Policy Scanner") 
+* makes your DevOps server configuration/security/automation policies explicit
+* easily detects configuration drift (Puppet)
+* provides details on package updates (Debian, PHP, Gem)
+* provides basic security checks
 
 Policies are implemented by small shell snippets and thus polscan is easily extensible by your own specific policies. To make it easy to use it comes with host discovery solutions for typical automation setups (Chef, Puppet, MCollective).
 
