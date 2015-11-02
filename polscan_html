@@ -97,6 +97,9 @@ while read host group severity details; do
 			policies[fail_$policy]=$(( ${policies[fail_$policy]} + 1 ))
 			hosts[fail_$host]=$(( ${hosts[fail_$host]} + 1 ))
 			;;
+		OK)
+			hosts[ok_$host]=$(( ${hosts[ok_$host]} + 1 ))
+			;;
 	esac
 
 	# Update summary every 50 hosts
@@ -148,9 +151,9 @@ done
 # Host infos
 (
 	for h in $(ls); do
-		echo "{\"$host\": {\"WARNING\": ${hosts["warn_$h"]-0}, \"FAILED\": ${hosts["failed_$h"]-0}}},"
+		echo -n "{\"$h\": {\"WARNING\": ${hosts["warn_$h"]-0}, \"FAILED\": ${hosts["fail_$h"]-0}}},"
 	done
-) | write_json hosts
+) | write_json hosts results
 
 # 30 days per-policy histogram
 declare -A histogram

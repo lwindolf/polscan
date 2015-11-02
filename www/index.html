@@ -58,30 +58,30 @@
 				padding: 0 6px;
 				color: white;
 			}
-			.FAILED.bc10 { background: #f00; }
-			.FAILED.bc9 { background: #f22; }
-			.FAILED.bc8 { background: #f44; }
-			.FAILED.bc7 { background: #f66; color:black; }
-			.FAILED.bc6 { background: #f77; color:black; }
-			.FAILED.bc5 { background: #f88; color:black; }
-			.FAILED.bc4 { background: #f99; color:black; }
-			.FAILED.bc3 { background: #faa; color:black; }
-			.FAILED.bc2 { background: #fbb; color:black; }
-			.FAILED.bc1 { background: #fcc; color:black; }
+			.bcf10 { background: #f00; }
+			.bcf9 { background: #f22; }
+			.bcf8 { background: #f44; }
+			.bcf7 { background: #f66; color:black; }
+			.bcf6 { background: #f77; color:black; }
+			.bcf5 { background: #f88; color:black; }
+			.bcf4 { background: #f99; color:black; }
+			.bcf3 { background: #faa; color:black; }
+			.bcf2 { background: #fbb; color:black; }
+			.bcf1 { background: #fcc; color:black; }
 			.WARNING {
 				background: #ff4;
 				padding: 0 6px;
 			}
-			.WARNING.bc10 { background: #ff0; }
-			.WARNING.bc9 { background: #ff0; }
-			.WARNING.bc8 { background: #ff2; }
-			.WARNING.bc7 { background: #ff2; }
-			.WARNING.bc6 { background: #ff4; }
-			.WARNING.bc5 { background: #ff4; }
-			.WARNING.bc4 { background: #ff4; }
-			.WARNING.bc3 { background: #ff6; }
-			.WARNING.bc2 { background: #ff6; }
-			.WARNING.bc1 { background: #ff6; }
+			.bcw10 { background: #ff0; }
+			.bcw9 { background: #ff0; }
+			.bcw8 { background: #ff2; }
+			.bcw7 { background: #ff2; }
+			.bcw6 { background: #ff4; }
+			.bcw5 { background: #ff4; }
+			.bcw4 { background: #ff4; }
+			.bcw3 { background: #ff6; }
+			.bcw2 { background: #ff6; }
+			.bcw1 { background: #ff6; }
 			.OK {
 				background: #7f7;
 				padding: 0 6px;
@@ -486,29 +486,27 @@
 			}
 
 			function loadHostMap() {
-				getData('all', function(data) {
+				getData('hosts', function(data) {
 					clean();
 					$('#results').append('<div class="overviewBox" id="hostmap"><small>Each box represents a host color coded with highest finding severity. The number indicates the number of findings. Hover over a box to see the hostname!</small><br/></div>');
 
-					var hosts = new Array();
-					var hostStates = new Array();
-					$.each(data.results, function(i, item) {
-						if(!hosts[item.host]) {
-							hosts[item.host] = 1;
-							hostStates[item.host] = item.severity;
-						} else {
-							hosts[item.host]++;
-							if(item.severity == 'FAILED')
-								hostStates[item.host] = 'FAILED';
-							else if(hostStates[item.host] == 'OK')
-								hostStates[item.host] = item.severity;
-						}
-					});
-
 					var html = "";
-					for(var h in hosts) {
-						html += "<div title='"+h+"' class='hostMapBox "+hostStates[h]+" bc"+((hosts[h]>10)?10:hosts[h])+"'>"+hosts[h]+"</div> ";
-					}
+					$.each(data.results, function(i, findings) {
+						var count = "";
+						var h = Object.keys(findings)[0];
+						html += "<div title='"+h+"' class='hostMapBox ";
+						if(findings[h].FAILED != 0) {
+							html += "FAILED bcf"+((findings[h].FAILED>10)?10:findings[h].FAILED);
+							count = findings[h].FAILED;
+						} else if(findings[h].WARNING != 0) {
+							html += "WARNING bcw"+((findings[h].WARNING>10)?10:findings[h].WARNING);
+							count = findings[h].WARNING;
+						} else {
+							html += "OK";
+							count = 0;
+						}
+						html += "'>"+count+"</div> ";
+					});
 					$('#hostmap').append(html);
 				});
 			}
