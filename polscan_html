@@ -64,22 +64,24 @@ write_json() {
 declare -A policies
 declare -A pgroups
 declare -A pall
+declare -A hosts
 
 groups=$(
 	egrep -h "^[a-zA-Z0-9][[a-zA-Z0-9]* (OK|WARNING|FAILED) " ./* |\
 	awk '{print $1}' | sort -u
 )
-echo "Found results for:" $groups
-
-# Global results
-tmp=
+echo "Found groups:" $groups
+echo "Aggregating all results ..."
+i=0
+findings=0
+TMPFILE=$(mktemp || exit 1)
 while read host group severity details; do
 	policy=${details/#|||/}
 	policy=${policy/|||*/}
 	message=${details/*|||/}
 	case $severity in
 		OK|WARNING|FAILED)
-			tmp=$tmp'{"host": "'$host'", "group": "'$group'", "severity": "'$severity'", "policy": "'$policy'", "message": "'${message//\"/\'}'"},'
+			echo '{"host": "'$host'", "group": "'$group'", "severity": "'$severity'", "policy": "'$policy'", "message": "'${message//\"/\'}'"},' >$TMPFILE
 			;;
 	esac
 	case $severity in
@@ -87,17 +89,28 @@ while read host group severity details; do
 			pall[warn]=$(( ${pall[warn]} + 1))
 			pgroups[warn_$group]=$(( ${pgroups[warn_$group]} + 1 ))
 			policies[warn_$policy]=$(( ${policies[warn_$policy]} + 1 ))
+			hosts[warn_$host]=$(( ${hosts[warn_$host]} + 1 ))
 			;;
 		FAILED)
 			pall[fail]=$(( ${pall[fail]} + 1))
 			pgroups[fail_$group]=$(( ${pgroups[fail_$group]} + 1 ))
 			policies[fail_$policy]=$(( ${policies[fail_$policy]} + 1 ))
+			hosts[fail_$host]=$(( ${hosts[fail_$host]} + 1 ))
 			;;
 	esac
+
+	# Update summary every 50 hosts
+	if [ $i -eq 50 ]; then
+		i=0
+		echo "   $(date +%H:%M:%S) ${#hosts[*]} Hosts, $findings Findings (${pall[fail]} Failed ${pall[warn]} Warnings)"
+	fi
+	i=$(($i + 1))
+	findings=$(($findings + 1))
 done < <(
 	ls | xargs -I {} -n1 sed '/^[^ ][^ ]* OK /d; s/^/{} /;' {}
 )
-echo -n "$tmp" | write_json all results
+cat $TMPFILE | write_json all results
+rm $TMPFILE
 
 # Per group results
 for g in $groups; do
@@ -132,6 +145,13 @@ done
 	done
 ) | write_json overview 'WARNING": '${pall[warn]-0}', "FAILED": '${pall[fail]-0}', "overview'
 
+# Host infos
+(
+	for h in $(ls); do
+		echo "{\"$host\": {\"WARNING\": ${hosts["warn_$h"]-0}, \"FAILED\": ${hosts["failed_$h"]-0}}},"
+	done
+) | write_json hosts
+
 # 30 days per-policy histogram
 declare -A histogram
 declare -A histogram_ids
@@ -152,7 +172,7 @@ do
 			histogram["policy_${policy// /_}_${severity}_${day}"]=$nr
 			histogram["group_${group// /_}_${severity}_${day}"]=$(( $nr + ${histogram["group_${group// /_}_${severity}_${day}"]-0} ))
 			histogram["all_${severity}_${day}"]=$(( $nr + ${histogram["all_${severity}_${day}"]-0} ))
-		done < <(egrep -r '(FAILED|WARNING) |||' "$RESULT_BASE_DIR/$day" |sed 's/.*:\([^ ]*\) \([^ ]*\) |||\(.*\)|||.*/\1 \2 \3/' | sort | uniq -c)
+		done < <(egrep -r '(FAILED|WARNING) \|\|\|' "$RESULT_BASE_DIR/$day" |sed 's/.*:\([^ ]*\) \([^ ]*\) |||\(.*\)|||.*/\1 \2 \3/' | sort | uniq -c)
 	fi
 	i=$(( $i + 1 ))
 done
