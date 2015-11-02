@@ -55,7 +55,10 @@ write_json() {
 	echo "Writing $name.json..."
 	(
 		echo '{"date": "'$DATE'", "'$root'":['
-		cat | sed 's/[^[:print:]]//g'
+		cat |\
+		sed 's/[^[:print:]]//g' |\
+		sed '/^$/d' |\
+		sed '$s/,$//' 	# Strip last comma in lists
 		echo -n "]}"
 	) | sed -e 's/,\]/]/g' >${JSON_DIR}/${name}.json
 }
@@ -81,7 +84,7 @@ while read host group severity details; do
 	message=${details/*|||/}
 	case $severity in
 		OK|WARNING|FAILED)
-			echo '{"host": "'$host'", "group": "'$group'", "severity": "'$severity'", "policy": "'$policy'", "message": "'${message//\"/\'}'"},' >$TMPFILE
+			echo '{"host": "'$host'", "group": "'$group'", "severity": "'$severity'", "policy": "'$policy'", "message": "'${message//\"/\'}'"},' >>$TMPFILE
 			;;
 	esac
 	case $severity in
