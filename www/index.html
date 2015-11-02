@@ -237,6 +237,9 @@
 				font-size:80%;
 				text-align:center;
 			}
+			.hostMapBox:hover {
+				cursor: pointer;
+			}
 		</style>
 	</head>
 	<body>
@@ -463,7 +466,7 @@
 			/* Generic JSON fetcher. Returns already loaded stuff from
 			   result cache array.
 
-			   FIXME: Avoid OOM we navigation through days
+			   FIXME: Avoid OOM when navigating through days
 			 */
 			function getData(name, callback) {
 				if(resultCache[baseUrl + name]) {
@@ -505,7 +508,7 @@
 							html += "OK";
 							count = 0;
 						}
-						html += "'>"+count+"</div> ";
+						html += "' onclick='setLocationHash(\"all\", \""+h+"\")'>"+count+"</div> ";
 					});
 					$('#hostmap').append(html);
 				});
