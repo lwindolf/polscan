@@ -79,7 +79,7 @@ if [ "$REMOTE_SCANNER_LIST" != "" ]; then
 
 	echo "Running remote scans..."
 	i=1
-	host_count=$(echo $HOST_LIST | wc -l)
+	host_count=$(echo $HOST_LIST | wc -w)
 	for remote in $HOST_LIST; do
 		if ! echo $remote | grep -q @; then
 			# Default user if none given from host list
