@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Polscan: a Debian policy scanner
+
 # Copyright (C) 2015  Lars Windolf <lars.windolf@gmx.de>
 #
 # This program is free software: you can redistribute it and/or modify

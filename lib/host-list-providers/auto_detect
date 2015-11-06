@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# Host list provider auto detection:
+#
+# Probes all host list providers and returns results of the
+# one with most results.
+
+# Copyright (C) 2015  Lars Windolf <lars.windolf@gmx.de>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+declare -A results_by_provider
+
+selected=
+maxCount=0
+
+echo "Probing host list providers..." >&2
+cd "${LIB_DIR}/host-list-providers" || exit 1
+for p in $(ls | grep -v auto_detect); do
+	echo -n "   - $p " >&2
+	results_by_provider[$p]=$(./$p 2>/dev/null)
+	count=$(echo ${results_by_provider[$p]} | wc -w)
+	echo "($count results)" >&2
+	if [ $maxCount -lt $count ]; then
+		selected=$p
+		maxCount=$count
+	fi
+done
+
+if [ "$selected" != "" ]; then
+	echo "Selected host list provider: $selected" >&2
+	echo ${results_by_provider[$selected]}
+else
+	echo "ERROR: No suitable host list provider!" >&2
+fi

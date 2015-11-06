@@ -2,6 +2,5 @@
 
 # name: Chef
 # description: knife based host list provider. Just "knife node list".
-# param1: (optional) egrep expression to filter to host list
 
-knife node list | egrep "$PARAM1"
+knife node list
