@@ -246,4 +246,4 @@ if [ $LATEST == 1 ]; then
 	cd $RESULT_BASE_DIR && ln -s "json/$DATE" latest
 fi
 
-echo "Done."
+echo "JSON Done."
