@@ -35,7 +35,7 @@ if [ ! -d $RESULT_DIR ]; then
 	mkdir -vp "$RESULT_DIR"
 fi
 
-# 1. If none given determine host list automatically
+# 1.a) If none given determine host list automatically
 if [ "$HOST_LIST" == "" ]; then 
 	echo "Fetching host list (provider '$HOST_LIST_PROVIDER')..."
 	HLP="$LIB_DIR/host-list-providers/$HOST_LIST_PROVIDER"
@@ -50,6 +50,9 @@ if [ "$HOST_LIST" == "" ]; then
 	fi
 fi
 echo "Host list:" $HOST_LIST
+
+# 1.b) Determine hodt groups
+HOST_GROUPS=$($LIB_DIR/host-group-providers/$HOST_GROUP_PROVIDERS)
 
 REMOTE_SCANNER_LIST=$(grep -v "^ *#" "$REMOTE_SCANNERS_FILE")
 if [ "$REMOTE_SCANNER_LIST" != "" ]; then
@@ -76,8 +79,10 @@ if [ "$REMOTE_SCANNER_LIST" != "" ]; then
 	host_count=$(echo $HOST_LIST | wc -w)
 	for remote in $HOST_LIST; do
 		if ! echo $remote | grep -q @; then
-			# Default user if none given from host list
-			remote=$SSH_USER@$remote
+			# Default user if none given from host list and SSH_USER is set
+			if [ "$SSH_USER" != "" ]; then
+				remote=$SSH_USER@$remote
+			fi
 		fi
 
 		current_host=${remote/*@/}

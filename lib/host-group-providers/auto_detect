@@ -21,7 +21,8 @@
 
 found_some=0
 echo "Probing host group providers..." >&2
-for p in $(cd $(dirname $0); ls | grep -v auto_detect); do
+cd $(dirname $0) || exit 1
+for p in $(ls | grep -v auto_detect); do
 	echo -n "   - $p " >&2
 	results=$(./$p 2>/dev/null)
 	count=$(echo "${results}" | grep -v '^$' | wc -l)

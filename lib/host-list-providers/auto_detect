@@ -27,7 +27,7 @@ selected=
 maxCount=0
 
 echo "Probing host list providers..." >&2
-cd "${LIB_DIR}/host-list-providers" || exit 1
+cd $(dirname $0) || exit 1
 for p in $(ls | grep -v auto_detect); do
 	echo -n "   - $p " >&2
 	results_by_provider[$p]=$(./$p 2>/dev/null)
