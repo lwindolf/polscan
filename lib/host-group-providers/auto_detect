@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# Host group provider auto detection:
+#
+# Probes all host group providers and returns all results
+
+# Copyright (C) 2015  Lars Windolf <lars.windolf@gmx.de>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+found_some=0
+echo "Probing host group providers..." >&2
+for p in $(cd $(dirname $0); ls | grep -v auto_detect); do
+	echo -n "   - $p " >&2
+	results=$(./$p 2>/dev/null)
+	count=$(echo "${results}" | grep -v '^$' | wc -l)
+	echo "($count results)" >&2
+
+	if [ $count -gt 0 ]; then
+		found_some=1
+	fi
+
+	echo "$results"
+done
+
+if [ $found_some -ne 1 ]; then
+	echo "ERROR: No suitable host list provider!" >&2
+fi
