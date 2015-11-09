@@ -49,7 +49,13 @@ if [ "$HOST_LIST" == "" ]; then
 		exit 1
 	fi
 fi
-echo "Host list:" $HOST_LIST
+
+if [ "$HOST_LIST" == "" ]; then
+	echo "ERROR: Could not find any hosts! Aborting."
+	exit 1
+else
+	echo "Host list:" $HOST_LIST
+fi
 
 # 1.b) Determine hodt groups
 HOST_GROUPS=$($LIB_DIR/host-group-providers/$HOST_GROUP_PROVIDERS)
