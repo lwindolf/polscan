@@ -112,8 +112,8 @@ if [ "$REMOTE_SCANNER_LIST" != "" ]; then
 				errors=$(grep -v 'Warning: Permanently added.*to the list of known hosts.' ${RESULT_DIR}/${current_host}.err 2>/dev/null)
 				echo "Polscan FAILED |||Polscan remote scan||| $errors"
 			) >>${RESULT_DIR}/$current_host
-			rm ${RESULT_DIR}/${current_host}.err
 		fi
+		rm ${RESULT_DIR}/${current_host}.err
 
 		i=$(( $i + 1 ))
 	done
