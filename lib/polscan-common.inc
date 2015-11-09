@@ -75,3 +75,28 @@ get_policy_description() {
 		s/\"/'/g;
 	" "$1"
 }
+
+################################################################################
+# get_scanners
+#
+# $1	type "standalone" or "remote"
+#
+# Returns scanner filename
+################################################################################
+get_scanners() {
+	scanner_type=$1
+
+	case $scanner_type in
+		remote)
+			conf_file="$REMOTE_SCANNERS_FILE"
+			;;
+		standalone)
+			conf_file="$STANDALONE_SCANNERS_FILE"
+			;;
+		*)
+			echo "ERROR: get_scanners() called with invalid scanner type!"
+			exit 1
+	esac
+
+	grep -v "^ *#" "$conf_file" 2>/dev/null
+}
