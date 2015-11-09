@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# name: Saltstack
+# description: Salt master based host list provider.
+
+salt-key -L 2>/dev/null | grep -v ":"
