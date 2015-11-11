@@ -32,10 +32,10 @@ source $LIB_DIR/polscan-common.inc
 
 # 0. Prepare output dir
 if [ ! -d $RESULT_DIR ]; then
-	mkdir -vp "$RESULT_DIR"
+	mkdir -vp "$RESULT_DIR" || exit 1
 fi
 
-# 1.a) If none given determine host list automatically
+# 1. If none given determine host list automatically
 if [ "$HOST_LIST" == "" ]; then 
 	echo "Fetching host list (provider '$HOST_LIST_PROVIDER')..."
 	HLP="$LIB_DIR/host-list-providers/$HOST_LIST_PROVIDER"
@@ -57,9 +57,6 @@ else
 	echo "Host list:" $HOST_LIST
 fi
 
-# 1.b) Determine host groups
-HOST_GROUPS=$($LIB_DIR/host-group-providers/$HOST_GROUP_PROVIDERS)
-
 REMOTE_SCANNER_LIST=$(get_scanners remote)
 if [ "$REMOTE_SCANNER_LIST" != "" ]; then
 
@@ -79,11 +76,12 @@ if [ "$REMOTE_SCANNER_LIST" != "" ]; then
 		fi
 	done
 
-	# 3. Run remote scans
 	echo "Running remote scans..."
 	i=1
 	host_count=$(echo $HOST_LIST | wc -w)
 	for remote in $HOST_LIST; do
+		current_host=${remote/*@/}
+
 		if ! echo $remote | grep -q @; then
 			# Default user if none given from host list and SSH_USER is set
 			if [ "$SSH_USER" != "" ]; then
@@ -91,14 +89,11 @@ if [ "$REMOTE_SCANNER_LIST" != "" ]; then
 			fi
 		fi
 
-		current_host=${remote/*@/}
-
 		if ! echo $remote | grep -q "root@"; then
 			sudo=$SUDO_CMD
-			echo " -> $remote (sudo) [$i/$host_count]"
-		else
-			echo " -> $remote"
 		fi
+
+		echo " -> $remote [$i/$host_count]"
 
 		/bin/cat $RSS | $SSH_CMD $remote $sudo "/bin/bash < <(/bin/cat -)" \
 			>${RESULT_DIR}/$current_host \
@@ -109,7 +104,7 @@ if [ "$REMOTE_SCANNER_LIST" != "" ]; then
 			# we have a scripting/connectivity issue that we want
 			# to track under name "polscan"
 			(
-				errors=$(grep -v 'Warning: Permanently added.*to the list of known hosts.' ${RESULT_DIR}/${current_host}.err 2>/dev/null)
+				errors=$(grep -v "$STDERR_WHITELIST" ${RESULT_DIR}/${current_host}.err 2>/dev/null)
 				echo "Polscan FAILED |||Polscan remote scan||| $errors"
 			) >>${RESULT_DIR}/$current_host
 		fi

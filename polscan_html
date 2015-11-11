@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# Polscan: a Debian policy scanner
+# polscan_html: Process polscan results into static HTML
+
 # Copyright (C) 2015  Lars Windolf <lars.windolf@gmx.de>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -153,10 +154,17 @@ done
 
 # Host infos
 (
-	for h in $(ls); do
+	for h in *; do
 		echo -n "{\"$h\": {\"WARNING\": ${hosts["warn_$h"]-0}, \"FAILED\": ${hosts["fail_$h"]-0}}},"
 	done
 ) | write_json hosts results
+(
+	for h in ${!host_groups[*]}; do
+		tmp=${host_groups[$h]% }
+		tmp=${tmp// /\",\"}
+		echo -n "{\"$h\": [\"$tmp\"]},"
+	done
+) | write_json host_groups results
 
 # 30 days per-policy histogram
 declare -A histogram

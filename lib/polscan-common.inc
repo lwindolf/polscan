@@ -34,6 +34,23 @@ RESULT_DIR="${RESULT_BASE_DIR}/${DATE}"
 JSON_DIR="${RESULT_BASE_DIR}/json/${DATE}"
 
 ################################################################################
+# Determine host groups
+#
+# Host group providers give <host group>+<host> tuples. Which we regroup here
+# to per host group host lists.
+#
+# Fills the global hash "host_groups"
+################################################################################
+load_host_groups() {
+	declare -g -A host_groups
+
+	while read host_group host rest; do
+		host_groups[''$host_group]="${host_groups[''$host_group]}${host} "
+	done < <($LIB_DIR/host-group-providers/$HOST_GROUP_PROVIDERS | grep -v '^$')
+}
+
+
+################################################################################
 # get_policy_group
 #
 # $1	file name
@@ -63,6 +80,8 @@ get_policy_name() {
 
 ################################################################################
 # get_policy_description
+#
+# FIXME: Somehow allow multi line descriptions
 #
 # $1	file name
 #
@@ -100,3 +119,5 @@ get_scanners() {
 
 	grep -v "^ *#" "$conf_file" 2>/dev/null
 }
+
+load_host_groups
