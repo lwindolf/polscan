@@ -57,7 +57,7 @@ else
 	echo "Host list:" $HOST_LIST
 fi
 
-# 1.b) Determine hodt groups
+# 1.b) Determine host groups
 HOST_GROUPS=$($LIB_DIR/host-group-providers/$HOST_GROUP_PROVIDERS)
 
 REMOTE_SCANNER_LIST=$(get_scanners remote)
