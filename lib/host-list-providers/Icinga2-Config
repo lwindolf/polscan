@@ -1,0 +1,11 @@
+#!/bin/bash
+
+
+# name: Icinga2 Config
+# description: Provides host names from Icinga2 configuration files. Note that his might yield unwanted domain names and logical names you might not like. Consider filtering this output.
+
+host_match_pattern="object[[:space:]][[:space:]]*Host[[:space:]]"
+icinga2_locations="/etc/icinga2 /usr/local/icinga2/etc"
+
+rgrep -h "$host_match_pattern" $icinga2_locations 2>/dev/null |\
+sed "s/.*$host_match_pattern\"//;s/\".*//" | 
