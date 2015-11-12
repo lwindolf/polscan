@@ -43,8 +43,10 @@ JSON_DIR="${RESULT_BASE_DIR}/json/${DATE}"
 #
 # Fills the global hash "host_groups"
 ################################################################################
+
+declare -A host_groups
+
 load_host_groups() {
-	declare -g -A host_groups
 
 	while read host_group host rest; do
 		host_groups[''$host_group]="${host_groups[''$host_group]}${host} "
