@@ -230,6 +230,19 @@
 			#hostmap {
 				overflow:auto;
 			}
+			.hostMapOrder {
+				background:#eee;
+				padding:6px 12px;
+				border:1px solid #ccc;
+				margin:6px 0;
+			}
+			.hostMapGroupTitle {
+				font-size:80%;
+				float:left;
+				margin:3px 0;
+				padding:0 6px;
+				background:#ccc;
+			}
 			.hostMapBox {
 				width:12px;
 				float:left;
@@ -264,6 +277,8 @@
 
 		<script>
 			var resultCache = new Array();
+			var hostGroupNamespaces = new Array();
+			var hostGroups;
 			var currentResultSet;
 			var groupBy = new Array();
 			var baseUrl = "results/latest/";
@@ -445,7 +460,6 @@
 						if(groupBy[key] > 3 && key.length > 3) {
 							groupingEnabled = true;
 							$('#groupById').append("<option>"+key+"</option>");
-							//$('#groupById').append("<option>"+key+" ("+groupBy[key]+")</option>");
 						}
 					}
 					if(groupingEnabled)
@@ -488,13 +502,22 @@
 				});
 			}
 
-			function loadHostMap() {
-				getData('hosts', function(data) {
-					clean();
-					$('#results').append('<div class="overviewBox" id="hostmap"><small>Each box represents a host color coded with highest finding severity. The number indicates the number of findings. Hover over a box to see the hostname!</small><br/></div>');
+			function getGroupByHost(groupType, host) {
+				if(groupType in hostGroupNamespaces) {
+					for(hg in hostGroups) {
+						var name = Object.keys(hostGroups[hg])[0];
+						if(name.indexOf(groupType) == 0 && 
+						   hostGroups[hg][name].indexOf(host) != -1)
+							return name.split(/::/)[1];
+					}
+				} 
+				return 'Ungrouped';
+			}
 
-					var html = "";
+			function addHostsToMap(groupType) {
+				getData('hosts', function(data) {
 					$.each(data.results, function(i, findings) {
+						var html = "";
 						var count = "";
 						var h = Object.keys(findings)[0];
 						html += "<div title='"+h+"' class='hostMapBox ";
@@ -509,8 +532,35 @@
 							count = 0;
 						}
 						html += "' onclick='setLocationHash(\"all\", \""+h+"\")'>"+count+"</div> ";
+						var groupName = getGroupByHost(groupType, h);
+						if($('#hostmap').find('#'+groupName).length == 0) {
+console.log("adding div for "+groupName);
+							$('#hostmap').append('<div class="hostMapGroup" id="'+groupName+'"><div class="hostMapGroupTitle">'+groupName+':</div></div>');
+}
+						$('#' + groupName).append(html);
 					});
-					$('#hostmap').append(html);
+				});
+			}
+
+			function loadHostMap(groupType) {
+				getData('host_groups', function(data) {
+					clean();
+					$('#results').append('<div class="overviewBox" id="hostmap"><small>Each box represents a host color coded with highest finding severity. The number indicates the number of findings. Hover over a box to see the hostname!</small><br/></div>');
+					hostGroups = data.results;
+					$.each(data.results, function(i, list) {
+						var ns = Object.keys(list)[0].split(/::/)[0];
+						if(hostGroupNamespaces[ns] === undefined)
+							hostGroupNamespaces[ns]=1;
+						else
+							hostGroupNamespaces[ns]++;
+					});
+					$('#hostmap').append('<div class="hostMapOrder">Order by Host Group Type <select id="hostmapGroupType" onchange="loadHostMap(this.value)"></select></div>');
+					$('#hostmapGroupType').append('<option value="none"></option>');
+					for(hg in hostGroupNamespaces) {
+						$('#hostmapGroupType').append('<option '+((hg == groupType)?'selected':'')+' value="'+hg+'">'+hg+'</option>');
+					}
+
+					addHostsToMap(groupType);
 				});
 			}
 
@@ -550,7 +600,7 @@
 				if(!params[0]) 
 					loadOverview();
 				else if(params[0] == "hostmap")
-					loadHostMap();
+					loadHostMap(params[1]);
 				else
 					loadScannerResults(params[0], params[1]?decodeURI(params[1]):null, params.length > 1);
 
