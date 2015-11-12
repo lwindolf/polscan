@@ -21,6 +21,8 @@ if [ "$1" == "-l" ]; then
 	shift
 	HOST_LIST=$1
 	shift
+else
+	HOST_LIST=
 fi
 
 LATEST=0
