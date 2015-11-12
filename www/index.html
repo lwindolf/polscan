@@ -537,11 +537,10 @@
 						}
 						html += "' onclick='setLocationHash(\"all\", \""+h+"\")'>"+count+"</div> ";
 						var groupName = getGroupByHost(groupType, h);
-						if($('#hostmap').find('#'+groupName).length == 0) {
-console.log("adding div for "+groupName);
-							$('#hostmap').append('<div class="hostMapGroup" id="'+groupName+'"><div class="hostMapGroupTitle">'+groupName+'</div></div>');
-}
-						$('#' + groupName).append(html);
+						var groupClassName = groupName.replace(/[\.#]/g, "");
+						if($('#hostmap').find('#'+groupClassName).length == 0)
+							$('#hostmap').append('<div class="hostMapGroup" id="'+groupClassName+'"><div class="hostMapGroupTitle">'+groupName+'</div></div>');
+						$('#' + groupClassName).append(html);
 					});
 				});
 			}
