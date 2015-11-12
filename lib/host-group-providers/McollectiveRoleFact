@@ -10,5 +10,5 @@ if [ "$MCOLLECTIVE_ROLE_FACT" != "" ]; then
 	  format 'Role::%s %s'
 	  fields { [ facts['$MCOLLECTIVE_ROLE_FACT'], identity ] }
 	end
-	")
+	") | grep -v "Role:: "
 fi
