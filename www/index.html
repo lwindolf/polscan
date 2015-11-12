@@ -236,8 +236,12 @@
 				border:1px solid #ccc;
 				margin:6px 0;
 			}
+			.hostMapGroup {
+				clear:both;
+			}
 			.hostMapGroupTitle {
 				font-size:80%;
+				width:200px;
 				float:left;
 				margin:3px 0;
 				padding:0 6px;
@@ -535,7 +539,7 @@
 						var groupName = getGroupByHost(groupType, h);
 						if($('#hostmap').find('#'+groupName).length == 0) {
 console.log("adding div for "+groupName);
-							$('#hostmap').append('<div class="hostMapGroup" id="'+groupName+'"><div class="hostMapGroupTitle">'+groupName+':</div></div>');
+							$('#hostmap').append('<div class="hostMapGroup" id="'+groupName+'"><div class="hostMapGroupTitle">'+groupName+'</div></div>');
 }
 						$('#' + groupName).append(html);
 					});
