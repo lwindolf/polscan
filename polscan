@@ -57,6 +57,8 @@ else
 	echo "Host list:" $HOST_LIST
 fi
 
+load_host_groups
+
 REMOTE_SCANNER_LIST=$(get_scanners remote)
 if [ "$REMOTE_SCANNER_LIST" != "" ]; then
 

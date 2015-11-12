@@ -47,6 +47,7 @@ JSON_DIR="${RESULT_BASE_DIR}/json/${DATE}"
 declare -A host_groups
 
 load_host_groups() {
+	export HOST_LIST	# Some providers might want to use it
 
 	while read host_group host rest; do
 		host_groups[''$host_group]="${host_groups[''$host_group]}${host} "
@@ -123,5 +124,3 @@ get_scanners() {
 
 	grep -v "^ *#" "$conf_file" 2>/dev/null
 }
-
-load_host_groups

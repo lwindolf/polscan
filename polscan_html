@@ -41,6 +41,8 @@ if [ ! -d "$JSON_DIR" ]; then
 fi
 cd $RESULT_DIR || exit 1
 
+load_host_groups
+
 ###############################################################################
 # Helper method to write JSON, solves the issue of forbidden final comma in
 # array lists...
