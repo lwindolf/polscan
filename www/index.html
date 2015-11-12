@@ -1,3 +1,4 @@
+<!-- vim: set ts=4 sw=4: -->
 <!doctype html>
 <html>
 	<head>
@@ -552,10 +553,10 @@
 					hostGroups = data.results;
 					$.each(data.results, function(i, list) {
 						var ns = Object.keys(list)[0].split(/::/)[0];
-						if(hostGroupNamespaces[ns] === undefined)
-							hostGroupNamespaces[ns]=1;
-						else
+						if(ns in hostGroupNamespaces)
 							hostGroupNamespaces[ns]++;
+						else
+							hostGroupNamespaces[ns]=1;
 					});
 					$('#hostmap').append('<div class="hostMapOrder">Order by Host Group Type <select id="hostmapGroupType" onchange="loadHostMap(this.value)"></select></div>');
 					$('#hostmapGroupType').append('<option value="none"></option>');
