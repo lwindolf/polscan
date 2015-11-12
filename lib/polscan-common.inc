@@ -8,7 +8,9 @@ if [ ! -f $CONF_FILE ]; then
 	echo "ERROR: Could not find $CONF_FILE"
 	exit 1
 fi
+set -a
 source $CONF_FILE
+set +a
 
 # Select result dir
 if [ "$RESULT_BASE_DIR" == "" ]; then
