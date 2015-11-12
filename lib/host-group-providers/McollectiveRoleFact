@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# name: Mcollective Role Fact
+# description: Fetch Host Role from a Mcollective fact. This requires a 1-to-1 host/role mapping available via an Mcollective reported fact. The name of the fact is configurable via $MCOLLECTIVE_ROLE_FACT (default is "role")
+
+set -x
+if [ "$MCOLLECTIVE_ROLE_FACT" != "" ]; then
+	mco inventory --script <(echo "
+	inventory do
+	  format 'Role::%s %s'
+	  fields { [ facts['$MCOLLECTIVE_ROLE_FACT'], identity ] }
+	end
+	")
+fi
