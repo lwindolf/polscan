@@ -41,6 +41,9 @@ if [ ! -d "$JSON_DIR" ]; then
 fi
 cd $RESULT_DIR || exit 1
 
+# Determine host list from input result dir
+HOST_LIST=$(cd $RESULT_DIR && ls)
+
 load_host_groups
 
 ###############################################################################
