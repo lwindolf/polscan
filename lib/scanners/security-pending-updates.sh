@@ -5,7 +5,11 @@
 security_repos=$(grep -h '^deb.*security' /etc/apt/sources.list /etc/apt/sources.list.d/* 2>/dev/null)
 TMPFILE=$(mktemp) && {
 	/bin/echo "$security_repos" >$TMPFILE
-	pkgs=$(apt-get -s dist-upgrade -o Dir::Etc::SourceList=$TMPFILE 2>/dev/null | grep ^Inst | awk '{print $2}')
+	pkgs=$(
+		apt-get -s dist-upgrade -o Dir::Etc::SourceList=$TMPFILE 2>/dev/null |\
+		grep ^Inst |\
+		awk '{version=$4; gsub(/\(/, "", version); print $2 "=" version}'
+	)
 	if [ "$pkgs" != "" ]; then
 		result_warning "Security upgrades pending:" $pkgs
 	else
