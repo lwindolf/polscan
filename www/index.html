@@ -516,20 +516,38 @@
 				if(groupType in hostGroupNamespaces) {
 					for(hg in hostGroups) {
 						var name = Object.keys(hostGroups[hg])[0];
-						if(name.indexOf(groupType) == 0 && 
+						if(name.indexOf(groupType) == 0 &&
 						   hostGroups[hg][name].indexOf(host) != -1)
 							return name.split(/::/)[1];
 					}
-				} 
+				}
 				return 'Ungrouped';
 			}
 
-			function addHostsToMap(groupType) {
+			function addHostsToMap() {
+				var groupType = $('#hostmapGroupType').val();
+				var filterType = $('#hostmapFilterType').val();
+				var filterValue = $('#hostmapFilterValue').val();
+				var hg = undefined;
+
+				if(filterType && filterValue)
+					hg = filterType + "::" + filterValue;
+					console.log("filter="+hg);
+
+				$('#hostmap').children().remove();
+
 				getData('hosts', function(data) {
 					$.each(data.results, function(i, findings) {
 						var html = "";
 						var count = "";
 						var h = Object.keys(findings)[0];
+
+						if(hg) {
+							// Apply filter
+							if(filterValue != getGroupByHost(filterType, h))
+								return;
+						}
+
 						html += "<div title='"+h+"' class='hostMapBox ";
 						if(findings[h].FAILED != 0) {
 							html += "FAILED bcf"+((findings[h].FAILED>10)?10:findings[h].FAILED);
@@ -551,7 +569,7 @@
 				});
 			}
 
-			function loadHostGroupTypes(data, id, groupType) {
+			function loadHostGroupTypes(data, id, groupType, noneAllowed) {
 				hostGroups = data;
 				$.each(data, function(i, list) {
 					var ns = Object.keys(list)[0].split(/::/)[0];
@@ -561,23 +579,51 @@
 						hostGroupNamespaces[ns]=1;
 				});
 
+				if (noneAllowed)
+					$('#'+id).append('<option></option>');
 				for(hg in hostGroupNamespaces) {
 					$('#'+id).append('<option '+((hg == groupType)?'selected':'')+' value="'+hg+'">'+hg+'</option>');
+				}
+			}
+
+			var hgValues;
+			function loadHostGroupValues(data, id, value, noneAllowed) {
+				hgValues = new Array();
+				$.each(data, function(i, list) {
+					if(value == Object.keys(list)[0].split(/::/)[0]) {
+						var v = Object.keys(list)[0].split(/::/)[1];
+						hgValues.push(v);
+					}
+				});
+
+				$('#'+id).children().remove();
+				if (noneAllowed)
+					$('#'+id).append('<option></option>');
+				hgValues = hgValues.sort();
+				for(var i = 0; i < hgValues.length; i++) {
+					$('#'+id).append('<option value="'+hgValues[i]+'">'+hgValues[i]+'</option>');
 				}
 			}
 
 			function loadHostMap(groupType) {
 				getData('host_groups', function(data) {
 					clean();
-					$('#results').append('<div class="overviewBox" id="hostmap"><small>Each box represents a host color coded with highest finding severity. The number indicates the number of findings. Hover over a box to see the hostname!</small><br/></div>');
-					$('#hostmap').append('<div class="hostMapOrder">Order by Host Group Type <select id="hostmapGroupType" onchange="setLocationHash(\'hostmap\', this.value)"></select></div>');
+					$('#results').append('<div class="overviewBox"><div id="hostMapNav"><small>Each box represents a host color coded with highest finding severity. The number indicates the number of findings. Hover over a box to see the hostname!</small><br/></div><div id="hostmap"></div></div>');
+					$('#hostMapNav').append('<div class="hostMapOrder">'+
+						'Order by Host Group Type <select id="hostmapGroupType" onchange="setLocationHash(\'hostmap\', this.value)"></select> '+
+						'Filter by <select id="hostmapFilterType"></select><select id="hostmapFilterValue"/></select> <input type="button" value="Go" onclick="addHostsToMap();"/> '+
+						'</div>');
 					loadHostGroupTypes(data.results, 'hostmapGroupType', groupType);
+					loadHostGroupTypes(data.results, 'hostmapFilterType', undefined, true);
+					$('#hostmapFilterType').change(function() {
+						loadHostGroupValues(data.results, 'hostmapFilterValue', $('#hostmapFilterType').val(), true);
+					});
 					if(groupType == undefined) {
 						setLocationHash('hostmap', $('#hostmapGroupType').val());
 						return;
 					}
 
-					addHostsToMap(groupType);
+					addHostsToMap();
 				});
 			}
 
