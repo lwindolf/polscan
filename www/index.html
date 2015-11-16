@@ -270,7 +270,6 @@
 		<div id='menu'>
 			<a href="#">Overview</a>
 			<a href="#hostmap">Hosts Map</a>
-			<a href="#hostgroups">Host Groups</a>
 
 			Findings: 
 			<a href="#all">All</a>
@@ -608,10 +607,12 @@
 			function loadHostMap(groupType) {
 				getData('host_groups', function(data) {
 					clean();
-					$('#results').append('<div class="overviewBox"><div id="hostMapNav"><small>Each box represents a host color coded with highest finding severity. The number indicates the number of findings. Hover over a box to see the hostname!</small><br/></div><div id="hostmap"></div></div>');
+					$('#results').append('<div class="overviewBox"><div id="hostMapNav"><small>Each box represents a host color coded with highest finding severity. The number indicates the number of findings. Hover over a box to see the hostname!</small><br/></div><div id="hostmap"></div><div id="selectedGroup"></div></div>');
 					$('#hostMapNav').append('<div class="hostMapOrder">'+
-						'Order by Host Group Type <select id="hostmapGroupType" onchange="setLocationHash(\'hostmap\', this.value)"></select> '+
-						'Filter by <select id="hostmapFilterType"></select><select id="hostmapFilterValue"/></select> <input type="button" value="Go" onclick="addHostsToMap();"/> '+
+						'Order by <select id="hostmapGroupType" onchange="setLocationHash(\'hostmap\', this.value)"></select> '+
+						'Filter by <select id="hostmapFilterType"></select><select id="hostmapFilterValue"/></select> '+
+						'Show as <select id="hostMapType"><option value="list" selected>List</option><option value="treemap">Tree Map</option></select>'+
+						'<input id="hostMapGo" type="button" value="Go"/> '+
 						'</div>');
 					loadHostGroupTypes(data.results, 'hostmapGroupType', groupType);
 					loadHostGroupTypes(data.results, 'hostmapFilterType', undefined, true);
@@ -621,56 +622,52 @@
 					if(groupType == undefined) {
 						setLocationHash('hostmap', $('#hostmapGroupType').val());
 						return;
+					} else {
+						addHostsToMap();
 					}
 
-					addHostsToMap();
+					$('#hostMapGo').click(function() {
+						$('#hostmap').empty();
+						if($('#hostMapType').val() == 'list')
+							addHostsToMap();
+						else
+							addHostsToTreeMap(groupType);
+					});
 				});
 			}
 
-			function loadHostgroups(groupType) {
-				getData('host_groups', function(data) {
-					clean();
-					$('#results').append('<div class="overviewBox"><div id="treemap"></div><div id="selectedGroup"></div></div>');
-					$('#treemap').append('<div class="hostMapOrder">Host Group Type <select id="hostmapGroupType" onchange="setLocationHash(\'hostgroups\', this.value)"></select></div>');
-					loadHostGroupTypes(data.results, 'hostmapGroupType', groupType);
-					if(groupType == undefined) {
-						setLocationHash('hostgroups', $('#hostmapGroupType').val());
+			function addHostsToTreeMap(groupType) {
+				// First count hosts represented by this host group schema
+				// as this host count is probably not equal to all known hosts
+				var hostCount = 0;
+				for(hg in hostGroups) {
+					var name = Object.keys(hostGroups[hg])[0];
+					if(name.indexOf(groupType) == 0)
+						hostCount += hostGroups[hg][name].length;
+				}
+
+				var treeMapChildren = new Array();
+				for(hg in hostGroups) {
+					var name = Object.keys(hostGroups[hg])[0];
+					if(name.indexOf(groupType) != 0)
+						continue;
+
+					treeMapChildren.push({
+						'id'	: name.split(/::/)[1],
+						'size'	: [hostGroups[hg][name].length/hostCount],
+						'color' : [.50]
+					});
+				}
+
+				$('#hostmap').treemap({
+					'dimensions' : [window.innerWidth - 100, window.innerHeight - 250],
+					'nodeData': { 'id': 'root', 'children':treeMapChildren}
+				})
+				.bind('treemapmousemove', function(e,data) {
+             		if(data.nodes[0] == undefined)
 						return;
-					}
-
-					// First count hosts represented by this host group schema
-					// as this host count is probably not equal to all known hosts
-					var hostCount = 0;
-					for(hg in hostGroups) {
-						var name = Object.keys(hostGroups[hg])[0];
-						if(name.indexOf(groupType) == 0)
-							hostCount += hostGroups[hg][name].length;
-					}
-
-					var treeMapChildren = new Array();
-					for(hg in hostGroups) {
-						var name = Object.keys(hostGroups[hg])[0];
-						if(name.indexOf(groupType) != 0)
-							continue;
-
-						treeMapChildren.push({
-							'id'	: name.split(/::/)[1],
-							'size'	: [hostGroups[hg][name].length/hostCount],
-							'color' : [.50]
-						});
-					}
-
-					$('#treemap').treemap({
-						'dimensions' : [window.innerWidth - 100, window.innerHeight - 250],
-						'nodeData': { 'id': 'root', 'children':treeMapChildren}
-					})
-					.bind('treemapmousemove', function(e,data) {
-             			if(data.nodes[0] == undefined)
-							return;
-                		$("#selectedGroup").html(data.ids[0]);
-            		});
-				});
-			
+               		$("#selectedGroup").html(data.ids[0]);
+            	});
 			}
 
 			function loadScannerResults(name, searchValue, reduced) {
@@ -710,8 +707,6 @@
 					loadOverview();
 				else if(params[0] == "hostmap")
 					loadHostMap(params[1]);
-				else if(params[0] == "hostgroups")
-					loadHostgroups(params[1]);
 				else
 					loadScannerResults(params[0], params[1]?decodeURI(params[1]):null, params.length > 1);
 
