@@ -305,16 +305,16 @@
 			}
 
 			function onCopyHosts() {
-                                $('#hostlist').html('<textarea style="width:100%">');
-                                var hosts = $('td.host:visible').get();
+                $('#hostlist').html('<textarea style="width:100%">');
+                var hosts = $('td.host:visible').get();
 				var tmp = new Array();
 				for(var i = 0; i < hosts.length; i++) {
 					if(!tmp[hosts[i].innerHTML])
 						$('#hostlist textarea').append(hosts[i].innerHTML + " ");
-					tmp[hosts[i].innerHTML] = 1;
-                                }
-                                $('#hostlist').show();
-                        }
+						tmp[hosts[i].innerHTML] = 1;
+					}
+					$('#hostlist').show();
+			}
 
 			function onGroupByChange() {
 				createGroupTable(
