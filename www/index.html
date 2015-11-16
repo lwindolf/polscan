@@ -473,7 +473,7 @@
 						}
 					}
 					if(groupingEnabled)
-						$('#groupById').removeAttr('disabled');
+						$('#groupBy').children().removeAttr('disabled');
 				}
 
 				$("#resultTable"+name+" .group").click(function() {
@@ -682,8 +682,8 @@
 						'Search <input type="text" size="40" id="search"/> ' +
 						'<input type="button" value="Go" onclick="onSearch();"/> ' +
 						'<input type="button" value="Get Hosts" title="Click here to get a text field with a whitespace separated list of all hosts in the result list" onclick="onCopyHosts();"/> ' + 
-						'<br/>Group Hosts By <select id="groupById" disabled><option name="none" selected></option></select> ' +
-						'<input type="button" value="Go" onclick="onGroupByChange();"/> ' +
+						'<br/><span id="groupBy">Group Hosts By <select id="groupById" disabled><option name="none" selected></option></select> ' +
+						'<input type="button" disabled value="Go" onclick="onGroupByChange();"/></span> ' +
 						'<div id="hostlist"/>' +
 						'</div>');
 					createResultTable(name, '#results', data.results, searchValue, reduced);
