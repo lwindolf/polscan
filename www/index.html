@@ -288,6 +288,7 @@
 			var resultCache = new Array();
 			var hostGroupNamespaces = new Array();
 			var hostGroups;
+			var hosts;
 			var currentResultSet;
 			var groupBy = new Array();
 			var baseUrl = "results/latest/";
@@ -651,16 +652,32 @@
 					var name = Object.keys(hostGroups[hg])[0];
 					if(name.indexOf(groupType) != 0)
 						continue;
-
-					treeMapChildren.push({
-						'id'	: name.split(/::/)[1],
-						'size'	: [hostGroups[hg][name].length/hostCount],
-						'color' : [.50]
-					});
+					var g = {
+						'id'	   : name.split(/::/)[1],
+						'size'	   : [hostGroups[hg][name].length/hostCount],
+						'color'    : [.50],
+						'children' : []
+					};
+					for(i = 0; i < hostGroups[hg][name].length; i++) {
+						var c = 0;
+						
+						g.children.push({
+							'id'    : hostGroups[hg][name][i],
+							'size'  : [1/hostGroups[hg][name].length],
+							'color' : c,
+							'labelsEnabled': false
+						});	
+					}
+					treeMapChildren.push(g);
 				}
 
 				$('#hostmap').treemap({
 					'dimensions' : [window.innerWidth - 100, window.innerHeight - 250],
+				    'colorStops' : [
+				        {"val":0,"color":"#4a4"},
+				        {"val":0.5,"color":"#4aa"},
+				        {"val":1,"color":"#a44"}
+				    ],
 					'nodeData': { 'id': 'root', 'children':treeMapChildren}
 				})
 				.bind('treemapmousemove', function(e,data) {
