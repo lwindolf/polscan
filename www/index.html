@@ -514,10 +514,9 @@
 
 			function getGroupByHost(groupType, host) {
 				if(groupType in hostGroupNamespaces) {
-					for(hg in hostGroups) {
-						var name = Object.keys(hostGroups[hg])[0];
+					for(name in hostGroups) {
 						if(name.indexOf(groupType) == 0 &&
-						   hostGroups[hg][name].indexOf(host) != -1)
+						   hostGroups[name].indexOf(host) != -1)
 							return name.split(/::/)[1];
 					}
 				}
@@ -537,10 +536,10 @@
 				$('#hostmap').children().remove();
 
 				getData('hosts', function(data) {
-					$.each(data.results, function(i, findings) {
+					hosts = data.results;
+					$.each(data.results, function(h, findings) {
 						var html = "";
 						var count = "";
-						var h = Object.keys(findings)[0];
 
 						if(hg) {
 							// Apply filter
@@ -549,12 +548,12 @@
 						}
 
 						html += "<div title='"+h+"' class='hostMapBox ";
-						if(findings[h].FAILED != 0) {
-							html += "FAILED bcf"+((findings[h].FAILED>10)?10:findings[h].FAILED);
-							count = findings[h].FAILED;
-						} else if(findings[h].WARNING != 0) {
-							html += "WARNING bcw"+((findings[h].WARNING>10)?10:findings[h].WARNING);
-							count = findings[h].WARNING;
+						if(findings.FAILED != 0) {
+							html += "FAILED bcf"+((findings.FAILED>10)?10:findings.FAILED);
+							count = findings.FAILED;
+						} else if(findings.WARNING != 0) {
+							html += "WARNING bcw"+((findings.WARNING>10)?10:findings.WARNING);
+							count = findings.WARNING;
 						} else {
 							html += "OK";
 							count = 0;
@@ -571,8 +570,8 @@
 
 			function loadHostGroupTypes(data, id, groupType, noneAllowed) {
 				hostGroups = data;
-				$.each(data, function(i, list) {
-					var ns = Object.keys(list)[0].split(/::/)[0];
+				$.each(data, function(name, list) {
+					var ns = name.split(/::/)[0];
 					if(ns in hostGroupNamespaces)
 						hostGroupNamespaces[ns]++;
 					else
@@ -589,9 +588,9 @@
 			var hgValues;
 			function loadHostGroupValues(data, id, value, noneAllowed) {
 				hgValues = new Array();
-				$.each(data, function(i, list) {
-					if(value == Object.keys(list)[0].split(/::/)[0]) {
-						var v = Object.keys(list)[0].split(/::/)[1];
+				$.each(data, function(name, list) {
+					if(value == name.split(/::/)[0]) {
+						var v = name.split(/::/)[1];
 						hgValues.push(v);
 					}
 				});
@@ -605,14 +604,14 @@
 				}
 			}
 
-			function loadHostMap(groupType) {
+			function loadHostMap(groupType, mapType) {
 				getData('host_groups', function(data) {
 					clean();
 					$('#results').append('<div class="overviewBox"><div id="hostMapNav"><small>Each box represents a host color coded with highest finding severity. The number indicates the number of findings. Hover over a box to see the hostname!</small><br/></div><div id="hostmap"></div><div id="selectedGroup"></div></div>');
 					$('#hostMapNav').append('<div class="hostMapOrder">'+
 						'Order by <select id="hostmapGroupType" onchange="setLocationHash(\'hostmap\', this.value)"></select> '+
 						'Filter by <select id="hostmapFilterType"></select><select id="hostmapFilterValue"/></select> '+
-						'Show as <select id="hostMapType"><option value="list" selected>List</option><option value="treemap">Tree Map</option></select>'+
+						'Show as <select id="hostMapType"><option selected value="list" selected>List</option><option value="treemap">Tree Map</option></select>'+
 						'<input id="hostMapGo" type="button" value="Go"/> '+
 						'</div>');
 					loadHostGroupTypes(data.results, 'hostmapGroupType', groupType);
@@ -620,20 +619,19 @@
 					$('#hostmapFilterType').change(function() {
 						loadHostGroupValues(data.results, 'hostmapFilterValue', $('#hostmapFilterType').val(), true);
 					});
-					if(groupType == undefined) {
-						setLocationHash('hostmap', $('#hostmapGroupType').val());
-						return;
-					} else {
-						addHostsToMap();
-					}
 
+					if(mapType)
+						$('#hostMapType').val(mapType);
 					$('#hostMapGo').click(function() {
 						$('#hostmap').empty();
+						setLocationHash('hostmap', $('#hostmapGroupType').val() + "---" + $('#hostMapType').val());
 						if($('#hostMapType').val() == 'list')
 							addHostsToMap();
 						else
 							addHostsToTreeMap(groupType);
 					});
+
+					$('#hostMapGo').trigger('click');
 				});
 			}
 
@@ -641,30 +639,36 @@
 				// First count hosts represented by this host group schema
 				// as this host count is probably not equal to all known hosts
 				var hostCount = 0;
-				for(hg in hostGroups) {
-					var name = Object.keys(hostGroups[hg])[0];
+				for(name in hostGroups) {
 					if(name.indexOf(groupType) == 0)
-						hostCount += hostGroups[hg][name].length;
+						// FIXME: count unique only!!!
+						hostCount += hostGroups[name].length;
 				}
 
 				var treeMapChildren = new Array();
-				for(hg in hostGroups) {
-					var name = Object.keys(hostGroups[hg])[0];
+				for(name in hostGroups) {
 					if(name.indexOf(groupType) != 0)
 						continue;
 					var g = {
 						'id'	   : name.split(/::/)[1],
-						'size'	   : [hostGroups[hg][name].length/hostCount],
-						'color'    : [.50],
+						'size'	   : [hostGroups[name].length/hostCount],
+						'color'    : [.0],
 						'children' : []
 					};
-					for(i = 0; i < hostGroups[hg][name].length; i++) {
+					for(i = 0; i < hostGroups[name].length; i++) {
 						var c = 0;
+						if(hostGroups[name][i] in hosts) {
+							var findings = hosts[hostGroups[name][i]];
+							if(findings.FAILED > 0)
+								c = 0.99;
+							else if(findings.WARNING > 0)
+								c = 0.5;
+						}
 						
 						g.children.push({
-							'id'    : hostGroups[hg][name][i],
-							'size'  : [1/hostGroups[hg][name].length],
-							'color' : c,
+							'id'    : hostGroups[name][i],
+							'size'  : [1/hostGroups[name].length],
+							'color' : [c],
 							'labelsEnabled': false
 						});	
 					}
@@ -675,16 +679,16 @@
 					'dimensions' : [window.innerWidth - 100, window.innerHeight - 250],
 				    'colorStops' : [
 				        {"val":0,"color":"#4a4"},
-				        {"val":0.5,"color":"#4aa"},
+				        {"val":0.5,"color":"#aa4"},
 				        {"val":1,"color":"#a44"}
 				    ],
 					'nodeData': { 'id': 'root', 'children':treeMapChildren}
 				})
 				.bind('treemapmousemove', function(e,data) {
-             		if(data.nodes[0] == undefined)
+		             		if(data.nodes[0] == undefined)
 						return;
-               		$("#selectedGroup").html(data.ids[0]);
-            	});
+       		        		$("#selectedGroup").html(data.ids[0]);
+            			});
 			}
 
 			function loadScannerResults(name, searchValue, reduced) {
@@ -723,7 +727,7 @@
 				if(!params[0]) 
 					loadOverview();
 				else if(params[0] == "hostmap")
-					loadHostMap(params[1]);
+					loadHostMap(params[1], params[2]);
 				else
 					loadScannerResults(params[0], params[1]?decodeURI(params[1]):null, params.length > 1);
 
