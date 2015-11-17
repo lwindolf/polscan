@@ -105,18 +105,25 @@
 				padding:6px;
 			}
 			#logo {
-				background: #555;
-				color: #eee;
+				background: #222;
 				padding:6px 12px;
 				font-size:150%;
 				font-weight:bold;
+				float:left;
+				margin-right:12px;
+			}
+			#logo a {
+				text-decoration: none;
+				color: #eee;
 			}
 			#menu {
 				background: #353535;
-				padding:12px;
 				color:silver;
 			}
-			#menu a {
+			#menuOptions {
+				padding: 12px;
+			}
+			#menuOptions a {
 				color: #ddd;
 				text-decoration:none;
 				border:1px solid #666;
@@ -128,11 +135,11 @@
 				margin-right:12px;
 				border-radius: 4px;
 			}
-			#menu a:hover {
+			#menuOptions a:hover {
 				color: white;
 				background: #777;
 			}
-			#menu a.current {
+			#menuOptions a.current {
 				color: #444;
 				font-weight:bold;
 				background: #eee;
@@ -264,10 +271,11 @@
 		</style>
 	</head>
 	<body>
-		<div id='logo'>
-			Polscan
-		</div>
 		<div id='menu'>
+			<div id='logo'>
+			<a href='https://github.com/lwindolf/polscan'>Polscan</a>
+			</div>
+			<div id='menuOptions'>
 			<a href="#">Overview</a>
 			<a href="#hostmap">Hosts Map</a>
 
@@ -275,6 +283,7 @@
 			<a href="#all">All</a>
 			<a href="#new">New</a>
 			<a href="#solved">Solved</a>
+			</div>
 		</div>
 
 		<div id='timebar'>Date <input type='text' id='datepicker' size='10'/></div>
