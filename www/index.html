@@ -609,7 +609,7 @@
 					clean();
 					$('#results').append('<div class="overviewBox"><div id="hostMapNav"><small>Each box represents a host color coded with highest finding severity. The number indicates the number of findings. Hover over a box to see the hostname!</small><br/></div><div id="hostmap"></div><div id="selectedGroup"></div></div>');
 					$('#hostMapNav').append('<div class="hostMapOrder">'+
-						'Order by <select id="hostmapGroupType" onchange="setLocationHash(\'hostmap\', this.value)"></select> '+
+						'Order by <select id="hostmapGroupType"></select> '+
 						'Filter by <select id="hostmapFilterType"></select><select id="hostmapFilterValue"/></select> '+
 						'Show as <select id="hostMapType"><option selected value="list" selected>List</option><option value="treemap">Tree Map</option></select>'+
 						'<input id="hostMapGo" type="button" value="Go"/> '+
