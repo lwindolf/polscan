@@ -50,22 +50,33 @@ load_host_groups
 # Helper method to write JSON, solves the issue of forbidden final comma in
 # array lists...
 #
-# $1	file name
-# $2	root key
-# $3	extra data for root key
+# $1	result type 'list' or 'hash'
+# $2	file name
+# $3	root key
 ###############################################################################
 write_json() {
-	name=$1
-	root=$2
+	result_type=$1
+	name=$2
+	root=$3
 
 	echo "Writing $name.json..."
 	(
-		echo '{"date": "'$DATE'", "'$root'":['
+		echo '{"date": "'$DATE'", "'$root'":'
+		if [ "$result_type" == 'list' ]; then
+			echo '['
+		else
+			echo '{'
+		fi
 		cat |\
 		sed 's/[^[:print:]]//g' |\
 		sed '/^$/d' |\
 		sed '$s/,$//' 	# Strip last comma in lists
-		echo -n "]}"
+		if [ "$result_type" == 'list' ]; then
+			echo ']'
+		else
+			echo '}'
+		fi
+		echo -n "}"
 	) | sed -e 's/,\]/]/g' >${JSON_DIR}/${name}.json
 }
 
@@ -121,7 +132,7 @@ while read host group severity details; do
 done < <(
 	ls | xargs -I {} -n1 sed '/^[^ ][^ ]* OK /d; s/^/{} /;' {}
 )
-cat $TMPFILE | write_json all results
+cat $TMPFILE | write_json list all results
 rm $TMPFILE
 
 # Per group results
@@ -135,7 +146,7 @@ for g in $groups; do
 			message=${details/*|||/}
 			echo -n '{"host": "'$host'", "severity": "'$severity'", "policy": "'$policy'", "message": "'${message//\"/\'}'"},'
 		done
-	) | write_json $g 'group": "'$g'", "WARNING": '${pgroups[warn_$g]-0}', "FAILED": '${pgroups[fail_$g]-0}', "results'
+	) | write_json list $g 'group": "'$g'", "WARNING": '${pgroups[warn_$g]-0}', "FAILED": '${pgroups[fail_$g]-0}', "results'
 done
 
 # Statistics
@@ -155,21 +166,21 @@ done
 		description=`get_policy_description "$LIB_DIR/$s"`
 		echo -n '{"policy": "'$policy'", "parent": "'$group'", "description": "'$description'", "WARNING": '${policies[warn_$policy]-0}', "FAILED": '${policies[fail_$policy]-0}'},'
 	done
-) | write_json overview 'WARNING": '${pall[warn]-0}', "FAILED": '${pall[fail]-0}', "overview'
+) | write_json list overview 'WARNING": '${pall[warn]-0}', "FAILED": '${pall[fail]-0}', "overview'
 
 # Host infos
 (
 	for h in *; do
-		echo -n "{\"$h\": {\"WARNING\": ${hosts["warn_$h"]-0}, \"FAILED\": ${hosts["fail_$h"]-0}}},"
+		echo -n "\"$h\": {\"WARNING\": ${hosts["warn_$h"]-0}, \"FAILED\": ${hosts["fail_$h"]-0}},"
 	done
-) | write_json hosts results
+) | write_json hash hosts results
 (
 	for h in ${!host_groups[*]}; do
 		tmp=${host_groups[$h]% }
 		tmp=${tmp// /\",\"}
-		echo -n "{\"$h\": [\"$tmp\"]},"
+		echo -n "\"$h\": [\"$tmp\"],"
 	done
-) | write_json host_groups results
+) | write_json hash host_groups results
 
 # 30 days per-policy histogram
 declare -A histogram
@@ -223,7 +234,7 @@ do
 	done
 	echo "}"
 done
-) | sed "1s/^,//;s/\],\}/\]\}/;s/, \]/\]/g" | write_json histogram "labels\": [${labels}], \"histogram"
+) | sed "1s/^,//;s/\],\}/\]\}/;s/, \]/\]/g" | write_json list histogram "labels\": [${labels}], \"histogram"
 
 if [ -d "$RESULT_BASE_DIR/$ONE_DAY_AGO/" ]; then
         diff=$(diff -u <(cd "$RESULT_BASE_DIR/$ONE_DAY_AGO" && grep "|||" * | sort) <(cd "$RESULT_BASE_DIR/$DATE" && grep "|||" * | sort) | grep "^[-+]" | grep -v " OK |||")
@@ -239,7 +250,7 @@ if [ -d "$RESULT_BASE_DIR/$ONE_DAY_AGO/" ]; then
 			message=${details/*|||/}
 			echo -n '{"host": "'$host'", "group": "'$group'", "severity": "'$severity'", "policy": "'$policy'", "message": "'${message//\"/\'}'"},'
 		done
-	) | write_json new results
+	) | write_json list new results
 
 	(
 		echo "$solved_today" | sed "s/^-//" |\
@@ -250,7 +261,7 @@ if [ -d "$RESULT_BASE_DIR/$ONE_DAY_AGO/" ]; then
 			message=${details/*|||/}
 			echo -n '{"host": "'$host'", "group": "'$group'", "severity": "'$severity'", "policy": "'$policy'", "message": "'${message//\"/\'}'"},'
 		done
-	) | write_json solved results
+	) | write_json list solved results
 fi
 
 if [ $LATEST == 1 ]; then
