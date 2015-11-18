@@ -7,6 +7,8 @@
 		<script type="text/javascript" src="Chart.min.js"></script>
 		<script type="text/javascript" src="jquery-ui.min.js"></script>
 		<script type="text/javascript" src="jquery.ui.treemap.js"></script>
+		<script type="text/javascript" src="d3.min.js"></script>
+		<script type="text/javascript" src="d3pie.min.js"></script>
 		<link rel="stylesheet" href="jquery-ui.min.css">
 		<script src="jquery-ui.min.js"></script>
 		<meta charset="utf-8">
@@ -30,6 +32,10 @@
 				padding:12px 24px;
 				margin-right:12px;
 				margin-bottom:12px;
+			}
+			.overviewBox.dark {
+				background:#444;
+				float:left;
 			}
 			#col1, #col2 {
 				float:left;
@@ -192,6 +198,9 @@
 				clear:both;
 				margin-bottom:12px;
 			}
+			.badges {
+				height:260px;
+			}
 			.badges, .chart {
 				border:1px solid #aaa;
 				border-radius:6px;
@@ -267,6 +276,13 @@
 			}
 			.hostMapBox:hover {
 				cursor: pointer;
+			}
+			#findingsPies {
+				height:260px;
+				padding:0 24px;
+			}
+			div.pie {
+				float:left;
 			}
 		</style>
 	</head>
@@ -845,6 +861,57 @@
 				onLocationHashChange();
 			}
 
+
+			function addPieChart(id, title, size, data) {
+				return new d3pie(id, {
+					"header": {
+						"title": {
+							"text": title,
+							"color": "#fff",
+						},
+					},
+					"size": {
+						"canvasWidth": size*0.8,
+						"canvasHeight": size,
+						"pieOuterRadius": "90%"
+					},
+					"data": {
+						"sortOrder": "value-desc",
+						"content": data,
+					},
+					"tooltips": {
+						"enabled": true,
+						"type": "placeholder",
+						"string": "{label}: \n{value}, {percentage}%"
+					},
+					"labels": {
+						"outer": {
+							"format": "none"
+						},
+						"inner": {
+							"format": "label-percentage2",
+							"hideWhenLessThanPercentage": 8
+						},
+						"mainLabel": {
+							"fontSize": 10
+						},
+						"percentage": {
+							"color": "#fff",
+							"decimalPlaces": 0
+						},
+						"value": {
+							"color": "#adadad",
+							"fontSize": 10
+						}
+					},
+					'callbacks': {
+						'onClickSegment': function(segment) {
+							setLocationHash(segment.data.label);
+						}
+					}
+				});
+			}
+
 			function loadOverview() {
 
 				clean();
@@ -856,9 +923,12 @@
 	        		.done(function( data ) {
 					createBadges('#row1', data.FAILED, data.WARNING);
 					$("#loadmessage").hide();
-					$("<div id='groups' class='overviewBox col1'>").appendTo("#col1")
-					$("#groups").append("<h3>By Groups</h3>");
+					//$("<div id='groups' class='overviewBox col1'>").appendTo("#col1")
+					//$("#groups").append("<h3>By Groups</h3>");
 
+					var groupFailed = new Array();
+					var groupWarning = new Array();
+					var pieGroupHosts = new Array();
 		   			$.each(data.overview, function(i, item) {
 						if(item.group) {
 							var compliant = 1;
@@ -866,27 +936,43 @@
 							item.group +
 							'</span>';
 							if(item.FAILED > 0) {
+								groupFailed.push({
+									"label": item.group,
+									"value": item.FAILED,
+									"color": "#ff0000"
+								});
 								compliant = 0;
 								tmp += ' <span class="FAILED" title="Total failures found">' +
 								item.FAILED +
 								'</span>';
 							}
 							if(item.WARNING > 0) {
+								groupWarning.push({
+									"label": item.group,
+									"value": item.WARNING,
+									"color": "#ee0"
+								});
 								compliant = 0;
 								tmp += ' <span class="WARNING" title="Total warnings seen">' +
 								item.WARNING +
 								'</span>'
 							}
 							if(compliant) {
-								tmp += ' <span class="OK" title="100% compliance for this policy">compliant</span>';
+								tmp += ' <span class="OK" title="100% compliance for this group">compliant</span>';
 							}
 
-							$( "<div class='group'>" )
+							/*$( "<div class='group'>" )
 							.html(tmp)
-							.appendTo( "#groups" );
-
+							.appendTo( "#groups" );*/
 						}
 		   			});
+
+					$("<div id='findingsPies' class='overviewBox dark'>").appendTo("#row1");
+					$("<div id='pieChartFailed' class='pie'>").appendTo("#findingsPies");
+					$("<div id='pieChartWarning' class='pie'>").appendTo("#findingsPies");
+					addPieChart('pieChartFailed', 'Problems', 260, groupFailed);
+					addPieChart('pieChartWarning', 'Warnings', 260, groupWarning);
+					// FIXME: addPieChart('pieChartHosts', 'Warnings', 260, pieGroupHosts);
 
 					$( "<div id='policies' class='overviewBox'>" ).appendTo( "#col1" )
 					$( "<h3>Findings per Policy</h3>").appendTo( "#policies" )
