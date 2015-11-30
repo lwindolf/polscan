@@ -1,6 +1,6 @@
 # Override "echo" to prefix current host and policy infos
 echo() {
-	/bin/echo $current_host $policy_group $@
+	/bin/echo $current_host $policy_group "$@"
 }
 
 # Result reporting
