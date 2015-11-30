@@ -101,7 +101,7 @@ while read host group severity details; do
 	message=${details/*|||/}
 	case $severity in
 		OK|WARNING|FAILED)
-			echo '{"host": "'$host'", "group": "'$group'", "severity": "'$severity'", "policy": "'$policy'", "message": "'${message//\"/\'}'"},' >>$TMPFILE
+			echo '{"host": "'$host'", "group": "'$group'", "severity": "'$severity'", "policy": "'$policy'", "message": "'"${message//\"/\'}"'"},' >>$TMPFILE
 			;;
 	esac
 	case $severity in
@@ -144,7 +144,7 @@ for g in $groups; do
 			policy=${details/#|||/}
 			policy=${policy/|||*/}
 			message=${details/*|||/}
-			echo -n '{"host": "'$host'", "severity": "'$severity'", "policy": "'$policy'", "message": "'${message//\"/\'}'"},'
+			echo -n '{"host": "'$host'", "severity": "'$severity'", "policy": "'$policy'", "message": "'"${message//\"/\'}"'"},'
 		done
 	) | write_json list $g 'group": "'$g'", "WARNING": '${pgroups[warn_$g]-0}', "FAILED": '${pgroups[fail_$g]-0}', "results'
 done
@@ -248,7 +248,7 @@ if [ -d "$RESULT_BASE_DIR/$ONE_DAY_AGO/" ]; then
 			policy=${details/#|||/}
 			policy=${policy/|||*/}
 			message=${details/*|||/}
-			echo -n '{"host": "'$host'", "group": "'$group'", "severity": "'$severity'", "policy": "'$policy'", "message": "'${message//\"/\'}'"},'
+			echo -n '{"host": "'$host'", "group": "'$group'", "severity": "'$severity'", "policy": "'$policy'", "message": "'"${message//\"/\'}"'"},'
 		done
 	) | write_json list new results
 
@@ -259,7 +259,7 @@ if [ -d "$RESULT_BASE_DIR/$ONE_DAY_AGO/" ]; then
 			policy=${details/#|||/}
 			policy=${policy/|||*/}
 			message=${details/*|||/}
-			echo -n '{"host": "'$host'", "group": "'$group'", "severity": "'$severity'", "policy": "'$policy'", "message": "'${message//\"/\'}'"},'
+			echo -n '{"host": "'$host'", "group": "'$group'", "severity": "'$severity'", "policy": "'$policy'", "message": "'"${message//\"/\'}"'"},'
 		done
 	) | write_json list solved results
 fi
