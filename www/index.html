@@ -977,7 +977,7 @@
 		   			$.each( data.overview, function( i, item ) {
 						if(item.policy && (item.FAILED + item.WARNING > 0)) {
 							var compliant = 1;
-							var tmp = '<div class="policy" title="'+item.description+'">' + item.parent + ' ::: <span class="name">' + item.policy + '</span>';
+							var tmp = '<div class="policy" title="'+item.description+'">' + item.parent + ' ::: <span class="name" filter="' + item.parent + '---' + item.policy + '">' + item.policy + '</span>';
 							if(item.FAILED > 0) {
 								compliant = 0;
 								tmp += ' <span class="FAILED" title="Total failures found">' +
@@ -1008,7 +1008,7 @@
 						setLocationHash($(this).html());
 					});
 					$(".policy").find(".name").click(function() {
-						setLocationHash('all---' + $(this).html());
+						setLocationHash($(this).attr('filter'));
 					});
 	        	})
 				.fail(function(j, t, e) {
