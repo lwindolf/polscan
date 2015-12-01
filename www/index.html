@@ -67,32 +67,33 @@
 				padding: 0 6px;
 				color: white;
 			}
-			.bcf10 { background: #f00; }
-			.bcf9 { background: #f22; }
-			.bcf8 { background: #f44; }
-			.bcf7 { background: #f66; color:black; }
-			.bcf6 { background: #f77; color:black; }
-			.bcf5 { background: #f88; color:black; }
-			.bcf4 { background: #f99; color:black; }
-			.bcf3 { background: #faa; color:black; }
-			.bcf2 { background: #fbb; color:black; }
-			.bcf1 { background: #fcc; color:black; }
+			.bcf10 { background: #f00; color:#f00; }
+			.bcf9 { background: #f22; color:#f22; }
+			.bcf8 { background: #f44; color:#f44; }
+			.bcf7 { background: #f66; color:#f66; }
+			.bcf6 { background: #f77; color:#f77; }
+			.bcf5 { background: #f88; color:#f88; }
+			.bcf4 { background: #f99; color:#f99; }
+			.bcf3 { background: #faa; color:#faa; }
+			.bcf2 { background: #fbb; color:#fbb; }
+			.bcf1 { background: #fcc; color:#fcc; }
 			.WARNING {
 				background: #ff4;
 				padding: 0 6px;
 			}
-			.bcw10 { background: #ff0; }
-			.bcw9 { background: #ff0; }
-			.bcw8 { background: #ff2; }
-			.bcw7 { background: #ff2; }
-			.bcw6 { background: #ff4; }
-			.bcw5 { background: #ff4; }
-			.bcw4 { background: #ff4; }
-			.bcw3 { background: #ff6; }
-			.bcw2 { background: #ff6; }
-			.bcw1 { background: #ff6; }
+			.bcw10 { background: #ff0; color: #ff0; }
+			.bcw9 { background: #ff0; color: #ff0; }
+			.bcw8 { background: #ff2; color: #ff2; }
+			.bcw7 { background: #ff2; color: #ff2; }
+			.bcw6 { background: #ff4; color: #ff4; }
+			.bcw5 { background: #ff4; color: #ff4; }
+			.bcw4 { background: #ff4; color: #ff4; }
+			.bcw3 { background: #ff6; color: #ff6; }
+			.bcw2 { background: #ff6; color: #ff6; }
+			.bcw1 { background: #ff6; color: #ff6; }
 			.OK {
 				background: #7f7;
+				color: #7f7;
 				padding: 0 6px;
 			}
 			.errorbox {
@@ -263,7 +264,7 @@
 				background:#ccc;
 			}
 			.hostMapBox {
-				width:12px;
+				width:6px;
 				float:left;
 				margin:3px;
 				font-size:80%;
@@ -579,7 +580,7 @@
 							html += "OK";
 							count = 0;
 						}
-						html += "' onclick='setLocationHash(\"all\", \""+h+"\")'>"+count+"</div> ";
+						html += "' onclick='setLocationHash(\"all\", \""+h+"\")'>.</div> ";
 						var groupName = getGroupByHost(groupType, h);
 						var groupClassName = groupName.replace(/[\.#]/g, "");
 						if($('#hostmap').find('#'+groupClassName).length == 0)
@@ -628,7 +629,7 @@
 			function loadHostMap(groupType, mapType) {
 				getData('host_groups', function(data) {
 					clean();
-					$('#results').append('<div class="overviewBox"><div id="hostMapNav"><small>Each box represents a host color coded with highest finding severity. The number indicates the number of findings. Hover over a box to see the hostname!</small><br/></div><div id="hostmap"></div><div id="selectedGroup"></div></div>');
+					$('#results').append('<div class="overviewBox"><div id="hostMapNav"><small>Hover over a box to see the hostname!</small><br/></div><div id="hostmap"></div><div id="selectedGroup"></div></div>');
 					$('#hostMapNav').append('<div class="hostMapOrder">'+
 						'Order by <select id="hostmapGroupType"></select> '+
 						'Filter by <select id="hostmapFilterType"></select><select id="hostmapFilterValue"/></select> '+
