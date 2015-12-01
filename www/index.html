@@ -103,12 +103,7 @@
 				border: 3px solid #f22;
 			}
 			.description {
-				//display:block;
 				display:none;
-				font-style:italic;
-				font-size: 80%;
-				color: gray;
-				padding:6px;
 			}
 			#logo {
 				background: #222;
@@ -862,8 +857,7 @@
 				onLocationHashChange();
 			}
 
-
-			function addPieChart(id, title, size, data) {
+			function addPieChart(id, title, size, pColor, data) {
 				return new d3pie(id, {
 					"header": {
 						"title": {
@@ -894,10 +888,10 @@
 							"hideWhenLessThanPercentage": 8
 						},
 						"mainLabel": {
-							"fontSize": 10
+							"fontSize": 16,
 						},
 						"percentage": {
-							"color": "#fff",
+							"color": pColor,
 							"decimalPlaces": 0
 						},
 						"value": {
@@ -924,8 +918,6 @@
 	        		.done(function( data ) {
 					createBadges('#row1', data.FAILED, data.WARNING);
 					$("#loadmessage").hide();
-					//$("<div id='groups' class='overviewBox col1'>").appendTo("#col1")
-					//$("#groups").append("<h3>By Groups</h3>");
 
 					var groupFailed = new Array();
 					var groupWarning = new Array();
@@ -967,8 +959,8 @@
 					$("<div id='findingsPies' class='overviewBox dark'>").appendTo("#row1");
 					$("<div id='pieChartFailed' class='pie'>").appendTo("#findingsPies");
 					$("<div id='pieChartWarning' class='pie'>").appendTo("#findingsPies");
-					addPieChart('pieChartFailed', 'Problems', 260, groupFailed);
-					addPieChart('pieChartWarning', 'Warnings', 260, groupWarning);
+					addPieChart('pieChartFailed', 'Problems', 260, '#fff', groupFailed);
+					addPieChart('pieChartWarning', 'Warnings', 260, '#777' ,groupWarning);
 					// FIXME: addPieChart('pieChartHosts', 'Warnings', 260, pieGroupHosts);
 
 					$( "<div id='policies' class='overviewBox'>" ).appendTo( "#col1" )
