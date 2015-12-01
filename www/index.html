@@ -327,7 +327,7 @@
 			}
 
 			function onSearch() {
-				setLocationHash('all---'+$('#search').val());
+				setLocationHash(currentResultSet+'---'+$('#search').val());
 			}
 
 			function onCopyHosts() {
@@ -520,6 +520,7 @@
 			function getData(name, callback) {
 				if(resultCache[baseUrl + name]) {
 					console.log("Using "+name+".json from cache");
+					currentResultSet = name;
 					callback(resultCache[baseUrl + name]);
 					return;
 				}
