@@ -505,10 +505,10 @@
 					setLocationHash($(this).html());
 				});
 				$("#resultTable"+name+" .policy").click(function() {
-					setLocationHash('all---' + $(this).html());
+					setLocationHash(name + '---' + $(this).html());
 				});
 				$("#resultTable"+name+" .host").click(function() {
-					setLocationHash('all---' + $(this).html());
+					setLocationHash(name + '---' + $(this).html());
 				});
 			}
 
