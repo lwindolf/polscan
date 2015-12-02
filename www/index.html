@@ -272,11 +272,13 @@
 			.hostMapGroup .boxes {
 			}
 			.hostMapBox {
-				width:6px;
+				width:12px;
+				height:12px;
 				float:left;
-				margin:3px;
-				font-size:80%;
+				margin:2px;
+				font-size:8px;
 				text-align:center;
+				padding:0;
 			}
 			.hostMapBox:hover {
 				cursor: pointer;
@@ -335,8 +337,8 @@
 			}
 
 			function onCopyHosts() {
-                $('#hostlist').html('<textarea style="width:100%">');
-                var hosts = $('td.host:visible').get();
+				$('#hostlist').html('<textarea style="width:100%">');
+				var hosts = $('td.host:visible').get();
 				var tmp = new Array();
 				for(var i = 0; i < hosts.length; i++) {
 					if(!tmp[hosts[i].innerHTML])
@@ -554,6 +556,7 @@
 			}
 
 			function addHostsToMap() {
+				var findings = $('#findingsGroup').val();
 				var groupType = $('#hostmapGroupType').val();
 				var filterType = $('#hostmapFilterType').val();
 				var filterValue = $('#hostmapFilterValue').val();
@@ -561,43 +564,57 @@
 
 				if(filterType && filterValue)
 					hg = filterType + "::" + filterValue;
-					console.log("filter="+hg);
 
-				$('#hostmap').children().remove();
+				getData(findings, function(data) {
+					var findingsByHost = new Array();
+					$.each(data.results, function(i, item) {
+						findingsByHost[item.host] += item.severity.substring(0,1);
+					});
 
-				getData('hosts', function(data) {
-					hosts = data.results;
-					$.each(data.results, function(h, findings) {
-						var html = "";
-						var count = "";
+					for (host in hosts) {
+						var value = findingsByHost[host];
+						var html = "<div title='"+host+"' class='hostMapBox ";
+						var count;
 
-						if(hg) {
-							// Apply filter
-							if(filterValue != getGroupByHost(filterType, h))
-								return;
-						}
+						// Apply filter
+						if(hg && (filterValue != getGroupByHost(filterType, host)))
+							continue;
 
-						html += "<div title='"+h+"' class='hostMapBox ";
-						if(findings.FAILED != 0) {
-							html += "FAILED bcf"+((findings.FAILED>10)?10:findings.FAILED);
-							count = findings.FAILED;
-						} else if(findings.WARNING != 0) {
-							html += "WARNING bcw"+((findings.WARNING>10)?10:findings.WARNING);
-							count = findings.WARNING;
+						if(!value)
+							value = "";
+						if(-1 != value.indexOf('F')) {
+							count = (value.match(/F/g) || []).length;
+							html += "FAILED bcf"+((count>10)?10:count);
+						} else if(-1 != value.indexOf('W')) {
+							count = (value.match(/W/g) || []).length;
+							html += "WARNING bcw"+((count>10)?10:count);
 						} else {
 							html += "OK";
-							count = 0;
 						}
-						html += "' onclick='setLocationHash(\"all\", \""+h+"\")'>.</div> ";
-						var groupName = getGroupByHost(groupType, h);
+						html += "' onclick='setLocationHash(\"all\", \""+host+"\")'>.</div> ";
+						var groupName = getGroupByHost(groupType, host);
 						var groupClassName = groupName.replace(/[\.#]/g, "");
 						if($('#hostmap').find('#'+groupClassName).length == 0)
 							$('#hostmap').append('<div class="hostMapGroup" id="'+groupClassName+'"><table><tr><td class="title">'+groupName+'</td><td class="boxes"></td></tr></table></div>');
 						$('#' + groupClassName + ' .boxes').append(html);
+					}
+				});
+			}
+
+			// Add all findings group names to a <select>
+			// FIXME: selected logic
+			function loadFindingGroups(id) {
+				getData("overview", function(data) {
+					$('#'+id).append('<option selected value="all">All</option>');
+					$.each(data.overview, function(i, item) {
+						if(item.group) {
+							$('#'+id).append('<option value="'+item.group+'">'+item.group+'</option>');
+						}
 					});
 				});
 			}
 
+			// Add all host group types to a <select>
 			function loadHostGroupTypes(data, id, groupType, noneAllowed) {
 				hostGroups = data;
 				$.each(data, function(name, list) {
@@ -615,6 +632,7 @@
 				}
 			}
 
+			// Add all host group values to a <select>
 			var hgValues;
 			function loadHostGroupValues(data, id, value, noneAllowed) {
 				hgValues = new Array();
@@ -637,13 +655,15 @@
 			function loadHostMap(groupType, mapType) {
 				getData('host_groups', function(data) {
 					clean();
-					$('#results').append('<div class="overviewBox"><div id="hostMapNav"><small>Hover over a box to see the hostname!</small><br/></div><div id="hostmap"></div><div id="selectedGroup"></div></div>');
-					$('#hostMapNav').append('<div class="hostMapOrder">'+
-						'Order by <select id="hostmapGroupType"></select> '+
+					$('#results').append('<div class="overviewBox"><div id="hostMapNav"><small>Hover over a box to see the host name!</small><br/></div><div id="hostmap"></div><div id="selectedGroup"></div></div>');
+					$('#hostMapNav').prepend('<div class="hostMapOrder">'+
+						'Findings <select id="findingsGroup"></select> '+
+						'Group by <select id="hostmapGroupType"></select> '+
 						'Filter by <select id="hostmapFilterType"></select><select id="hostmapFilterValue"/></select> '+
 						'Show as <select id="hostMapType"><option selected value="list" selected>List</option><option value="treemap">Tree Map</option></select>'+
 						'<input id="hostMapGo" type="button" value="Go"/> '+
 						'</div>');
+					loadFindingGroups('findingsGroup');
 					loadHostGroupTypes(data.results, 'hostmapGroupType', groupType);
 					loadHostGroupTypes(data.results, 'hostmapFilterType', undefined, true);
 					$('#hostmapFilterType').change(function() {
@@ -774,7 +794,10 @@
 			}
 
 			(function() {
-				onLocationHashChange();
+				getData('hosts', function(data) {
+					hosts = data.results;
+					onLocationHashChange();
+				});
 
 				// Allow some simple navigation by browser history 
 				// for scanner results
@@ -919,12 +942,11 @@
 			function loadOverview() {
 
 				clean();
-				$("<div id='overviewBoxContainer'>").appendTo("#results")
-				$("<div id='col2'>").appendTo("#overviewBoxContainer")
-				$("<div id='col1'>").appendTo("#overviewBoxContainer")
+				$("<div id='overviewBoxContainer'>").appendTo("#results");
+				$("<div id='col2'>").appendTo("#overviewBoxContainer");
+				$("<div id='col1'>").appendTo("#overviewBoxContainer");
 
-				$.getJSON(baseUrl + "overview.json", {})
-	        		.done(function( data ) {
+				getData("overview", function(data) {
 					createBadges('#row1', data.FAILED, data.WARNING);
 					$("#loadmessage").hide();
 
@@ -1011,10 +1033,7 @@
 					$(".policy").find(".name").click(function() {
 						setLocationHash($(this).attr('filter'));
 					});
-	        	})
-				.fail(function(j, t, e) {
-					error('Fetching overview results failed! ' + t + " " +e);
-				});
+	        		});
 
 				$("<div id='newBox' class='overviewBox'>").appendTo("#col2")
 				$("#newBox").html("<h3>New Findings</h3>");
