@@ -664,12 +664,16 @@
 			function addHostMapTooltip() {
 				
 				var changeTooltipPosition = function(event) {
-					var tooltipX = event.pageX - 200;
+					var tooltipX = event.pageX + 8;
 					var tooltipY = event.pageY + 8;
+
+					if(tooltipX > $(window).width() * 2 / 3 - 16)
+						tooltipX = $(window).width() * 2 / 3 - 16;
+
 					$('div.tooltip').css({
 						top: tooltipY,
 						left: tooltipX,
-						'max-width': $(window).width() / 2
+						width: $(window).width() / 3
 					});
 				};
 
@@ -680,10 +684,16 @@
 					if(!resultCache[$('#findingsGroup').val()])
 						console.log("Fatal: no cache for "+$('#findingsGroup').val());
 					$.each(resultCache[$('#findingsGroup').val()].results, function(i, item) {
-						if(item.host == host) {
-							details += "<tr><td class='group'>" + item.group + "</td><td class='policy "+item.severity+"'>" + item.policy + "</td><td>" + ((item.message.length>100)?item.message.substring(0,100)+" [...]":item.message) + "</td></tr>";
+						if(item.host == host && item.severity != "OK") {
+							details += "<tr>";
+							if(item.group)
+								details += "<td class='group'>" + item.group + "</td>";
+							details += "<td class='policy "+item.severity+"'>" + item.policy + "</td><td>" + ((item.message.length>100)?item.message.substring(0,100)+" [...]":item.message) + "</td></tr>";
 						}
 					});
+					if(details == "")
+						details = "<br/><br/>No problematic findings here.";
+
 	  				$('div.tooltip').remove();
 					$('<div class="tooltip"><b>'+host+'</b><table class="resultTable">'+details+'</table></div>').appendTo('#hostmap');
 					changeTooltipPosition(event);
@@ -703,7 +713,7 @@
 			function loadHostMap(groupType, mapType) {
 				getData('host_groups', function(data) {
 					clean();
-					$('#results').append('<div class="overviewBox"><div id="hostMapNav"><small>Hover over a box to see the host name!</small><br/></div><div id="hostmap"></div><div id="selectedGroup"></div></div>');
+					$('#results').append('<div class="overviewBox"><div id="hostMapNav"><small>Hover over a box for host details.</small><br/></div><div id="hostmap"></div><div id="selectedGroup"></div></div>');
 					$('#hostMapNav').prepend('<div class="hostMapOrder">'+
 						'Findings <select id="findingsGroup"></select> '+
 						'Group by <select id="hostmapGroupType"></select> '+
