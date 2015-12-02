@@ -604,8 +604,8 @@
 			// Add all findings group names to a <select>
 			// FIXME: selected logic
 			function loadFindingGroups(id) {
+				$('#'+id).append('<option selected value="all">All</option>');
 				getData("overview", function(data) {
-					$('#'+id).append('<option selected value="all">All</option>');
 					$.each(data.overview, function(i, item) {
 						if(item.group) {
 							$('#'+id).append('<option value="'+item.group+'">'+item.group+'</option>');
