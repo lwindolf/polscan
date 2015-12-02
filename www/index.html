@@ -283,6 +283,14 @@
 			.hostMapBox:hover {
 				cursor: pointer;
 			}
+			.tooltip{
+				margin:3px;
+				padding:3px;
+				border:1px solid #777;
+				background-color:white;
+				position: absolute;
+				z-index: 2;
+			}
 			#findingsPies {
 				height:260px;
 				padding:0 24px;
@@ -573,7 +581,7 @@
 
 					for (host in hosts) {
 						var value = findingsByHost[host];
-						var html = "<div title='"+host+"' class='hostMapBox ";
+						var html = "<div host='"+host+"' class='hostMapBox ";
 						var count;
 
 						// Apply filter
@@ -598,6 +606,8 @@
 							$('#hostmap').append('<div class="hostMapGroup" id="'+groupClassName+'"><table><tr><td class="title">'+groupName+'</td><td class="boxes"></td></tr></table></div>');
 						$('#' + groupClassName + ' .boxes').append(html);
 					}
+
+					addHostMapTooltip();
 				});
 			}
 
@@ -650,6 +660,32 @@
 				for(var i = 0; i < hgValues.length; i++) {
 					$('#'+id).append('<option value="'+hgValues[i]+'">'+hgValues[i]+'</option>');
 				}
+			}
+
+			function addHostMapTooltip() {
+				
+	var changeTooltipPosition = function(event) {
+	  var tooltipX = event.pageX - 8;
+	  var tooltipY = event.pageY + 8;
+	  $('div.tooltip').css({top: tooltipY, left: tooltipX});
+	};
+
+	var showTooltip = function(event) {
+	  $('div.tooltip').remove();
+	  $('<div class="tooltip">'+$(this).attr('host')+'</div>')
+            .appendTo('#hostmap');
+	  changeTooltipPosition(event);
+	};
+
+	var hideTooltip = function() {
+	   $('div.tooltip').remove();
+	};
+
+	$("div.hostMapBox").bind({
+	   mousemove : changeTooltipPosition,
+	   mouseenter : showTooltip,
+	   mouseleave: hideTooltip
+	});
 			}
 
 			function loadHostMap(groupType, mapType) {
