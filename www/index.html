@@ -276,7 +276,7 @@
 				height:12px;
 				float:left;
 				margin:2px;
-				font-size:8px;
+				font-size:2px;
 				text-align:center;
 				padding:0;
 			}
@@ -541,7 +541,6 @@
 
 				$.getJSON(baseUrl + name + ".json", {})
 		        	 .done(function(data) {
-					console.log("JSON network fetch done.");
 					currentResultSet = name;
 					resultCache[name] = data;
 					callback(data);
@@ -599,7 +598,7 @@
 						} else {
 							html += "OK";
 						}
-						html += "' onclick='setLocationHash(\"all\", \""+host+"\")'>.</div> ";
+						html += "' onclick='setLocationHash(\"all\", \""+host+"\")'>&nbsp;</div> ";
 						var groupName = getGroupByHost(groupType, host);
 						var groupClassName = groupName.replace(/[\.#]/g, "");
 						if($('#hostmap').find('#'+groupClassName).length == 0)
@@ -664,18 +663,31 @@
 
 			function addHostMapTooltip() {
 				
-	var changeTooltipPosition = function(event) {
-	  var tooltipX = event.pageX - 8;
-	  var tooltipY = event.pageY + 8;
-	  $('div.tooltip').css({top: tooltipY, left: tooltipX});
-	};
+				var changeTooltipPosition = function(event) {
+					var tooltipX = event.pageX - 200;
+					var tooltipY = event.pageY + 8;
+					$('div.tooltip').css({
+						top: tooltipY,
+						left: tooltipX,
+						'max-width': $(window).width() / 2
+					});
+				};
 
-	var showTooltip = function(event) {
-	  $('div.tooltip').remove();
-	  $('<div class="tooltip">'+$(this).attr('host')+'</div>')
-            .appendTo('#hostmap');
-	  changeTooltipPosition(event);
-	};
+				var showTooltip = function(event) {
+					var host = $(this).attr('host');
+					var details = "";
+
+					if(!resultCache[$('#findingsGroup').val()])
+						console.log("Fatal: no cache for "+$('#findingsGroup').val());
+					$.each(resultCache[$('#findingsGroup').val()].results, function(i, item) {
+						if(item.host == host) {
+							details += "<tr><td class='group'>" + item.group + "</td><td class='policy "+item.severity+"'>" + item.policy + "</td><td>" + ((item.message.length>100)?item.message.substring(0,100)+" [...]":item.message) + "</td></tr>";
+						}
+					});
+	  				$('div.tooltip').remove();
+					$('<div class="tooltip"><b>'+host+'</b><table class="resultTable">'+details+'</table></div>').appendTo('#hostmap');
+					changeTooltipPosition(event);
+				};
 
 	var hideTooltip = function() {
 	   $('div.tooltip').remove();
