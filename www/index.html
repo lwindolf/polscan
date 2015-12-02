@@ -377,7 +377,7 @@
 				console.time("grouping");
 				var hosts = new Array();
 				var values = new Array();
-			   	$.each(resultCache[baseUrl + name].results, function( i, item ) {
+			   	$.each(resultCache[name].results, function( i, item ) {
 					if(item.message.indexOf(groupByValue) == -1)
 						return;
 
@@ -532,10 +532,10 @@
 			   FIXME: Avoid OOM when navigating through days
 			 */
 			function getData(name, callback) {
-				if(resultCache[baseUrl + name]) {
+				if(resultCache[name]) {
 					console.log("Using "+name+".json from cache");
 					currentResultSet = name;
-					callback(resultCache[baseUrl + name]);
+					callback(resultCache[name]);
 					return;
 				}
 
@@ -543,7 +543,7 @@
 		        	 .done(function(data) {
 					console.log("JSON network fetch done.");
 					currentResultSet = name;
-					resultCache[baseUrl + name] = data;
+					resultCache[name] = data;
 					callback(data);
 				})
 				.fail(function(j, t, e) {
