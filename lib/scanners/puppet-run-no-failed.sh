@@ -1,4 +1,4 @@
-# group: Puppet
+# group: Puppet-Run
 # name: No failed
 # description: Checks for Puppet 2/3 last_run_report.yaml for failed resources
 
