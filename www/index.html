@@ -563,30 +563,40 @@
 				return 'Ungrouped';
 			}
 
-			function addHostsToMap() {
-				var findings = $('#findingsGroup').val();
-				var groupType = $('#hostmapGroupType').val();
+			function get_hosts_filtered() {
 				var filterType = $('#hostmapFilterType').val();
 				var filterValue = $('#hostmapFilterValue').val();
 				var hg = undefined;
+				var results = new Array();
 
 				if(filterType && filterValue)
 					hg = filterType + "::" + filterValue;
 
+				for(host in hosts) {
+					if(!hg || filterValue == getGroupByHost(filterType, host))
+						results.push(host);
+				}
+
+				return results;
+			}
+
+			function addHostsToMap() {
+				var findings = $('#findingsGroup').val();
+				var groupType = $('#hostmapGroupType').val();
+
 				getData(findings, function(data) {
 					var findingsByHost = new Array();
+					var filteredHosts = get_hosts_filtered()
+
 					$.each(data.results, function(i, item) {
 						findingsByHost[item.host] += item.severity.substring(0,1);
 					});
 
-					for (host in hosts) {
+					for (h in filteredHosts) {
 						var value = findingsByHost[host];
 						var html = "<div host='"+host+"' class='hostMapBox ";
+						var host = filteredHosts[h];
 						var count;
-
-						// Apply filter
-						if(hg && (filterValue != getGroupByHost(filterType, host)))
-							continue;
 
 						if(!value)
 							value = "";
@@ -700,15 +710,15 @@
 					changeTooltipPosition(event);
 				};
 
-	var hideTooltip = function() {
-	   $('div.tooltip').remove();
-	};
+				var hideTooltip = function() {
+				   $('div.tooltip').remove();
+				};
 
-	$("div.hostMapBox").bind({
-	   mousemove : changeTooltipPosition,
-	   mouseenter : showTooltip,
-	   mouseleave: hideTooltip
-	});
+				$("div.hostMapBox").bind({
+				   mousemove : changeTooltipPosition,
+				   mouseenter : showTooltip,
+				   mouseleave: hideTooltip
+				});
 			}
 
 			function loadHostMap(groupType, mapType) {
@@ -745,26 +755,25 @@
 			}
 
 			function addHostsToTreeMap(groupType) {
-				// First count hosts represented by this host group schema
-				// as this host count is probably not equal to all known hosts
 				var hostCount = 0;
-				for(name in hostGroups) {
-					if(name.indexOf(groupType) == 0)
-						// FIXME: count unique only!!!
-						hostCount += hostGroups[name].length;
-				}
-
 				var treeMapChildren = new Array();
+				var findings = $('#findingsGroup').val();
+				var groupType = $('#hostmapGroupType').val();
+				var filteredHosts = get_hosts_filtered();
+
 				for(name in hostGroups) {
 					if(name.indexOf(groupType) != 0)
 						continue;
 					var g = {
 						'id'	   : name.split(/::/)[1],
-						'size'	   : [hostGroups[name].length/hostCount],
+						'size'	   : [hostGroups[name].length],	// division by hostCount happens later
 						'color'    : [.0],
 						'children' : []
 					};
 					for(i = 0; i < hostGroups[name].length; i++) {
+						if(-1 == filteredHosts.indexOf(hostGroups[name][i]))
+							break;
+
 						var c = 0;
 						if(hostGroups[name][i] in hosts) {
 							var findings = hosts[hostGroups[name][i]];
@@ -776,12 +785,26 @@
 						
 						g.children.push({
 							'id'    : hostGroups[name][i],
-							'size'  : [1/hostGroups[name].length],
+							'size'  : [1],	// division by groupCount happens later
 							'color' : [c],
 							'labelsEnabled': false
 						});	
+
+						hostCount++;
 					}
 					treeMapChildren.push(g);
+				}
+
+				// Apply relative sizing as we now know the host count
+				for(c in treeMapChildren) {
+					var g = treeMapChildren[c];
+					var groupCount = g.children.length;
+
+					g.size[0] /= hostCount;
+
+					for(h in g.children) {
+						g.children[h].size[0] /= groupCount;
+					}
 				}
 
 				$('#hostmap').treemap({
