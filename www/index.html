@@ -739,17 +739,17 @@
 					});
 
 					$('#hostMapGo').click(function() {
-console.log("click!");
 						setLocationHash({ view: 'hostmap', gT: $('#hostmapGroupType').val() });
 					});
 
-					$('#hostmap').empty();
-					addHostsToMap(params);
+					if(params.fG)
+						addHostsToMap(params);
+					else
+						$('#hostMapGo').trigger('click');
 				});
 			}
 
 			function loadScannerResults(params, reduced) {
-
 				console.log("Loading results start (search="+params.sT+" reduced="+reduced+")");
 				getData(params.fG, function(data) {
 					clean();
@@ -792,7 +792,6 @@ console.log("click!");
 
 					while (match = search.exec(window.location.hash.substring(1)))
 					       params[decode(match[1])] = decode(match[2]);
-console.log("parsed params: "+JSON.stringify(params));
 				} catch(e) {
 					console.log("Invalid parameter encoding! "+e);
 				}
