@@ -583,11 +583,8 @@
 				return results;
 			}
 
-			function addHostsToMap() {
-				var findings = $('#findingsGroup').val();
-				var groupType = $('#hostmapGroupType').val();
-
-				getData(findings, function(data) {
+			function addHostsToMap(params) {
+				getData(params.fG, function(data) {
 					var findingsByHost = new Array();
 					var filteredHosts = get_hosts_filtered()
 
@@ -613,7 +610,7 @@
 							html += "OK";
 						}
 						html += "' onclick='setLocationHash({ sT: \""+host+"\"})'>&nbsp;</div> ";
-						var groupName = getGroupByHost(groupType, host);
+						var groupName = getGroupByHost(params.gT, host);
 						var groupClassName = groupName.replace(/[\.#]/g, "");
 						if($('#hostmap').find('#'+groupClassName).length == 0)
 							$('#hostmap').append('<div class="hostMapGroup" id="'+groupClassName+'"><table><tr><td class="title">'+groupName+'</td><td class="boxes"></td></tr></table></div>');
@@ -749,7 +746,7 @@ console.log("click!");
 					});
 
 					$('#hostmap').empty();
-					addHostsToMap();
+					addHostsToMap(params);
 				});
 			}
 
