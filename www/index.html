@@ -308,12 +308,12 @@
 			</div>
 			<div id='menuOptions'>
 			<a href="#">Overview</a>
-			<a href="#hostmap">Hosts Map</a>
+			<a href="#view=hostmap">Hosts Map</a>
 
 			Findings: 
-			<a href="#all">All</a>
-			<a href="#new">New</a>
-			<a href="#solved">Solved</a>
+			<a href="#view=results&fG=all">All</a>
+			<a href="#view=results&fG=new">New</a>
+			<a href="#view=results&fG=solved">Solved</a>
 			</div>
 		</div>
 
@@ -342,7 +342,7 @@
 			}
 
 			function onSearch() {
-				setLocationHash(currentResultSet+'---'+$('#search').val());
+				setLocationHash({ fG: currentResultSet, sT: $('#search').val()});
 			}
 
 			function onCopyHosts() {
@@ -364,6 +364,8 @@
 					$('#search').val(),
 					$('#groupById option:selected').text()
 				);
+
+				// FIXME setLocationHash({ fG: currentResultSet, sT: $('#search').val(), gT: $('#groupById option:selected').text()});
 			}
 
 			function createGroupTable(name, id, searchValue, groupByValue) {
@@ -420,7 +422,7 @@
 				for(var key in values) {
 					var hostlinks = "";
 					for(var h in hosts[key])
-						hostlinks += "<a href='javascript:setLocationHash(\"all---"+hosts[key][h]+"\");'>"+hosts[key][h]+"</a> ";
+						hostlinks += "<a href='javascript:setLocationHash({ sT: \"+hosts[key][h]+\"});'>"+hosts[key][h]+"</a> ";
 					rows.push('<tr><td class="groupByValue">' + key + '</td>' +
 						  '<td class="count">' + hosts[key].length + '</td>' +
 					          '<td class="hosts">' + hostlinks + '</td></tr>');
@@ -517,13 +519,13 @@
 				}
 
 				$("#resultTable"+name+" .group").click(function() {
-					setLocationHash($(this).html());
+					setLocationHash({ fG: $(this).html()});
 				});
 				$("#resultTable"+name+" .policy").click(function() {
-					setLocationHash(name + '---' + $(this).html());
+					setLocationHash({ fG: name, sT: $(this).html()});
 				});
 				$("#resultTable"+name+" .host").click(function() {
-					setLocationHash(name + '---' + $(this).html());
+					setLocationHash({ fG: name, sT: $(this).html()});
 				});
 			}
 
@@ -533,17 +535,19 @@
 			   FIXME: Avoid OOM when navigating through days
 			 */
 			function getData(name, callback) {
-				if(resultCache[name]) {
+				var cacheName = name.replace('-', '_');
+
+				if(resultCache[cacheName]) {
 					console.log("Using "+name+".json from cache");
-					currentResultSet = name;
-					callback(resultCache[name]);
+					currentResultSet = cacheName;
+					callback(resultCache[cacheName]);
 					return;
 				}
 
 				$.getJSON(baseUrl + name + ".json", {})
 		        	 .done(function(data) {
-					currentResultSet = name;
-					resultCache[name] = data;
+					currentResultSet = cacheName;
+					resultCache[cacheName] = data;
 					callback(data);
 				})
 				.fail(function(j, t, e) {
@@ -609,7 +613,7 @@
 						} else {
 							html += "OK";
 						}
-						html += "' onclick='setLocationHash(\"all\", \""+host+"\")'>&nbsp;</div> ";
+						html += "' onclick='setLocationHash({ sT: \""+host+"\"})'>&nbsp;</div> ";
 						var groupName = getGroupByHost(groupType, host);
 						var groupClassName = groupName.replace(/[\.#]/g, "");
 						if($('#hostmap').find('#'+groupClassName).length == 0)
@@ -622,13 +626,12 @@
 			}
 
 			// Add all findings group names to a <select>
-			// FIXME: selected logic
-			function loadFindingGroups(id) {
+			function loadFindingGroups(id, selected) {
 				$('#'+id).append('<option selected value="all">All</option>');
 				getData("overview", function(data) {
 					$.each(data.overview, function(i, item) {
 						if(item.group) {
-							$('#'+id).append('<option value="'+item.group+'">'+item.group+'</option>');
+							$('#'+id).append('<option '+(selected==item.group?'selected ':'')+'value="'+item.group+'">'+item.group+'</option>');
 						}
 					});
 				});
@@ -654,10 +657,10 @@
 
 			// Add all host group values to a <select>
 			var hgValues;
-			function loadHostGroupValues(data, id, value, noneAllowed) {
+			function loadHostGroupValues(data, id, group, value, noneAllowed) {
 				hgValues = new Array();
 				$.each(data, function(name, list) {
-					if(value == name.split(/::/)[0]) {
+					if(group == name.split(/::/)[0]) {
 						var v = name.split(/::/)[1];
 						hgValues.push(v);
 					}
@@ -668,7 +671,7 @@
 					$('#'+id).append('<option></option>');
 				hgValues = hgValues.sort();
 				for(var i = 0; i < hgValues.length; i++) {
-					$('#'+id).append('<option value="'+hgValues[i]+'">'+hgValues[i]+'</option>');
+					$('#'+id).append('<option '+(value==hgValues[i]?'selected ':'')+'value="'+hgValues[i]+'">'+hgValues[i]+'</option>');
 				}
 			}
 
@@ -691,17 +694,19 @@
 				var showTooltip = function(event) {
 					var host = $(this).attr('host');
 					var details = "";
+					var cache = resultCache[$('#findingsGroup').val().replace('-', '_')];
 
-					if(!resultCache[$('#findingsGroup').val()])
+					if(!cache)
 						console.log("Fatal: no cache for "+$('#findingsGroup').val());
-					$.each(resultCache[$('#findingsGroup').val()].results, function(i, item) {
-						if(item.host == host && item.severity != "OK") {
-							details += "<tr>";
-							if(item.group)
-								details += "<td class='group'>" + item.group + "</td>";
-							details += "<td class='policy "+item.severity+"'>" + item.policy + "</td><td>" + ((item.message.length>100)?item.message.substring(0,100)+" [...]":item.message) + "</td></tr>";
-						}
-					});
+					else
+						$.each(cache.results, function(i, item) {
+							if(item.host == host && item.severity != "OK") {
+								details += "<tr>";
+								if(item.group)
+									details += "<td class='group'>" + item.group + "</td>";
+								details += "<td class='policy "+item.severity+"'>" + item.policy + "</td><td>" + ((item.message.length>100)?item.message.substring(0,100)+" [...]":item.message) + "</td></tr>";
+							}
+						});
 					if(details == "")
 						details = "<br/><br/>No problematic findings here.";
 
@@ -721,7 +726,7 @@
 				});
 			}
 
-			function loadHostMap(groupType, mapType) {
+			function loadHostMap(params) {
 				getData('host_groups', function(data) {
 					clean();
 					$('#results').append('<div class="overviewBox"><div id="hostMapNav"><small>Hover over a box for host details.</small><br/></div><div id="hostmap"></div><div id="selectedGroup"></div></div>');
@@ -732,25 +737,26 @@
 						'Show as <select id="hostMapType"><option selected value="list" selected>List</option><option value="treemap">Tree Map</option></select>'+
 						'<input id="hostMapGo" type="button" value="Go"/> '+
 						'</div>');
-					loadFindingGroups('findingsGroup');
-					loadHostGroupTypes(data.results, 'hostmapGroupType', groupType);
-					loadHostGroupTypes(data.results, 'hostmapFilterType', undefined, true);
+					loadFindingGroups('findingsGroup', params.fG);
+					loadHostGroupTypes(data.results, 'hostmapGroupType', params.gT);
+					loadHostGroupTypes(data.results, 'hostmapFilterType', params.fT, true);
+					loadHostGroupValues(data.results, 'hostmapFilterValue', params.fT, params.fV, true);
 					$('#hostmapFilterType').change(function() {
-						loadHostGroupValues(data.results, 'hostmapFilterValue', $('#hostmapFilterType').val(), true);
+						loadHostGroupValues(data.results, 'hostmapFilterValue', $('#hostmapFilterType').val(), undefined, true);
 					});
 
-					if(mapType)
-						$('#hostMapType').val(mapType);
 					$('#hostMapGo').click(function() {
-						$('#hostmap').empty();
-						setLocationHash('hostmap', $('#hostmapGroupType').val() + "---" + $('#hostMapType').val());
-						if($('#hostMapType').val() == 'list')
-							addHostsToMap();
-						else
-							addHostsToTreeMap(groupType);
+console.log("click!");
+						setLocationHash({ view: 'hostmap', gB: $('#hostmapGroupType').val(), gT: $('#hostmapGroupType').val(), mT: $('#hostMapType').val() });
 					});
 
-					$('#hostMapGo').trigger('click');
+					$('#hostmap').empty();
+					if(params.mT)
+						$('#hostMapType').val(params.mT);
+					if($('#hostMapType').val() == 'list')
+						addHostsToMap();
+					else
+						addHostsToTreeMap(params.gT);
 				});
 			}
 
@@ -823,10 +829,10 @@
             			});
 			}
 
-			function loadScannerResults(name, searchValue, reduced) {
+			function loadScannerResults(params, reduced) {
 
-				console.log("Loading results start (search="+searchValue+" reduced="+reduced+")");
-				getData(name, function(data) {
+				console.log("Loading results start (search="+params.sT+" reduced="+reduced+")");
+				getData(params.fG, function(data) {
 					clean();
 					$('#results').append('<div class="search">' +
 						'Search <input type="text" size="40" id="search"/> ' +
@@ -836,43 +842,75 @@
 						'<input type="button" disabled value="Go" onclick="onGroupByChange();"/></span> ' +
 						'<div id="hostlist"/>' +
 						'</div>');
-					createResultTable(name, '#results', data.results, searchValue, reduced);
-					$("#search").val(searchValue);
+					createResultTable(params.fG, '#results', data.results, params.sT, reduced);
+					$("#search").val(params.sT);
 	
 					var badgeTitle;
-					if(name == "all") {
-						if(searchValue)
-							badgeTitle = "<small>Filter</small><br/> " + searchValue;
+					if(!params.fG || params.fG == "all") {
+						if(params.sT)
+							badgeTitle = "<small>Filter</small><br/> " + params.sT;
 						else
 							badgeTitle = "Overall";
 					} else {
-						badgeTitle = "<small>Group</small><br/> " + name;
+						badgeTitle = "<small>Group</small><br/> " + params.fG;
 					}
 	
 					createBadges('#row1', failed, warning, badgeTitle);
-					createHistogram(searchValue?searchValue:name);
+					createHistogram(params.sT?params.sT:params.fG);
 				});
 			}
 
 			function onLocationHashChange() {
-				var params = window.location.hash.substring(1).split('---');
-				if(!params[0]) 
+				var params = {};
+
+				try {
+					// http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript (2nd answer)
+					var match,
+					    pl = /\+/g,  // Regex for replacing addition symbol with a space
+					    search = /([^&=]+)=?([^&]*)/g,
+					    decode = function (s) { return decodeURIComponent(s.replace(pl, " ")); },
+    					    query  = window.location.search.substring(1);
+
+					while (match = search.exec(window.location.hash.substring(1)))
+					       params[decode(match[1])] = decode(match[2]);
+console.log("parsed params: "+JSON.stringify(params));
+				} catch(e) {
+					console.log("Invalid parameter encoding! "+e);
+				}
+
+				// FIXME: Update generic filter model
+
+				$("#menu a.current").removeClass("current");
+
+				if(params.view == "hostmap") {
+					loadHostMap(params);
+					$("#menu a[href='#view=hostmap']").addClass("current");
+				} else if(!params.fG) {
 					loadOverview();
-				else if(params[0] == "hostmap")
-					loadHostMap(params[1], params[2]);
-				else
-					loadScannerResults(params[0], params[1]?decodeURI(params[1]):null, params.length > 1);
+					$("#menu a[href='#']").addClass("current");
+				} else {
+					loadScannerResults(params, params.sT != undefined);
+					$("#menu a[href='#view=results&fG="+params.fG+"']").addClass("current");
+				}
 
 				// Highlight correct menu item...
-				$("#menu a.current").removeClass("current");
-				$("#menu a[href='#"+params[0]+"']").addClass("current");
 			}
 
-			function setLocationHash(id, search) {
-				if (search)
-					window.location.hash = id + "---" + search;
-				else
-					window.location.hash = id;
+			function setLocationHash(params) {
+				// FIXME: Build a real filter model!
+				var filterType = $('#hostmapFilterType').val();
+				var filterValue = $('#hostmapFilterValue').val();
+				var findingsGroup = $('#findingsGroup').val();
+
+				// Always add filter values...
+				if(filterType) {
+					params.fT = filterType;
+					params.fV = filterValue;
+				}
+				if(findingsGroup)
+					params.fG = findingsGroup;
+
+				window.location.hash = "#" + $.param(params);
 			}
 
 			(function() {
@@ -1015,7 +1053,7 @@
 					},
 					'callbacks': {
 						'onClickSegment': function(segment) {
-							setLocationHash(segment.data.label);
+							setLocationHash({ fG: segment.data.label});
 						}
 					}
 				});
@@ -1110,10 +1148,10 @@
 		   			});
 
 					$(".group").find(".name").click(function() {
-						setLocationHash($(this).html());
+						setLocationHash({ view: 'results', fG: $(this).html() });
 					});
 					$(".policy").find(".name").click(function() {
-						setLocationHash($(this).attr('filter'));
+						setLocationHash({ view: 'results', sT: $(this).attr('filter') });
 					});
 	        		});
 
