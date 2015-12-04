@@ -751,8 +751,8 @@
 
 			function loadScannerResults(params, reduced) {
 				console.log("Loading results start (search="+params.sT+" reduced="+reduced+")");
+				clean();
 				getData(params.fG, function(data) {
-					clean();
 					$('#results').append('<div class="search">' +
 						'Search <input type="text" size="40" id="search"/> ' +
 						'<input type="button" value="Go" onclick="onSearch();"/> ' +
