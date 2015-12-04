@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# name: Subdomain-Prefix
+# description: Hostgroup provider based on domain names. Simply groups all hosts by first subdomain prefix
+
+echo "$HOST_LIST" |\
+xargs -n 1 |\
+grep -v "^[^.]*$" |\
+sed 's/^\([^.]*\.\([^.]*\)\)/Domain::\2 \1/'
