@@ -246,14 +246,26 @@
 			#histogramChart {
 				margin:12px;
 			}
-			#hostmap {
-				overflow:auto;
-			}
-			.hostMapOrder {
+			#filterSettings {
 				background:#eee;
 				padding:6px 12px;
 				border:1px solid #ccc;
 				margin:6px 0;
+			}
+		@media (min-width: 1024px) {
+			#filterSettings {
+				float: left;
+				margin:0;
+				margin-right:12px;
+			}
+			#filterSettings select {
+				display:block;
+				width:300px;
+				margin-bottom:6px;
+			}
+		}
+			#hostmap {
+				overflow:auto;
 			}
 			.hostMapGroup {
 				width:100%;
@@ -724,7 +736,7 @@
 				getData('host_groups', function(data) {
 					clean();
 					$('#results').append('<div class="overviewBox"><div id="hostMapNav"/><div id="hostmap"/><div id="selectedGroup"/></div>');
-					$('#hostMapNav').append('<div class="hostMapOrder">'+
+					$('#hostMapNav').append('<div id="filterSettings">'+
 						'Findings <select id="findingsGroup"></select> '+
 						'Group by <select id="hostmapGroupType"></select> '+
 						'Filter by <select id="hostmapFilterType"></select><select id="hostmapFilterValue"/></select> '+
