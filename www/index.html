@@ -560,7 +560,6 @@
 					callback(data);
 				})
 				.fail(function(j, t, e) {
-					clean();
 					error('Fetching results for '+name+' failed! ' + t + " " + e);
 				});
 			}
@@ -604,8 +603,8 @@
 
 					for (h in filteredHosts) {
 						var value = findingsByHost[host];
-						var html = "<div host='"+host+"' class='hostMapBox ";
 						var host = filteredHosts[h];
+						var html = "<div host='"+host+"' class='hostMapBox ";
 						var count;
 
 						if(!value)
