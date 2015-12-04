@@ -87,7 +87,7 @@ declare -A pall
 declare -A hosts
 
 groups=$(
-	egrep -h "^[a-zA-Z0-9][[a-zA-Z0-9]* (OK|WARNING|FAILED) " ./* |\
+	egrep -h "^[a-zA-Z0-9_-][[a-zA-Z0-9_-]* (OK|WARNING|FAILED) " ./* |\
 	awk '{print $1}' | sort -u
 )
 echo "Found groups:" $groups
