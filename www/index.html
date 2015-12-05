@@ -756,6 +756,7 @@
 						loadHostGroupValues(resultCache['host_groups'].results, 'hostmapFilterValue', $('#hostmapFilterType').val(), undefined, true);
 					});
 
+					$("#search").val(params.sT);
 					$('#filterSettingsGo').click(callback);
 				});
 			}
@@ -788,7 +789,6 @@
 						createResultTable(params.fG, '#results', data.results, params.sT, reduced);
 					else
 						createGroupTable(params.fG, '#results', data.results, params.sT, params.gI);
-					//$("#search").val(params.sT);
 	
 					var badgeTitle;
 					if(!params.fG || params.fG == "all") {
