@@ -19,9 +19,6 @@
 				padding:0;
 				overflow-y:scroll;
 			}
-			select {
-				max-width:250px;
-			}
 			#overviewBoxContainer {
 				clear:both;
 			}
@@ -101,7 +98,6 @@
 			}
 			.errorbox {
 				padding: 24px;
-				padding-top:0;
 				margin:12px;
 				background: #f44;
 				border: 3px solid #f22;
@@ -149,7 +145,7 @@
 				font-weight:bold;
 				background: #eee;
 			}
-			#results, #timebar {
+			#results {
 				padding: 12px;
 			}
 			.resultTable {
@@ -249,9 +245,9 @@
 				margin:12px;
 			}
 			#filterSettings {
-				background:#eee;
+				background: #ddd;
+				border: 1px solid #aaa;
 				padding:6px 12px;
-				border:1px solid #ccc;
 				margin:6px 0;
 			}
 			#filterSettings hr {
@@ -268,12 +264,30 @@
 				margin:0;
 				margin-right:12px;
 			}
-			#filterSettings select, #filterSettings input[type='text'] {
+			#filterSettings .label {
+				font-weight:bold;
+				margin-top:12px;
+			}
+			#filterSettings hr {
+				display:block;
+			}
+			#filterSettings select {
 				display:block;
 				width:300px;
 				margin-bottom:6px;
 			}
+			#filterSettings input[type='text'] {
+				display:block;
+				width:292px;
+				margin-bottom:6px;
+			}
+			textarea#copyHostList {
+				height:250px;
+			}
 		}
+			textarea#copyHostList {
+				width:100%;
+			}
 			#hostmap {
 				overflow:auto;
 			}
@@ -338,8 +352,6 @@
 			</div>
 		</div>
 
-		<div id='timebar'>Date <input type='text' id='datepicker' size='10'/></div>
-
 		<div id='errors'>
 		</div>
 		<div id='results'>
@@ -358,12 +370,12 @@
 			var failed = 0;
 
 			function error(text) {
-				$('#errors').html('<div class="errorbox"><h2>Error</h2> '+text+'</div>');
+				$('#errors').html('<div class="errorbox"><b>Error:</b> '+text+'</div>');
 				$('#errors').show();
 			}
 
 			function onCopyHosts() {
-				$('#hostlist').html('<textarea style="width:100%">');
+				$('#hostlist').html('<textarea id="copyHostList">');
 				var hosts = $('td.host:visible').get();
 				var tmp = new Array();
 				for(var i = 0; i < hosts.length; i++) {
@@ -565,7 +577,7 @@
 					callback(data);
 				})
 				.fail(function(j, t, e) {
-					error('Fetching results for '+name+' failed! ' + t + " " + e);
+					error('Fetching results for group "'+name+'" failed! Maybe there is no data for this day?<br/><br/>Exception: ' + e);
 				});
 			}
 
@@ -736,27 +748,28 @@
 
 			function addFilterSettings(id, params, callback) {
 				$(id).append('<div id="filterSettings">');
-				$('#filterSettings').append('Findings <select id="findingsGroup"></select> ');
+				$('#filterSettings').append("<span class='label'>Date</span> <input type='text' id='datepicker' size='10'/> "+
+				'<span class="label">Findings</span> <select id="findingsGroup"></select> ');
 
 				if(params.view == 'hostmap')
-					$('#filterSettings').append('Group Hosts by <select id="hostmapGroupType"></select> ');
+					$('#filterSettings').append('<span class="label">Group Hosts by</span> <select id="hostmapGroupType"></select> ');
 				if(!params.view || params.view == 'results') {
-					$('#filterSettings').append('Group Hosts By <select id="groupById" disabled><option name="none"></option></select> ');
-					if(params.gI && params.gI != '') {
+					$('#filterSettings').append('<span class="label">Group Hosts By</span> <select id="groupById"><option name="none"></option></select> ');
+					if(params.gI && params.gI != '')
 						$('#groupById').append('<option name="'+params.gI+'" selected>'+params.gI+'</option>');
-						$('#groupById').removeAttr('disabled');
-					}
 				}
 
-				$('#filterSettings').append('Filter by <select id="hostmapFilterType"></select><select id="hostmapFilterValue"/></select> ');
+				$('#filterSettings').append('<span class="label">Filter by</span> <select id="hostmapFilterType"></select><select id="hostmapFilterValue"/></select> ');
 
 				if(!params.view || params.view == 'results')
-					$('#filterSettings').append('Search <input type="text" width="100%" id="search"/> ')
-				$('#filterSettings').append('<input id="filterSettingsGo" type="button" value="Go"/> ');
+					$('#filterSettings').append('<span class="label">Search</span> <input type="text" width="100%" id="search"/> ')
+				$('#filterSettings').append('<input id="filterSettingsGo" type="button" value="Apply"/> ');
 
 				if(!params.view || params.view == 'results')
 					$('#filterSettings').append('<hr/><input type="button" value="Get Hosts" title="Click here to get a text field with a whitespace separated list of all hosts in the result list" onclick="onCopyHosts();"/> ' + 
 					'<div id="hostlist"/>');
+
+				$(id + " *").attr('disabled', true);
 
 				getData('host_groups', function(data) {
 					loadFindingGroups('findingsGroup', params.fG);
@@ -766,6 +779,12 @@
 					$('#hostmapFilterType').change(function() {
 						loadHostGroupValues(resultCache['host_groups'].results, 'hostmapFilterValue', $('#hostmapFilterType').val(), undefined, true);
 					});
+
+					$("#datepicker").val(data.date);
+					$("#datepicker").datepicker({
+						dateFormat: "yy/mm/dd"
+					});
+					$(id + " *").removeAttr('disabled');
 				});
 
 				$("#search").val(params.sT);
@@ -833,6 +852,9 @@
 					console.log("Invalid parameter encoding! "+e);
 				}
 
+				if(params.d)
+					baseUrl = "results/json/"+params.d+"/";
+
 				// FIXME: Update generic filter model
 
 				$("#menu a.current").removeClass("current");
@@ -864,6 +886,8 @@
 					if(!params.fG && findingsGroup)
 						params.fG = findingsGroup;
 				}
+				if(!params.d)
+					params.d = $('#datepicker').val();
 
 				window.location.hash = "#" + $.param(params);
 			}
@@ -900,8 +924,7 @@
 			}
 
 			function createHistogram(id) {
-				$.getJSON(baseUrl + "histogram.json", {})
-	        		.done(function( data ) {
+				getData("histogram", function(data) {
 					var chartData = {
 						labels: [],
 						datasets: []
@@ -941,9 +964,6 @@
 					} else {
 						console.log("Could not find value set for "+all);
 					}
-	        		})
-				.fail(function(j, t, e) {
-					error('Fetching histogram data failed! ' + t + " " +e);
 				});
 			}
 
@@ -951,14 +971,6 @@
 				$('#results').html('<div id="row1"></div><div id="loadmessage"><i>Loading ...</i></div>');
 				$('#errors').hide();
 				$('#loadmessage').hide();
-			}
-
-			function onDateSelect(day) {
-
-				if(day)
-					baseUrl = "results/json/"+day+"/";
-
-				onLocationHashChange();
 			}
 
 			function addPieChart(id, title, size, pColor, data) {
@@ -1092,11 +1104,6 @@
 							$("#policies").append(tmp);
 
 						}
-						$("#datepicker").val(data.date);
-						$("#datepicker").datepicker({
-							dateFormat: "yy/mm/dd",
-							onSelect: onDateSelect
-						});
 		   			});
 
 					$(".group").find(".name").click(function() {
