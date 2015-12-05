@@ -156,7 +156,6 @@
 				border: 1px solid #aaa;
 				font-size:11pt;
 				border-collapse: collapse;
-				display: inline-block;
 			}
 			.resultTable th {
 				background: #ddd;
@@ -192,6 +191,9 @@
 				overflow: hidden;
 				text-overflow: ellipsis;
 				white-space: nowrap;
+			}
+			td.message {
+				word-break: break-all;
 			}
 			.search {
 				clear:both;
@@ -261,12 +263,12 @@
 			}
 		}
 		@media (min-width: 1024px) {
-			#hostMapNav #filterSettings {
+			#filterSettings {
 				float: left;
 				margin:0;
 				margin-right:12px;
 			}
-			#hostMapNav #filterSettings select, #hostMapNav #filterSettings input[type='text'] {
+			#filterSettings select, #filterSettings input[type='text'] {
 				display:block;
 				width:300px;
 				margin-bottom:6px;
