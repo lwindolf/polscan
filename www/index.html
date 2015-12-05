@@ -372,31 +372,36 @@
 					$('#hostlist').show();
 			}
 
-			function createGroupTable(results, id, searchValue, groupByValue) {
+			function createGroupTable(params, id, results) {
+				var filteredHosts = get_hosts_filtered()
+
 				$('.resultTable').empty();
 				$('.resultTable').remove();
-				$("<table id='resultTable"+name+"' class='resultTable tablesorter'>")
-				.html("<thead><tr><th>"+groupByValue+"</th><th>Count</th><th>Hosts</th></thead>")
+				$("<table id='resultTable"+params.fG+"' class='resultTable tablesorter'>")
+				.html("<thead><tr><th>"+params.gI+"</th><th>Count</th><th>Hosts</th></thead>")
 				.appendTo(id);
-				$('<tbody id="groupedData">').appendTo('#resultTable'+name);
+				$('<tbody id="groupedData">').appendTo('#resultTable'+params.fG);
 
-				console.log("Grouping hosts by '"+searchValue+"'");
+				console.log("Grouping hosts by '"+params.gI+"'");
 				console.time("grouping");
 				var hosts = new Array();
 				var values = new Array();
 			   	$.each(results, function( i, item ) {
-					if(item.message.indexOf(groupByValue) == -1)
+					if(item.message.indexOf(params.gI) == -1)
 						return;
 
-					if(searchValue &&
-					   !((item.host.indexOf(searchValue) != -1) ||
-					     (item.policy.indexOf(searchValue) != -1) ||
-					     (item.message.indexOf(searchValue) != -1)))
+					if(params.sT &&
+					   !((item.host.indexOf(params.sT) != -1) ||
+					     (item.policy.indexOf(params.sT) != -1) ||
+					     (item.message.indexOf(params.sT) != -1)))
+						return;
+
+					if(-1 == filteredHosts.indexOf(item.host))
 						return;
 
 					// Split message after colon by commata (if there is at 
 					// least one or by spaces...
-					var listStr = item.message.substring(groupByValue.length + 1);
+					var listStr = item.message.substring(params.gI.length + 1);
 					var list;
 
 					if(listStr.indexOf(',') != -1)
@@ -411,11 +416,9 @@
 						if(values[list[key]] === undefined)
 							values[list[key]] = 1;
 
-						if(hosts[list[key]] === undefined) {
-							hosts[list[key]] = new Array([item.host]);
-						} else {
-							hosts[list[key]].push(item.host);
-						}
+						if(hosts[list[key]] === undefined)
+							hosts[list[key]] = new Array();
+						hosts[list[key]].push(item.host);
 					}
 				});
 				console.timeEnd("grouping");
@@ -426,7 +429,7 @@
 				for(var key in values) {
 					var hostlinks = "";
 					for(var h in hosts[key])
-						hostlinks += "<a href='javascript:setLocationHash({ sT: \"+hosts[key][h]+\"});'>"+hosts[key][h]+"</a> ";
+						hostlinks += "<a href='javascript:setLocationHash({ fT: \"\", sT: \""+hosts[key][h]+"\"});'>"+hosts[key][h]+"</a> ";
 					rows.push('<tr><td class="groupByValue">' + key + '</td>' +
 						  '<td class="count">' + hosts[key].length + '</td>' +
 					          '<td class="hosts">' + hostlinks + '</td></tr>');
@@ -434,8 +437,6 @@
 					if(rows.length >= 250) {
 						document.getElementById('groupedData').innerHTML += rows.join(" ");
 						rows = new Array(250);
-				console.timeEnd("tablebuild");
-				console.time("tablebuild");
 					}
 				}
 				document.getElementById('groupedData').innerHTML += rows.join(" ");
@@ -443,7 +444,7 @@
 				console.timeEnd("table");
 
 				console.time("sorting");
-				$("#resultTable"+name).tablesorter({sortList: [[1,1]]});
+				$("#resultTable"+params.fG).tablesorter({sortList: [[1,1]]});
 				console.timeEnd("sorting");
 			}
 
@@ -734,8 +735,13 @@
 
 				if(params.view == 'hostmap')
 					$('#filterSettings').append('Group Hosts by <select id="hostmapGroupType"></select> ');
-				if(!params.view || params.view == 'results')
-					$('#filterSettings').append('Group Hosts By <select id="groupById" disabled><option name="none" selected></option></select> ');
+				if(!params.view || params.view == 'results') {
+					$('#filterSettings').append('Group Hosts By <select id="groupById" disabled><option name="none"></option></select> ');
+					if(params.gI && params.gI != '') {
+						$('#groupById').append('<option name="'+params.gI+'" selected>'+params.gI+'</option>');
+						$('#groupById').removeAttr('disabled');
+					}
+				}
 
 				$('#filterSettings').append('Filter by <select id="hostmapFilterType"></select><select id="hostmapFilterValue"/></select> ');
 
@@ -755,10 +761,10 @@
 					$('#hostmapFilterType').change(function() {
 						loadHostGroupValues(resultCache['host_groups'].results, 'hostmapFilterValue', $('#hostmapFilterType').val(), undefined, true);
 					});
-
-					$("#search").val(params.sT);
-					$('#filterSettingsGo').click(callback);
 				});
+
+				$("#search").val(params.sT);
+				$('#filterSettingsGo').click(callback);
 			}
 
 			function loadHostMap(params) {
@@ -772,7 +778,7 @@
 				if(params.fG)
 					addHostsToMap(params);
 				else
-					$('#Go').trigger('click');
+					$('#filterSettingsGo').trigger('click');
 			}
 
 			function loadScannerResults(params, reduced) {
@@ -782,13 +788,13 @@
 				getData(params.fG, function(data) {
 					$('#results').html('<div id="filter">');
 					addFilterSettings('#filter', params, function() {
-						setLocationHash({ fG: currentResultSet, sT: $('#search').val(), gI: $('#groupById').val() });
+						setLocationHash({ sT: $('#search').val(), gI: $('#groupById').val() });
 					});
 
 					if(!params.gI || params.gI == "")
 						createResultTable(params.fG, '#results', data.results, params.sT, reduced);
 					else
-						createGroupTable(params.fG, '#results', data.results, params.sT, params.gI);
+						createGroupTable(params, '#results', data.results);
 	
 					var badgeTitle;
 					if(!params.fG || params.fG == "all") {
@@ -847,11 +853,11 @@
 				var findingsGroup = $('#findingsGroup').val();
 
 				// Always add filter values...
-				if(filterType) {
+				if(!params.fT && filterType) {
 					params.fT = filterType;
 					params.fV = filterValue;
 				}
-				if(findingsGroup)
+				if(!params.fG && findingsGroup)
 					params.fG = findingsGroup;
 
 				window.location.hash = "#" + $.param(params);
