@@ -156,7 +156,7 @@
 				border: 1px solid #aaa;
 				font-size:11pt;
 				border-collapse: collapse;
-				clear: both;
+				display: inline-block;
 			}
 			.resultTable th {
 				background: #ddd;
@@ -252,13 +252,21 @@
 				border:1px solid #ccc;
 				margin:6px 0;
 			}
+			#filterSettings hr {
+				display:none;
+			}
+		@media (max-width: 1023px) {
+			#filterSettings select {
+				max-width:20%;
+			}
+		}
 		@media (min-width: 1024px) {
-			#filterSettings {
+			#hostMapNav #filterSettings {
 				float: left;
 				margin:0;
 				margin-right:12px;
 			}
-			#filterSettings select {
+			#hostMapNav #filterSettings select, #hostMapNav #filterSettings input[type='text'] {
 				display:block;
 				width:300px;
 				margin-bottom:6px;
@@ -352,10 +360,6 @@
 				$('#errors').show();
 			}
 
-			function onSearch() {
-				setLocationHash({ fG: currentResultSet, sT: $('#search').val()});
-			}
-
 			function onCopyHosts() {
 				$('#hostlist').html('<textarea style="width:100%">');
 				var hosts = $('td.host:visible').get();
@@ -368,18 +372,7 @@
 					$('#hostlist').show();
 			}
 
-			function onGroupByChange() {
-				createGroupTable(
-					currentResultSet,
-					'#results', 
-					$('#search').val(),
-					$('#groupById option:selected').text()
-				);
-
-				// FIXME setLocationHash({ fG: currentResultSet, sT: $('#search').val(), gT: $('#groupById option:selected').text()});
-			}
-
-			function createGroupTable(name, id, searchValue, groupByValue) {
+			function createGroupTable(results, id, searchValue, groupByValue) {
 				$('.resultTable').empty();
 				$('.resultTable').remove();
 				$("<table id='resultTable"+name+"' class='resultTable tablesorter'>")
@@ -391,7 +384,7 @@
 				console.time("grouping");
 				var hosts = new Array();
 				var values = new Array();
-			   	$.each(resultCache[name].results, function( i, item ) {
+			   	$.each(results, function( i, item ) {
 					if(item.message.indexOf(groupByValue) == -1)
 						return;
 
@@ -526,7 +519,7 @@
 						}
 					}
 					if(groupingEnabled)
-						$('#groupBy').children().removeAttr('disabled');
+						$('#groupById').removeAttr('disabled');
 				}
 
 				$("#resultTable"+name+" .group").click(function() {
@@ -731,49 +724,67 @@
 				});
 			}
 
-			function loadHostMap(params) {
+			function addFilterSettings(id, params, callback) {
+				$(id).append('<div id="filterSettings">');
+				$('#filterSettings').append('Findings <select id="findingsGroup"></select> ');
+
+				if(params.view == 'hostmap')
+					$('#filterSettings').append('Group Hosts by <select id="hostmapGroupType"></select> ');
+				if(!params.view || params.view == 'results')
+					$('#filterSettings').append('Group Hosts By <select id="groupById" disabled><option name="none" selected></option></select> ');
+
+				$('#filterSettings').append('Filter by <select id="hostmapFilterType"></select><select id="hostmapFilterValue"/></select> ');
+
+				if(!params.view || params.view == 'results')
+					$('#filterSettings').append('Search <input type="text" width="100%" id="search"/> ')
+				$('#filterSettings').append('<input id="filterSettingsGo" type="button" value="Go"/> ');
+
+				if(!params.view || params.view == 'results')
+					$('#filterSettings').append('<hr/><input type="button" value="Get Hosts" title="Click here to get a text field with a whitespace separated list of all hosts in the result list" onclick="onCopyHosts();"/> ' + 
+					'<div id="hostlist"/>');
+
 				getData('host_groups', function(data) {
-					clean();
-					$('#results').append('<div class="overviewBox"><div id="hostMapNav"/><div id="hostmap"/><div id="selectedGroup"/></div>');
-					$('#hostMapNav').append('<div id="filterSettings">'+
-						'Findings <select id="findingsGroup"></select> '+
-						'Group by <select id="hostmapGroupType"></select> '+
-						'Filter by <select id="hostmapFilterType"></select><select id="hostmapFilterValue"/></select> '+
-						'<input id="hostMapGo" type="button" value="Go"/> '+
-						'</div>');
 					loadFindingGroups('findingsGroup', params.fG);
-					loadHostGroupTypes(data.results, 'hostmapGroupType', params.gT);
-					loadHostGroupTypes(data.results, 'hostmapFilterType', params.fT, true);
-					loadHostGroupValues(data.results, 'hostmapFilterValue', params.fT, params.fV, true);
+					loadHostGroupTypes(resultCache['host_groups'].results, 'hostmapGroupType', params.gT);
+					loadHostGroupTypes(resultCache['host_groups'].results, 'hostmapFilterType', params.fT, true);
+					loadHostGroupValues(resultCache['host_groups'].results, 'hostmapFilterValue', params.fT, params.fV, true);
 					$('#hostmapFilterType').change(function() {
-						loadHostGroupValues(data.results, 'hostmapFilterValue', $('#hostmapFilterType').val(), undefined, true);
+						loadHostGroupValues(resultCache['host_groups'].results, 'hostmapFilterValue', $('#hostmapFilterType').val(), undefined, true);
 					});
 
-					$('#hostMapGo').click(function() {
-						setLocationHash({ view: 'hostmap', gT: $('#hostmapGroupType').val() });
-					});
-
-					if(params.fG)
-						addHostsToMap(params);
-					else
-						$('#hostMapGo').trigger('click');
+					$('#filterSettingsGo').click(callback);
 				});
+			}
+
+			function loadHostMap(params) {
+				clean();
+				$('#results').append('<div class="overviewBox"><div id="hostMapNav"/><div id="hostmap"/><div id="selectedGroup"/></div>');
+
+				addFilterSettings('#hostMapNav', params, function() {
+					setLocationHash({ view: 'hostmap', gT: $('#hostmapGroupType').val() });
+				});
+
+				if(params.fG)
+					addHostsToMap(params);
+				else
+					$('#Go').trigger('click');
 			}
 
 			function loadScannerResults(params, reduced) {
 				console.log("Loading results start (search="+params.sT+" reduced="+reduced+")");
 				clean();
+
 				getData(params.fG, function(data) {
-					$('#results').append('<div class="search">' +
-						'Search <input type="text" size="40" id="search"/> ' +
-						'<input type="button" value="Go" onclick="onSearch();"/> ' +
-						'<input type="button" value="Get Hosts" title="Click here to get a text field with a whitespace separated list of all hosts in the result list" onclick="onCopyHosts();"/> ' + 
-						'<br/><span id="groupBy">Group Hosts By <select id="groupById" disabled><option name="none" selected></option></select> ' +
-						'<input type="button" disabled value="Go" onclick="onGroupByChange();"/></span> ' +
-						'<div id="hostlist"/>' +
-						'</div>');
-					createResultTable(params.fG, '#results', data.results, params.sT, reduced);
-					$("#search").val(params.sT);
+					$('#results').html('<div id="filter">');
+					addFilterSettings('#filter', params, function() {
+						setLocationHash({ fG: currentResultSet, sT: $('#search').val(), gI: $('#groupById').val() });
+					});
+
+					if(!params.gI || params.gI == "")
+						createResultTable(params.fG, '#results', data.results, params.sT, reduced);
+					else
+						createGroupTable(params.fG, '#results', data.results, params.sT, params.gI);
+					//$("#search").val(params.sT);
 	
 					var badgeTitle;
 					if(!params.fG || params.fG == "all") {
