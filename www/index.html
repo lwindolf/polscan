@@ -257,12 +257,57 @@
 			#filterSettings select {
 				max-width:20%;
 			}
+			#filterSettings #calendar {
+				display:none;
+			}
 		}
 		@media (min-width: 1024px) {
 			#filterSettings {
 				float: left;
 				margin:0;
 				margin-right:12px;
+			}
+			#filterSettings #datepicker, #filterSettings .datepicker {
+				display:none;
+			}
+			#calendar .ui-datepicker {
+				width:298px;
+				padding:0;
+				margin-bottom:12px;
+			}
+			#calendar .ui-datepicker-next, #calendar .ui-datepicker-prev {
+				height:1.5em;
+			}
+			#calendar .ui-datepicker-next:after {
+				margin-left:0.7em;
+				content: ">";
+			}
+			#calendar .ui-datepicker-prev:after {
+				margin-left:0.7em;
+				content: "<";
+			}
+			#calendar .ui-datepicker-header {
+				background:#555;
+				border:0;
+				padding:0;
+			}
+			#calendar table {
+				background:white;
+			}
+			#calendar tr {
+				background:white;
+			}
+			#calendar td a {
+				text-align:center;
+			}
+			#calendar td.unavailable a {
+				color:#ccc;
+				border:0;
+				background:white;
+			}
+			#calendar td a.ui-state-active {
+				color:white;
+				background:#444;
 			}
 			#filterSettings .label {
 				font-weight:bold;
@@ -748,7 +793,8 @@
 
 			function addFilterSettings(id, params, callback) {
 				$(id).append('<div id="filterSettings">');
-				$('#filterSettings').append("<span class='label'>Date</span> <input type='text' id='datepicker' size='10'/> "+
+				$('#filterSettings').append("<span class='label datepicker'>Date</span> <input type='text' id='datepicker' size='10'/> "+
+				"<span id='calendar'></span>" +
 				'<span class="label">Findings</span> <select id="findingsGroup"></select> ');
 
 				if(params.view == 'hostmap')
@@ -784,6 +830,27 @@
 					$("#datepicker").datepicker({
 						dateFormat: "yy/mm/dd"
 					});
+					$("#calendar").datepicker({
+						dateFormat: "yy/mm/dd",
+						firstDay: 1,
+						defaultDate: new Date(data.date)
+					});
+
+					// Run some histogram based calendar marking magic
+					getData('histogram', function(data) {
+						var yearMonth = data.date.substring(0, data.date.length - 2);
+						for(i = 1; i <= 31; i++) {
+							var day = ((i<10)?"0":"") + i;
+							var td = $('#calendar td').filter(function() {
+								return $(this).text() == ""+i; 
+							});
+							if(-1 != data.labels.indexOf(yearMonth+day))
+								td.addClass('available');
+							else
+								td.addClass('unavailable');
+						}
+					});
+
 					$(id + " *").removeAttr('disabled');
 				});
 
