@@ -821,6 +821,15 @@
 					'<div id="hostlist"/>');
 
 				$(id + " *").attr('disabled', true);
+				$("#datepicker").datepicker({
+					dateFormat: "yy/mm/dd"
+				});
+				$("#calendar").datepicker({
+					dateFormat: "yy/mm/dd",
+					firstDay: 1,
+					defaultDate: new Date(params.d),
+					onSelect: function(date) { setLocationHash({ d: date }); }
+				});
 
 				getData('host_groups', function(data) {
 					try {
@@ -836,15 +845,7 @@
 					});
 
 					$("#datepicker").val(data.date);
-					$("#datepicker").datepicker({
-						dateFormat: "yy/mm/dd"
-					});
-					$("#calendar").datepicker({
-						dateFormat: "yy/mm/dd",
-						firstDay: 1,
-						defaultDate: new Date(data.date),
-						onSelect: function(date) { setLocationHash({ d: date }); }
-					});
+					$("#calendar").datepicker("setDate", data.date);
 
 					// Run some histogram based calendar marking magic
 					getData('histogram', function(data) {
