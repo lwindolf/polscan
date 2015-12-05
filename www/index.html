@@ -692,13 +692,18 @@
 
 			// Add all findings group names to a <select>
 			function loadFindingGroups(id, selected) {
-				$('#'+id).append('<option selected value="all">All</option>');
+				$('#'+id).append(
+					'<option value="all">&lt;All></option>'+
+					'<option value="new">&lt;New></option>'+
+					'<option value="solved">&lt;Solved></option>'
+				);
 				getData("overview", function(data) {
 					$.each(data.overview, function(i, item) {
 						if(item.group) {
-							$('#'+id).append('<option '+(selected==item.group?'selected ':'')+'value="'+item.group+'">'+item.group+'</option>');
+							$('#'+id).append('<option value="'+item.group+'">'+item.group+'</option>');
 						}
 					});
+					$('#'+id+" option[value='"+selected+"']").attr('selected', true);
 				});
 			}
 
@@ -818,10 +823,14 @@
 				$(id + " *").attr('disabled', true);
 
 				getData('host_groups', function(data) {
-					loadFindingGroups('findingsGroup', params.fG);
-					loadHostGroupTypes(resultCache['host_groups'].results, 'hostmapGroupType', params.gT);
-					loadHostGroupTypes(resultCache['host_groups'].results, 'hostmapFilterType', params.fT, true);
-					loadHostGroupValues(resultCache['host_groups'].results, 'hostmapFilterValue', params.fT, params.fV, true);
+					try {
+						loadFindingGroups('findingsGroup', params.fG);
+						loadHostGroupTypes(resultCache['host_groups'].results, 'hostmapGroupType', params.gT);
+						loadHostGroupTypes(resultCache['host_groups'].results, 'hostmapFilterType', params.fT, true);
+						loadHostGroupValues(resultCache['host_groups'].results, 'hostmapFilterValue', params.fT, params.fV, true);
+					} catch(e) {
+						error("Loading some host group definitions failed!");
+					}
 					$('#hostmapFilterType').change(function() {
 						loadHostGroupValues(resultCache['host_groups'].results, 'hostmapFilterValue', $('#hostmapFilterType').val(), undefined, true);
 					});
@@ -833,7 +842,8 @@
 					$("#calendar").datepicker({
 						dateFormat: "yy/mm/dd",
 						firstDay: 1,
-						defaultDate: new Date(data.date)
+						defaultDate: new Date(data.date),
+						onSelect: function(date) { setLocationHash({ d: date }); }
 					});
 
 					// Run some histogram based calendar marking magic
@@ -919,8 +929,14 @@
 					console.log("Invalid parameter encoding! "+e);
 				}
 
-				if(params.d)
-					baseUrl = "results/json/"+params.d+"/";
+				if(params.d) {
+					var newBaseUrl = "results/json/"+params.d+"/";
+					if(newBaseUrl != baseUrl) {
+						resultCache = new Array();
+						baseUrl = newBaseUrl;
+						console.log("new baseurl="+baseUrl);
+					}
+				}
 
 				// FIXME: Update generic filter model
 
