@@ -448,6 +448,7 @@
 			}
 
 			function createResultTable(name, id, data, searchValue, reduced) {
+				var filteredHosts = get_hosts_filtered()
 				var group = '';
 				if (name == 'all' || name == 'new' || name == 'solved')
 					group = '<th>Group</th>';
@@ -465,6 +466,9 @@
 					var severity = 0;
 
 					if(reduced && item.severity == 'OK')
+						return;
+
+					if(-1 == filteredHosts.indexOf(item.host))
 						return;
 
 					if(searchValue &&
