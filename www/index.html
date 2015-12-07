@@ -82,6 +82,12 @@
 			.bcw3 { background: #ff6; color: #ff6; }
 			.bcw2 { background: #ff6; color: #ff6; }
 			.bcw1 { background: #ff6; color: #ff6; }
+			.UNKNOWN {
+				background: #eee;
+				border: 1px dotted #aaa;
+				color: #7f7;
+				padding: 0 6px;
+			}
 			.OK {
 				background: #7f7;
 				border: 1px solid #4c4;
@@ -663,8 +669,10 @@
 						} else if(-1 != value.indexOf('W')) {
 							count = (value.match(/W/g) || []).length;
 							html += "WARNING bcw"+((count>10)?10:count);
-						} else {
+						} else if(-1 != value.indexOf('O')) {
 							html += "OK";
+						} else {
+							html += "UNKNOWN";
 						}
 						html += "' onclick='setLocationHash({ fG: \"all\", sT: \""+host+"\"}, true)'>&nbsp;</div> ";
 						var groupName = getGroupByHost(params.gT, host);
@@ -752,21 +760,29 @@
 				var showTooltip = function(event) {
 					var host = $(this).attr('host');
 					var details = "";
+					var okFound = false;
 					var cache = resultCache[$('#findingsGroup').val().replace('-', '_')];
 
 					if(!cache)
 						console.log("Fatal: no cache for "+$('#findingsGroup').val());
 					else
 						$.each(cache.results, function(i, item) {
-							if(item.host == host && item.severity != "OK") {
-								details += "<tr>";
-								if(item.group)
-									details += "<td class='group'>" + item.group + "</td>";
-								details += "<td class='policy "+item.severity+"'>" + item.policy + "</td><td class='message'>" + ((item.message.length>100)?item.message.substring(0,100)+" [...]":item.message) + "</td></tr>";
+							if(item.host == host) {
+								if(item.severity == "OK") {
+									okFound = true;
+								} else {
+									details += "<tr>";
+									if(item.group)
+										details += "<td class='group'>" + item.group + "</td>";
+									details += "<td class='policy "+item.severity+"'>" + item.policy + "</td><td class='message'>" + ((item.message.length>100)?item.message.substring(0,100)+" [...]":item.message) + "</td></tr>";
+								}
 							}
 						});
 					if(details == "")
-						details = "<br/><br/>No problematic findings here.";
+						if(okFound)
+							details = "<br/><br/>No problematic findings here.";
+						else
+							details = "<br/><br/>No findings at all. This usually means the policies of this group don't apply to this host.";
 
 	  				$('div.tooltip').remove();
 					$('<div class="tooltip"><b>'+host+'</b><table class="resultTable">'+details+'</table></div>').appendTo('#hostmap');
@@ -928,19 +944,22 @@
 				}
 
 				// FIXME: Update generic filter model
+				getData('hosts', function(data) {
+					hosts = data.results;
 
-				$("#menu a.current").removeClass("current");
+					$("#menu a.current").removeClass("current");
 
-				if(params.view == "hostmap") {
-					loadHostMap(params);
-					$("#menu a[href='#view=hostmap']").addClass("current");
-				} else if(!params.fG) {
-					loadOverview();
-					$("#menu a[href='#']").addClass("current");
-				} else {
-					loadScannerResults(params, params.sT != undefined);
-					$("#menu a[href='#view=results&fG="+params.fG+"']").addClass("current");
-				}
+					if(params.view == "hostmap") {
+						loadHostMap(params);
+						$("#menu a[href='#view=hostmap']").addClass("current");
+					} else if(!params.fG) {
+						loadOverview();
+						$("#menu a[href='#']").addClass("current");
+					} else {
+						loadScannerResults(params, params.sT != undefined);
+						$("#menu a[href='#view=results&fG="+params.fG+"']").addClass("current");
+					}
+				});
 			}
 
 			function setLocationHash(params, replace) {
@@ -965,10 +984,7 @@
 			}
 
 			(function() {
-				getData('hosts', function(data) {
-					hosts = data.results;
-					onLocationHashChange();
-				});
+				onLocationHashChange();
 
 				// Allow some simple navigation by browser history 
 				// for scanner results
