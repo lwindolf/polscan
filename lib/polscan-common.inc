@@ -32,7 +32,14 @@ if [ "$1" == "" ]; then
 	DATE=$(date +%Y/%m/%d)
 	LATEST=1
 fi
-ONE_DAY_AGO=$(date -d "$DATE 1 day ago" +%Y/%m/%d)
+
+# Determine previous date (going back up to 7 days)
+i=1
+ONE_DAY_AGO=nonsense
+while [ ! -d "$RESULT_BASE_DIR/$ONE_DAY_AGO" ]; do
+	ONE_DAY_AGO=$(date -d "$DATE $i day ago" +%Y/%m/%d)
+	i=$(( $i + 1 ))
+done
 
 RESULT_DIR="${RESULT_BASE_DIR}/${DATE}"
 JSON_DIR="${RESULT_BASE_DIR}/json/${DATE}"
