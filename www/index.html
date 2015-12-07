@@ -817,7 +817,7 @@
 				$('#filterSettings').append('<input id="filterSettingsGo" type="button" value="Apply"/> ');
 
 				if(!params.view || params.view == 'results')
-					$('#filterSettings').append('<hr/><input type="button" value="Get Hosts" title="Click here to get a text field with a whitespace separated list of all hosts in the result list" onclick="onCopyHosts();"/> ' + 
+					$('#filterSettings').append('<hr/><input type="button" value="Switch to Hosts Map" onclick="setLocationHash({ view: \'hostmap\' });"/><input type="button" value="Get Hosts" title="Click here to get a text field with a whitespace separated list of all hosts in the result list" onclick="onCopyHosts();"/> ' + 
 					'<div id="hostlist"/>');
 
 				$(id + " *").attr('disabled', true);
