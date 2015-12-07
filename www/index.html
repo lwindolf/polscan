@@ -825,7 +825,7 @@
 				getData('host_groups', function(data) {
 					try {
 						loadFindingGroups('findingsGroup', params.fG);
-						loadHostGroupTypes(resultCache['host_groups'].results, 'hostmapGroupType', params.gT);
+						loadHostGroupTypes(resultCache['host_groups'].results, 'hostmapGroupType', params.gT, true);
 						loadHostGroupTypes(resultCache['host_groups'].results, 'hostmapFilterType', params.fT, true);
 						loadHostGroupValues(resultCache['host_groups'].results, 'hostmapFilterValue', params.fT, params.fV, true);
 					} catch(e) {
