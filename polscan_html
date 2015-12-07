@@ -198,7 +198,7 @@ do
 		while read nr group severity policy;
 		do
 			histogram_ids["group_${group// /_}"]=$group
-			histogram_ids["policy_${policy// /_}"]=$policy
+			histogram_ids["policy_${policy// /_}"]="${group}:::${policy}"
 			histogram["policy_${policy// /_}_${severity}_${day}"]=$nr
 			histogram["group_${group// /_}_${severity}_${day}"]=$(( $nr + ${histogram["group_${group// /_}_${severity}_${day}"]-0} ))
 			histogram["all_${severity}_${day}"]=$(( $nr + ${histogram["all_${severity}_${day}"]-0} ))
@@ -210,8 +210,8 @@ done
 labels=$(
 	for l in ${!histogram_labels[*]}
 	do
-		echo -n "\"${histogram_labels[$l]}\","
-	done | sort
+		echo "\\\"${histogram_labels[$l]}\\\","
+	done | sort | xargs
 )
 
 (
