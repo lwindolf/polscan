@@ -1184,7 +1184,7 @@
 							} catch(e) {
 								console.log("Failed to get values for "+item.id+" Exception:"+e);
 							}
-							var tmp = '<tr><td class="group" title="'+item.description+'">' + group + '<span></td><td class="policy"><span class="name" filter="' + group + '---' + policy + '">' + (policy?policy:"") + '</span></td>';
+							var tmp = '<tr><td class="group" title="'+item.description+'" filter="' + group + '">' + group + '</td><td class="policy" filter="' + group + '---' + policy + '">' + (policy?policy:"") + '</td>';
 							tmp += '<td>';
 							if(failed > 0)
 								tmp += '<span class="FAILED" title="Total failures found">' + failed + '</span>';
@@ -1211,18 +1211,18 @@
 		   			});
 					$("#findingsPerPolicy").tablesorter({sortList: [[3,1],[2,1],[5,1],[4,1]]});
 
-					$(".group").find(".name").click(function() {
-						setLocationHash({ fG: $(this).html() });
+					$("#findingsPerPolicy .group").click(function() {
+						setLocationHash({ fG: $(this).attr('filter') });
 					});
-					$(".policy").find(".name").click(function() {
+					$("#findingsPerPolicy .policy").click(function() {
 						var fields = $(this).attr('filter').split(/---/);
 						setLocationHash({
 							fG: fields[0],
 							sT: fields[1]
 						});
 					});
-					$(".change").find(".changes").click(function() {
-						var fields = $(this).attr('filter').split(/---/);
+					$("#findingsPerPolicy .change").click(function() {
+						var fields = $(this).find('.changes').attr('filter').split(/---/);
 						setLocationHash({
 							fG: fields[0],
 							sT: fields[1]
