@@ -34,22 +34,14 @@
 				background:#444;
 				float:left;
 			}
+			#row1, #row2 {
+				clear:both;
+			}
 			#col1, #col2 {
 				float:left;
 				width:50%;
 			}
-			#groups .group, #policies .policy {
-				background: #ddd;
-				cursor: pointer;
-				padding: 6px;
-				border-radius: 6px;
-				margin:6px;
-				display:inline-block;
-			}
-			#groups .name {
-				margin: 6px;
-			}
-			.host:hover, .group:hover, .policy:hover {
+			.host:hover, .group:hover, .policy:hover, .change:hover {
 				background: #ccc;
 			}
 			#solved .FAILED, #solved .WARNING {
@@ -94,6 +86,12 @@
 				background: #7f7;
 				border: 1px solid #4c4;
 				color: #7f7;
+				padding: 0 6px;
+			}
+			.compliant {
+				background: #7f7;
+				border: 1px solid #4c4;
+				color: black;
 				padding: 0 6px;
 			}
 			.errorbox {
@@ -177,16 +175,6 @@
 			}
 			th.headerSortDown:after {
 				content: " ↓";
-			}
-			.overviewBox .resultTable {
-				width: 100%;
-			}
-			.overviewBox td.message {
-				width:100%;
-				max-width: 0;
-				overflow: hidden;
-				text-overflow: ellipsis;
-				white-space: nowrap;
 			}
 			td.message {
 				word-break: break-all;
@@ -774,7 +762,7 @@
 								details += "<tr>";
 								if(item.group)
 									details += "<td class='group'>" + item.group + "</td>";
-								details += "<td class='policy "+item.severity+"'>" + item.policy + "</td><td>" + ((item.message.length>100)?item.message.substring(0,100)+" [...]":item.message) + "</td></tr>";
+								details += "<td class='policy "+item.severity+"'>" + item.policy + "</td><td class='message'>" + ((item.message.length>100)?item.message.substring(0,100)+" [...]":item.message) + "</td></tr>";
 							}
 						});
 					if(details == "")
@@ -1051,7 +1039,7 @@
 			}
 
 			function clean() {
-				$('#results').html('<div id="row1"></div><div id="loadmessage"><i>Loading ...</i></div>');
+				$('#results').html('<div id="row1"></div><div id="loadmessage"><i>Loading ...</i></div><div id="row2"/>');
 				$('#errors').hide();
 				$('#loadmessage').hide();
 			}
@@ -1149,7 +1137,7 @@
 								'</span>'
 							}
 							if(compliant) {
-								tmp += ' <span class="OK" title="100% compliance for this group">compliant</span>';
+								tmp += ' <span class="compliant" title="100% compliance for this group">compliant</span>';
 							}
 						}
 		   			});
@@ -1161,33 +1149,50 @@
 					addPieChart('pieChartWarning', 'Warnings', 260, '#777' ,groupWarning);
 					// FIXME: addPieChart('pieChartHosts', 'Warnings', 260, pieGroupHosts);
 
-					$( "<div id='policies' class='overviewBox'>" ).appendTo( "#col1" )
-					$( "<h3>Findings per Policy</h3>").appendTo( "#policies" )
+					$( "<div id='policies' class='overviewBox'>" ).appendTo( "#row2" )
+					$( "<h3>Findings / Changes per Policy</h3><table class='resultTable tablesorter' id='findingsPerPolicy'><thead><tr><th>Group</th><th>Policy</th><th>Problems</th><th>Change</th><th>Warnings</th><th>Change</th></tr></thead><tbody></tbody></table>").appendTo("#policies")
 
-		   			$.each( data.overview, function( i, item ) {
-						if(item.policy && (item.FAILED + item.WARNING > 0)) {
+		   			getData("histogram", function(data) {
+					$.each(data.histogram, function(i, item ) {
+						if(-1 != item.id.indexOf(":::")) {
 							var compliant = 1;
-							var tmp = '<div class="policy" title="'+item.description+'">' + item.parent + ' ::: <span class="name" filter="' + item.parent + '---' + item.policy + '">' + item.policy + '</span>';
-							if(item.FAILED > 0) {
-								compliant = 0;
-								tmp += ' <span class="FAILED" title="Total failures found">' +
-								item.FAILED +
-								'</span>';
+							var group, policy, failed, failed2, warning, warning2, diff;
+							try {
+								group = item.id.split(/:::/)[0];
+								policy = item.id.split(/:::/)[1];
+								failed = item.FAILED[item.FAILED.length-1];
+								failed2 = item.FAILED[item.FAILED.length-2];
+								warning = item.WARNING[item.WARNING.length-1];
+								warning2 = item.WARNING[item.WARNING.length-2];
+							} catch(e) {
+								console.log("Failed to get values for "+item.id+" Exception:"+e);
 							}
-							if(item.WARNING > 0) {
-								compliant = 0;
-								tmp += ' <span class="WARNING" title="Total warnings seen">' +
-								item.WARNING +
-								'</span>'
-							}
-							if(compliant) {
-								tmp += ' <span class="OK" title="100% compliance for this policy">compliant</span>';
-							}
-							tmp += '</div>';
-							$("#policies").append(tmp);
+							var tmp = '<tr><td class="group" title="'+item.description+'">' + group + '<span></td><td class="policy"><span class="name" filter="' + group + '---' + policy + '">' + (policy?policy:"") + '</span></td>';
+							tmp += '<td>';
+							if(failed > 0)
+								tmp += '<span class="FAILED" title="Total failures found">' + failed + '</span>';
+							else
+								tmp += '<span title="Total failures found">0</span>';
+							tmp += '</td><td class="change">';
+							diff = failed - failed2;
+							if(diff != 0)
+								tmp += '<span class="'+(diff>0?"FAILED":"compliant")+' changes" filter="'+(diff>0?'new':'solved')+'---' + policy + '" title="Total change problems">+' + Math.abs(diff) + '</span>';
+							tmp += '</td><td>';
+							if(warning > 0)
+								tmp += '<span class="WARNING" title="Total warnings seen">' + warning + '</span>';
+							else
+								tmp += '<span title="Total warnings found">0</span>';
+							tmp += '</td><td class="change">';
+							diff = warning - warning2;
+							if(diff != 0)
+								tmp += '<span class="'+(diff>0?"WARNING":"compliant")+' changes" filter="'+(diff>0?'new':'solved')+'---' + policy + '" title="Total change warnings">+' + Math.abs(diff) + '</span>';
+							tmp += '</td>';
+							tmp += '</tr>';
+							$("#findingsPerPolicy").append(tmp);
 
 						}
 		   			});
+					$("#findingsPerPolicy").tablesorter({sortList: [[3,1],[2,1],[5,1],[4,1]]});
 
 					$(".group").find(".name").click(function() {
 						setLocationHash({ fG: $(this).html() });
@@ -1199,49 +1204,15 @@
 							sT: fields[1]
 						});
 					});
-	        		});
-
-				$("<div id='newBox' class='overviewBox'>").appendTo("#col2")
-				$("#newBox").html("<h3>New Findings</h3>");
-				$("#newBox").append("<div class='msg'><i>Loading</i></div>");
-
-				$.getJSON(baseUrl + "new.json", {})
-	        		.done(function( data ) {
-					$("#newBox").html("<h3><a href='#new'>New Findings ("+data.results.length+")</a></h3>");
-					// Truncate issues to give only a teaser...
-					var tmp = data.results;
-					if(data.results.length > 20)
-						tmp = data.results.splice(0, 20);
-					createResultTable({ fG: 'new' }, '#newBox', tmp);
-
-					if(tmp.length == 20)
-						$("#newBox .msg").html("Note: Only the first 20 issues where shown!");
-				})
-				.fail(function(j, t, e) {
-					$("#newBox .msg").html('Not available. You probably did not scan yesterday.');
-				});
-
-				$("<div id='solvedBox' class='overviewBox'>").appendTo("#col2")
-				$("#solvedBox").append("<h3>Solved / Gone</h3>");
-				$("#solvedBox").append("<div class='msg'><i>Loading</i></div>");
-
-				$.getJSON(baseUrl + "solved.json", {})
-	        		.done(function( data ) {
-					$("#solvedBox").html("<h3><a href='#solved'>Solved / Gone ("+data.results.length+")</a></h3>");
-					// Truncate issues to give only a teaser...
-					var tmp = data.results;
-					if(data.results.length > 20)
-						tmp = data.results.splice(0, 20);
-
-					createResultTable({ fG: 'solved'}, '#solvedBox', tmp);
-
-					if(tmp.length == 20)
-						$("#solvedBox .msg").html("Note: Only the first 20 issues where shown!");
-				})
-				.fail(function(j, t, e) {
-					$("#solvedBox .msg").html('Not available. You probably did not scan yesterday.');
-				});
-
+					$(".change").find(".changes").click(function() {
+						var fields = $(this).attr('filter').split(/---/);
+						setLocationHash({
+							fG: fields[0],
+							sT: fields[1]
+						});
+					});
+        			});
+					});
 				createHistogram('all');
 			}
 		</script>
