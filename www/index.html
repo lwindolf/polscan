@@ -1193,7 +1193,11 @@
 						setLocationHash({ fG: $(this).html() });
 					});
 					$(".policy").find(".name").click(function() {
-						setLocationHash({ fG: 'all', sT: $(this).attr('filter') });
+						var fields = $(this).attr('filter').split(/---/);
+						setLocationHash({
+							fG: fields[0],
+							sT: fields[1]
+						});
 					});
 	        		});
 
