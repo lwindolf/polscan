@@ -18,11 +18,11 @@ Screenshots
 
 *Overview Page*
 
-![screenshot](http://lzone.de/images/polscan-screenshot1.png)
+![screenshot](http://lzone.de/images/polscan-overview.png)
 
-*Result Details*
+*Host Map per Finding Type*
 
-![screenshot](http://lzone.de/images/polscan-screenshot2.png)
+![screenshot](http://lzone.de/images/polscan-hostmap-group-by-domain.png)
 
 Note: polscan is intentionally limited to Debian and for simplicity tries not to implement any distro-specific dependencies.
 
