@@ -1061,6 +1061,9 @@
 							animation: false,
 							showTooltips: false	// FIXME: disabled as long there is the bug of multiple dates being shown at the same time
 						});
+						$('#histogramChart').click(function(e) {
+							setLocationHash({ d: myLineChart.getPointsAtEvent(e)[0].label });
+						});
 					} else {
 						console.log("Could not find value set for "+all);
 					}
