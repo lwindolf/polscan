@@ -326,6 +326,12 @@
 				margin-left:0.7em;
 				content: "<";
 			}
+			#overviewCalendar table {
+				height:222px;
+			}
+			#overviewCalendar td {
+				font-size: 1.2em;
+			}
 			textarea#copyHostList {
 				width:100%;
 			}
@@ -802,6 +808,31 @@
 				});
 			}
 
+			function addCalendar(id, initialDate) {
+				$(id).datepicker({
+					dateFormat: "yy/mm/dd",
+					firstDay: 1,
+					defaultDate: new Date(initialDate),
+					onSelect: function(date) { setLocationHash({ d: date }); }
+				});
+				getData('host_groups', function(data) {
+					// Run some histogram based calendar marking magic
+					getData('histogram', function(data) {
+						var yearMonth = data.date.substring(0, data.date.length - 2);
+						for(i = 1; i <= 31; i++) {
+							var day = ((i<10)?"0":"") + i;
+							var td = $(id + ' td').filter(function() {
+								return $(this).text() == ""+i; 
+							});
+							if(-1 != data.labels.indexOf(yearMonth+day))
+								td.addClass('available');
+							else
+								td.addClass('unavailable');
+						}
+					});
+				});
+			}
+
 			function addFilterSettings(id, params, callback) {
 				$(id).append('<div id="filterSettings">');
 				$('#filterSettings').append("<span class='label datepicker'>Date</span> <input type='text' id='datepicker' size='10'/> "+
@@ -830,13 +861,7 @@
 				$("#datepicker").datepicker({
 					dateFormat: "yy/mm/dd"
 				});
-				$("#calendar").datepicker({
-					dateFormat: "yy/mm/dd",
-					firstDay: 1,
-					defaultDate: new Date(params.d),
-					onSelect: function(date) { setLocationHash({ d: date }); }
-				});
-
+				addCalendar("#calendar", params.d);
 				getData('host_groups', function(data) {
 					try {
 						loadFindingGroups('findingsGroup', params.fG);
@@ -852,21 +877,6 @@
 
 					$("#datepicker").val(data.date);
 					$("#calendar").datepicker("setDate", data.date);
-
-					// Run some histogram based calendar marking magic
-					getData('histogram', function(data) {
-						var yearMonth = data.date.substring(0, data.date.length - 2);
-						for(i = 1; i <= 31; i++) {
-							var day = ((i<10)?"0":"") + i;
-							var td = $('#calendar td').filter(function() {
-								return $(this).text() == ""+i; 
-							});
-							if(-1 != data.labels.indexOf(yearMonth+day))
-								td.addClass('available');
-							else
-								td.addClass('unavailable');
-						}
-					});
 
 					$(id + " *").removeAttr('disabled');
 				});
@@ -1121,6 +1131,8 @@
 				$("<div id='col1'>").appendTo("#overviewBoxContainer");
 
 				getData("overview", function(data) {
+					$("#row1").append("<div class='chart'><span id='overviewCalendar'/></div>");
+					addCalendar("#overviewCalendar", data.date);
 					createBadges('#row1', data.FAILED, data.WARNING);
 					$("#loadmessage").hide();
 
