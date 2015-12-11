@@ -106,7 +106,7 @@ if [ "$REMOTE_SCANNER_LIST" != "" ]; then
 			# we have a scripting/connectivity issue that we want
 			# to track under name "polscan"
 			(
-				errors=$(grep -v "$STDERR_WHITELIST" ${RESULT_DIR}/${current_host}.err 2>/dev/null)
+				errors=$(grep -v "$REMOTE_STDERR_WHITELIST" ${RESULT_DIR}/${current_host}.err 2>/dev/null)
 				echo "Polscan FAILED |||Polscan remote scan||| $errors"
 			) >>${RESULT_DIR}/$current_host
 		fi
