@@ -6,8 +6,10 @@
 
 for dir in /etc/apache2 /usr/local/apache2/conf /usr/local/apache/conf; do
 	if [ -d $dir ]; then
-		if ! rgrep -q "ServerTokens[[:space:]][[:space:]]*Prod" $dir/*-enabled; then
+		if ! rgrep -qR "ServerTokens[[:space:]][[:space:]]*Prod" $dir/*-enabled; then
 			result_failed "ServerTokens is not set to 'Prod' in $dir"
+		else
+			result_ok "$dir has ServerTokens set to 'Prod'"
 		fi
 	fi
 done
