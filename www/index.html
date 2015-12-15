@@ -983,17 +983,23 @@ var force = d3.layout.force()
 							var connections = item.message.split(/ /);
 							for(var c in connections) {
 								var fields = connections[c].split(/:/);
-								if(fields[3]) {
-									$('#netMapTable').append('<tr><td>'+host+'</td><td>'+fields[0]+'</td><td>'+fields[1]+'</td><td>'+fields[2]+'</td><td>'+fields[3]+'</td></tr>');
-									if(!nodeToId[fields[0]]) {
-										nodeToId[fields[0]] = netMapData.nodes.length;
-										netMapData.nodes.push({name: fields[0], group:1});
+								if(fields[4]) {
+									var localNode = fields[0];
+									if(fields[1] !== "high")
+											localNode += ":" + fields[1];
+									if(fields[2] !== "-")
+											localNode += " (" + fields[2] + ")";
+
+									$('#netMapTable').append('<tr><td>'+host+'</td><td>'+fields[0]+'</td><td>'+fields[1]+'</td><td>'+fields[2]+'</td><td>'+fields[3]+'</td><td>'+fields[4]+'</td></tr>');
+									if(!nodeToId[localNode]) {
+										nodeToId[localNode] = netMapData.nodes.length;
+										netMapData.nodes.push({name: localNode, group:1});
 									}
-									if(!nodeToId[fields[2]]) {
-										nodeToId[fields[2]] = netMapData.nodes.length;
-										netMapData.nodes.push({name: fields[2], group:1});
+									if(!nodeToId[fields[3]]) {
+										nodeToId[fields[3]] = netMapData.nodes.length;
+										netMapData.nodes.push({name: fields[3], group:1});
 									}
-									netMapData.links.push({source: nodeToId[fields[0]], target: nodeToId[fields[2]], weight:1});
+									netMapData.links.push({source: nodeToId[localNode], target: nodeToId[fields[3]], weight:1});
 								}
 							}
 						}
@@ -1004,12 +1010,12 @@ var force = d3.layout.force()
 
 			function loadNetworkMap(params) {
 				clean();
-				$('#results').append('<div class="overviewBox"><div id="netMapNav"/><div id="netmap" style="height:800px;width:90%"/><div id="selectedGroup"/><table id="netMapTable" class="resultTable"><tr><th>Host</th><th>Local IP</th><th>Local Port</th><th>Remote IP</th><th>Remote Port</th></tr></table></div>');
+				$('#results').append('<div class="overviewBox"><div id="netMapNav"/><div id="netmap" style="height:800px;width:90%"/><div id="selectedGroup"/><table id="netMapTable" class="resultTable"><tr><th>Host</th><th>Local IP</th><th>Local Port</th><th>Program</th><th>Remote IP</th><th>Remote Port</th></tr></table></div>');
 
 
 				addFilterSettings('#netMapNav', params, function() {
 				});
-				params.h = "host";
+				params.h = "lzone.de";
 				if(params.h)
 					addHostToNetMap(params.h);
 			}
