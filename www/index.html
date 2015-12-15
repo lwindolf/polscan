@@ -8,6 +8,7 @@
 		<script type="text/javascript" src="jquery-ui.min.js"></script>
 		<script type="text/javascript" src="d3.min.js"></script>
 		<script type="text/javascript" src="d3pie.min.js"></script>
+		<script type="text/javascript" src="cola.v3.min.js"></script>
 		<link rel="stylesheet" href="jquery-ui.min.css">
 		<script src="jquery-ui.min.js"></script>
 		<meta charset="utf-8">
@@ -382,6 +383,25 @@
 			div.pie {
 				float:left;
 			}
+
+
+
+.link {
+  stroke: #aaa;
+}
+
+.node text {
+stroke:#333;
+cursos:pointer;
+}
+
+.node circle{
+stroke:#fff;
+stroke-width:3px;
+fill:#555;
+}
+
+
 		</style>
 	</head>
 	<body>
@@ -392,6 +412,7 @@
 			<div id='menuOptions'>
 			<a href="#">Overview</a>
 			<a href="#view=hostmap">Hosts Map</a>
+			<a href="#view=netmap">Net Map</a>
 
 			Findings: 
 			<a href="#view=results&fG=all">All</a>
@@ -889,7 +910,7 @@
 			function loadHostMap(params) {
 				clean();
 				$('#results').append('<div class="overviewBox"><div id="hostMapNav"/><div id="hostmap"/><div id="selectedGroup"/></div>');
-
+	
 				addFilterSettings('#hostMapNav', params, function() {
 					setLocationHash({ view: 'hostmap', gT: $('#hostmapGroupType').val() });
 				});
@@ -898,6 +919,99 @@
 					addHostsToMap(params);
 				else
 					$('#filterSettingsGo').trigger('click');
+			}
+
+			var netMapData;
+
+			function updateNetMapGraph() {
+var width = $('#netmap').width();
+    height = $('#netmap').height();
+
+var svg = d3.select("#netmap").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+var force = d3.layout.force()
+    .gravity(.05)
+    .distance($('#netmap').width()/4)
+    .charge(-100)
+    .size([width, height]);
+
+  force
+      .nodes(netMapData.nodes)
+      .links(netMapData.links)
+      .start();
+
+  var link = svg.selectAll(".link")
+      .data(netMapData.links)
+    .enter().append("line")
+      .attr("class", "link")
+    .style("stroke-width", function(d) { return Math.sqrt(d.weight); });
+
+  var node = svg.selectAll(".node")
+      .data(netMapData.nodes)
+    .enter().append("g")
+      .attr("class", "node")
+      .call(force.drag);
+
+  node.append("circle")
+      .attr("r","5");
+
+  node.append("text")
+      .attr("dx", 12)
+      .attr("dy", ".35em")
+      .text(function(d) { return d.name });
+
+  force.on("tick", function() {
+    link.attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+    node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+  });
+			}
+
+			function addHostToNetMap(host) {
+				var nodeToId = new Array();
+				netMapData = { nodes: [], links: [] };
+				netMapData.nodes.push({name: host, group:1});
+				// get connections for this host
+				getData("Network", function(data) {
+					$.each(data.results, function(i, item) {
+						if(item.host == host && item.policy == "Connections") {
+							var connections = item.message.split(/ /);
+							for(var c in connections) {
+								var fields = connections[c].split(/:/);
+								if(fields[3]) {
+									$('#netMapTable').append('<tr><td>'+host+'</td><td>'+fields[0]+'</td><td>'+fields[1]+'</td><td>'+fields[2]+'</td><td>'+fields[3]+'</td></tr>');
+									if(!nodeToId[fields[0]]) {
+										nodeToId[fields[0]] = netMapData.nodes.length;
+										netMapData.nodes.push({name: fields[0], group:1});
+									}
+									if(!nodeToId[fields[2]]) {
+										nodeToId[fields[2]] = netMapData.nodes.length;
+										netMapData.nodes.push({name: fields[2], group:1});
+									}
+									netMapData.links.push({source: nodeToId[fields[0]], target: nodeToId[fields[2]], weight:1});
+								}
+							}
+						}
+					});
+					updateNetMapGraph();
+				});
+			}
+
+			function loadNetworkMap(params) {
+				clean();
+				$('#results').append('<div class="overviewBox"><div id="netMapNav"/><div id="netmap" style="height:800px;width:90%"/><div id="selectedGroup"/><table id="netMapTable" class="resultTable"><tr><th>Host</th><th>Local IP</th><th>Local Port</th><th>Remote IP</th><th>Remote Port</th></tr></table></div>');
+
+
+				addFilterSettings('#netMapNav', params, function() {
+				});
+				params.h = "host";
+				if(params.h)
+					addHostToNetMap(params.h);
 			}
 
 			function loadScannerResults(params) {
@@ -971,6 +1085,9 @@
 					if(params.view == "hostmap") {
 						loadHostMap(params);
 						$("#menu a[href='#view=hostmap']").addClass("current");
+					} else if(params.view == "netmap") {
+						loadNetworkMap(params);
+						$("#menu a[href='#view=netmap']").addClass("current");
 					} else if(!params.fG) {
 						loadOverview();
 						$("#menu a[href='#']").addClass("current");
