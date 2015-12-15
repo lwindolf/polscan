@@ -509,7 +509,7 @@
 				console.timeEnd("sorting");
 			}
 
-			function createResultTable(params, id, data, reduced) {
+			function createResultTable(params, id, data) {
 				var filteredHosts = get_hosts_filtered(params)
 				var group = '';
 				var name = params.fG;
@@ -532,7 +532,7 @@
 			   	$.each(data, function( i, item ) {
 					var severity = 0;
 
-					if(reduced && item.severity == 'OK')
+					if(!params.sT && item.severity == 'OK')
 						return;
 
 					if(-1 == filteredHosts.indexOf(item.host))
@@ -575,7 +575,7 @@
 						}
 					}
 				});
-				console.log("Parsing done (filter: "+reduced+").");
+				console.log("Parsing done");
 				$("#resultTable"+name+" tbody").append(rows);
 				console.log("Table setup done.");
 				$("#resultTable"+name).tablesorter({sortList: [[0,0]]});
@@ -899,8 +899,8 @@
 					$('#filterSettingsGo').trigger('click');
 			}
 
-			function loadScannerResults(params, reduced) {
-				console.log("Loading results start (search="+params.sT+" reduced="+reduced+")");
+			function loadScannerResults(params) {
+				console.log("Loading results start (search="+params.sT+")");
 				clean();
 
 				getData(params.fG, function(data) {
@@ -909,8 +909,8 @@
 						setLocationHash({ sT: $('#search').val(), gI: $('#groupById').val() });
 					});
 
-					if(!params.gI || params.gI == "")
-						createResultTable(params, '#results', data.results, reduced);
+					if(!params.gI)
+						createResultTable(params, '#results', data.results);
 					else
 						createGroupTable(params, '#results', data.results);
 	
@@ -955,6 +955,12 @@
 					}
 				}
 
+				// Delete empty search fields
+				if(params.sT === "")
+					delete params.sT;
+				if(params.gI === "")
+					delete params.gI;
+
 				// FIXME: Update generic filter model
 				getData('hosts', function(data) {
 					hosts = data.results;
@@ -968,7 +974,7 @@
 						loadOverview();
 						$("#menu a[href='#']").addClass("current");
 					} else {
-						loadScannerResults(params, params.sT != undefined);
+						loadScannerResults(params);
 						$("#menu a[href='#view=results&fG="+params.fG+"']").addClass("current");
 					}
 				});
