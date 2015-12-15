@@ -70,6 +70,9 @@ while read proto recvq sendq localaddr remoteaddr state program rest; do
 	localport=${localaddr##*:}
 	remoteip=${remoteaddr%%:*}
 	remoteport=${remoteaddr##*:}
+	program=${program/ */}
+	program=${program/:*/}
+	program=${program/*\//}
 
 	if [ "$remoteport" -gt 1023 ]; then
 		remoteport=high	# reduce client ports
@@ -78,7 +81,7 @@ while read proto recvq sendq localaddr remoteaddr state program rest; do
 		localport=high	# reduce client ports
 	fi
 
-	results="$results$localip:$localport:$remoteip:$remoteport "
-done < <(/bin/netstat -taln | egrep -v " 127|LISTEN" | grep "^tcp")
+	results="$results$localip:${program}-$localport:$remoteip:$remoteport "
+done < <(/bin/netstat -talnp | egrep -v " 127|LISTEN" | grep "^tcp")
 
 result_ok $(/bin/echo $results | xargs -n 1 | sort -u)
