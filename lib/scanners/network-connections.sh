@@ -3,7 +3,7 @@
 
 # group: Network
 # name: Connections
-# description: Pseudo scanner collecting connections using netstat -tal. Results are used for graphing host connections. This scanner enables the 'Net Map' feature.
+# description: Pseudo scanner collecting connections using netstat -tal. Results are used for graphing host connections. This scanner enables the 'Net Map' feature. If scanners run as root/sudo will resolve local program names.
 # feature: netmap
 
 OUR_NETWORKS=${OUR_NETWORKS-127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16}
@@ -73,7 +73,11 @@ while read proto recvq sendq localaddr remoteaddr state program rest; do
 	remoteport=${remoteaddr##*:}
 	program=${program/ */}
 	program=${program/:*/}
-	program=${program/*\//}
+	program=${program/#*\//}
+
+	if [[ $localport =~ $LISTEN_FILTER ]]; then
+		continue
+	fi
 
 	if [ "$remoteport" -gt 1023 ]; then
 		remoteport=high	# reduce client ports
@@ -82,7 +86,7 @@ while read proto recvq sendq localaddr remoteaddr state program rest; do
 		localport=high	# reduce client ports
 	fi
 
-	results="$results$localip:${program}-$localport:$remoteip:$remoteport "
+	results="$results$localip:$localport:$program:$remoteip:$remoteport "
 done < <(/bin/netstat -talnp | egrep -v " 127|LISTEN" | grep "^tcp")
 
 result_ok $(/bin/echo $results | xargs -n 1 | sort -u)
