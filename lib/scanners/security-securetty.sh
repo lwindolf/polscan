@@ -5,7 +5,7 @@
 
 insecure=$(egrep '^(ttyS[0-9]|vc/[0-9])[[:space:]]*$' /etc/securetty)
 if [ "$insecure" != "" ]; then
-	result_failed "/etc/securetty allows root login via $insecure"
+	result_failed "/etc/securetty allows root login via" $insecure
 else
 	result_ok
 fi
