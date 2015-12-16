@@ -2,13 +2,13 @@
 <!doctype html>
 <html>
 	<head>
+		<script type="text/javascript" src="d3.min.js"></script>
+		<script type="text/javascript" src="cola.v3.min.js"></script>
 		<script type="text/javascript" src="jquery-2.1.4.min.js"></script>
 		<script type="text/javascript" src="jquery.tablesorter.min.js"></script>
 		<script type="text/javascript" src="Chart.min.js"></script>
 		<script type="text/javascript" src="jquery-ui.min.js"></script>
-		<script type="text/javascript" src="d3.min.js"></script>
 		<script type="text/javascript" src="d3pie.min.js"></script>
-		<script type="text/javascript" src="cola.v3.min.js"></script>
 		<link rel="stylesheet" href="jquery-ui.min.css">
 		<script src="jquery-ui.min.js"></script>
 		<meta charset="utf-8">
@@ -401,7 +401,18 @@ stroke-width:3px;
 fill:#555;
 }
 
+.guideline {
+ //   stroke: orangered;
+  //  stroke-width: 4px;
+}
 
+
+svg .link-line {
+	fill: none;
+	stroke: #000;
+	stroke-width: 2.0px;
+	marker-end: url(#end-arrow);
+}
 		</style>
 	</head>
 	<body>
@@ -921,61 +932,192 @@ fill:#555;
 					$('#filterSettingsGo').trigger('click');
 			}
 
+
+    function getAlignmentBounds(vs, c) {
+        var os = c.offsets;
+        if (c.axis === 'x') {
+            var x = vs[os[0].node].x;
+            c.bounds = new cola.vpsc.Rectangle(x, x, 
+                Math.min.apply(Math, os.map(function (o) { return vs[o.node].bounds.y - 20; })),
+                Math.max.apply(Math, os.map(function (o) { return vs[o.node].bounds.Y + 20; })));
+        } else {
+            var y = vs[os[0].node].y;
+            c.bounds = new cola.vpsc.Rectangle(
+                Math.min.apply(Math, os.map(function (o) { return vs[o.node].bounds.x - 20; })),
+                Math.max.apply(Math, os.map(function (o) { return vs[o.node].bounds.X + 20; })),
+                y, y);
+        }
+        return c.bounds;
+    }
 			var netMapData;
+			var viewBoxX, viewBoxY;
 
 			function updateNetMapGraph() {
 var width = $('#netmap').width();
     height = $('#netmap').height();
 
-var svg = d3.select("#netmap").append("svg")
-    .attr("width", width)
-    .attr("height", height);
+    var color = d3.scale.category20();
 
-var force = d3.layout.force()
-    .gravity(.05)
-    .distance($('#netmap').width()/4)
-    .charge(-100)
-    .size([width, height]);
+    var d3cola = cola.d3adaptor()
+            .flowLayout("x", 400)
+			//.symnetricDiffLinkLengths(6)
+        .linkDistance(200)
+		.convergenceThreshold(0.1)
+        .avoidOverlaps(true)
+        //.handleDisconnected(false)
+        .size([width, height]);
 
-  force
-      .nodes(netMapData.nodes)
-      .links(netMapData.links)
-      .start();
+    var svg = d3.select("#netmap").append("svg")
+        .attr("width", width)
+        .attr("height", height);
 
-  var link = svg.selectAll(".link")
-      .data(netMapData.links)
-    .enter().append("line")
-      .attr("class", "link")
-    .style("stroke-width", function(d) { return Math.sqrt(d.weight); });
 
-  var node = svg.selectAll(".node")
-      .data(netMapData.nodes)
-    .enter().append("g")
-      .attr("class", "node")
-      .call(force.drag);
+	// Allow panning as suggested in by dersinces (CC BY-SA 3.0) in
+	// http://stackoverflow.com/questions/20099299/implement-panning-while-keeping-nodes-draggable-in-d3-force-layout
+	var drag = d3.behavior.drag();
+	drag.on('drag', function() {
+	    viewBoxX -= d3.event.dx;
+	    viewBoxY -= d3.event.dy;
+	    svg.select('g.node-area').attr('transform', 'translate(' + (-viewBoxX) + ',' + (-viewBoxY) + ')');
+	});
+	svg.append('rect')
+	  .classed('bg', true)
+	  .attr('stroke', 'transparent')
+	  .attr('fill', 'transparent')
+	  .attr('x', 0)
+	  .attr('y', 0)
+	  .attr('width', width)
+	  .attr('height', height)
+	  .call(drag);
 
-  node.append("circle")
-      .attr("r","5");
+	var nodeArea = svg.append('g').classed('node-area', true);
 
-  node.append("text")
-      .attr("dx", 12)
-      .attr("dy", ".35em")
-      .text(function(d) { return d.name });
+	svg.append('svg:defs').append('svg:marker').attr('id', 'end-arrow').attr('viewBox', '0 -5 10 10').attr('refX', 5).attr('markerWidth', 9).attr('markerHeight', 6).attr('orient', 'auto').append('svg:path').attr('d', 'M0,-5L10,0L0,5L2,0').attr('stroke-width', '0px').attr('fill', '#000');
 
-  force.on("tick", function() {
-    link.attr("x1", function(d) { return d.source.x; })
-        .attr("y1", function(d) { return d.source.y; })
-        .attr("x2", function(d) { return d.target.x; })
-        .attr("y2", function(d) { return d.target.y; });
+    graph = netMapData;
+console.log(JSON.stringify(netMapData));
+        graph.nodes.forEach(function (v) {
+            v.width = 200;
+			v.height = 40;
+        })
+        d3cola
+            .nodes(graph.nodes)
+            .links(graph.links)
+			.groups(graph.groups)
+			.constraints(graph.constraints)
+            .start(100,0,0)
 
-    node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
-  });
+        var group = nodeArea.selectAll(".group")
+            .data(graph.groups)
+          .enter().append("rect")
+            .attr("rx", 8).attr("ry", 8)
+            .attr("class", "group")
+            .style("fill", function (d, i) { if (i != 0) return color(i); else return '#fff' });
+
+        var link = nodeArea.selectAll(".link")
+            .data(graph.links)
+          .enter().append("line")
+            .attr("class", "link-line");
+
+        var guideline = nodeArea.selectAll(".guideline")
+            .data(graph.constraints.filter(function (c) { return c.type === 'alignment' }))
+          .enter().append("line")
+            .attr("class", "guideline")
+            .attr("stroke-dasharray", "5,5");
+
+        var pad = 5;
+        var node = nodeArea.selectAll(".node")
+            .data(graph.nodes)
+          .enter().append("rect")
+            .attr("class", "node")
+            .attr("x", function (d) { return -d.width/2 + pad; })
+            .attr("y", function (d) { return -d.height/2 + pad; })
+            .attr("width", function (d) { return d.width - 2 * pad; })
+            .attr("height", function (d) { return d.height - 2 * pad; })
+            .attr("rx", 5).attr("ry", 5)
+            .style("fill", function (d) { return color(graph.groups.length); })
+            .call(d3cola.drag)
+            .on('mouseup', function (d) {
+                d.fixed = 0;
+                d3cola.alpha(1); // fire it off again to satify gridify
+            });
+
+        var label = nodeArea.selectAll(".label")
+            .data(graph.nodes)
+           .enter().append("text")
+            .attr("class", "label")
+            .text(function (d) { return d.name; })
+            .call(d3cola.drag);
+
+        node.append("title")
+            .text(function (d) { return d.name; });
+
+        d3cola.on("tick", function () {
+		    node.each(function (d) {
+                    d.bounds.setXCentre(d.x);
+                    d.bounds.setYCentre(d.y);
+                    d.innerBounds = d.bounds.inflate(-0);
+                });
+
+				node.attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; });
+			//	nodeArea.selectAll(".link-label").attr("transform", function (d) { return "translate(" + d.source.x + "," + (d.source.y+d.target.y)/2 + ")"; });
+
+
+			link.each(function (d) {
+				cola.vpsc.makeEdgeBetween(d, d.source.innerBounds, d.target.innerBounds, 5);
+			});
+	    	link.attr("x1", function (d) {
+				return d.sourceIntersection.x;
+			}).attr("y1", function (d) {
+				return d.sourceIntersection.y;
+			}).attr("x2", function (d) {
+				return d.arrowStart.x;
+			}).attr("y2", function (d) {
+				return d.arrowStart.y;
+			});
+	   /*     node.attr("x", function (d) { return d.x - d.width / 2 + pad; })
+                .attr("y", function (d) { return d.y - d.height / 2 + pad; });
+        */    
+            group.attr("x", function (d) { return d.bounds.x; })
+                .attr("y", function (d) { return d.bounds.y; })
+                .attr("width", function (d) { return d.bounds.width(); })
+                .attr("height", function (d) { return d.bounds.height(); });
+
+            guideline
+                .attr("x1", function (d) { return getAlignmentBounds(graph.nodes, d).x; })
+                .attr("y1", function (d) {
+                    return d.bounds.y;
+                })
+                .attr("x2", function (d) { return d.bounds.X; })
+                .attr("y2", function (d) {
+                    return d.bounds.Y;
+                });
+
+            label.attr("x", function (d) { return d.x -d.width/2 + pad; })
+                 .attr("y", function (d) {
+                     var h = this.getBBox().height;
+                     return d.y + h/4;
+                 });
+        });
 			}
 
 			function addHostToNetMap(host) {
 				var nodeToId = new Array();
-				netMapData = { nodes: [], links: [] };
-				netMapData.nodes.push({name: host, group:1});
+				netMapData = {
+					nodes: [],
+					links: [],
+				    constraints: [
+						{ type: "alignment", axis: "x", offsets: [] },
+						{ type: "alignment", axis: "x", offsets: [] },
+						{ type: "alignment", axis: "x", offsets: [] }
+					],
+					groups: [
+						{ leaves: [0], groups: [1, 2, 3] },	// root
+						{ leaves: [] }, // local node group
+						{ leaves: [] }, // group for remote nodes connecting from
+						{ leaves: [] }	// group for remote nodes connecting to
+					]
+				};
 				// get connections for this host
 				getData("Network", function(data) {
 					$.each(data.results, function(i, item) {
@@ -984,22 +1126,36 @@ var force = d3.layout.force()
 							for(var c in connections) {
 								var fields = connections[c].split(/:/);
 								if(fields[4]) {
-									var localNode = fields[0];
+									var localNode;
+									if(fields[2] !== "-")
+											localNode = fields[2];
+									else
+											localNode = "???";
 									if(fields[1] !== "high")
 											localNode += ":" + fields[1];
-									if(fields[2] !== "-")
-											localNode += " (" + fields[2] + ")";
 
 									$('#netMapTable').append('<tr><td>'+host+'</td><td>'+fields[0]+'</td><td>'+fields[1]+'</td><td>'+fields[2]+'</td><td>'+fields[3]+'</td><td>'+fields[4]+'</td></tr>');
 									if(!nodeToId[localNode]) {
 										nodeToId[localNode] = netMapData.nodes.length;
-										netMapData.nodes.push({name: localNode, group:1});
+										netMapData.groups[1].leaves.push(nodeToId[localNode]);
+										netMapData.constraints[0].offsets.push({node: nodeToId[localNode], offset:0});
+										netMapData.nodes.push({name: localNode});
 									}
 									if(!nodeToId[fields[3]]) {
 										nodeToId[fields[3]] = netMapData.nodes.length;
-										netMapData.nodes.push({name: fields[3], group:1});
+										if(fields[1] !== "high") {
+											netMapData.groups[2].leaves.push(nodeToId[fields[3]]);
+											netMapData.constraints[1].offsets.push({node: nodeToId[fields[3]], offset:0});
+										} else {
+											netMapData.groups[3].leaves.push(nodeToId[fields[3]]);
+											netMapData.constraints[2].offsets.push({node: nodeToId[fields[3]], offset:0});
+										}
+										netMapData.nodes.push({name: fields[3]});
 									}
-									netMapData.links.push({source: nodeToId[localNode], target: nodeToId[fields[3]], weight:1});
+									if(fields[1] !== "high")
+										netMapData.links.push({target: nodeToId[localNode], source: nodeToId[fields[3]]});
+									else
+										netMapData.links.push({source: nodeToId[localNode], target: nodeToId[fields[3]]});
 								}
 							}
 						}
@@ -1010,7 +1166,7 @@ var force = d3.layout.force()
 
 			function loadNetworkMap(params) {
 				clean();
-				$('#results').append('<div class="overviewBox"><div id="netMapNav"/><div id="netmap" style="height:800px;width:90%"/><div id="selectedGroup"/><table id="netMapTable" class="resultTable"><tr><th>Host</th><th>Local IP</th><th>Local Port</th><th>Program</th><th>Remote IP</th><th>Remote Port</th></tr></table></div>');
+				$('#results').append('<div class="overviewBox"><div id="netmap" style="padding:12px;height:800px;width:100%;margin-bottom:12px;clear:both;border:1px solid black;"/><div id="selectedGroup"/><table id="netMapTable" class="resultTable"><tr><th>Host</th><th>Local IP</th><th>Local Port</th><th>Program</th><th>Remote IP</th><th>Remote Port</th></tr></table></div><div id="netMapNav"/>');
 
 
 				addFilterSettings('#netMapNav', params, function() {
