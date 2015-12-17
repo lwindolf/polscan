@@ -961,7 +961,7 @@ var width = $('#netmap').width();
     var d3cola = cola.d3adaptor()
             .flowLayout("x", 400)
 			//.symnetricDiffLinkLengths(6)
-        .linkDistance(200)
+        .linkDistance(100)
 		.convergenceThreshold(0.1)
         .avoidOverlaps(true)
         //.handleDisconnected(false)
@@ -998,7 +998,8 @@ var width = $('#netmap').width();
 console.log(JSON.stringify(netMapData));
         graph.nodes.forEach(function (v) {
             v.width = 200;
-			v.height = 40;
+			if(v.height === undefined)
+				v.height = 40;
         })
         d3cola
             .nodes(graph.nodes)
@@ -1103,6 +1104,8 @@ console.log(JSON.stringify(netMapData));
 
 			function addHostToNetMap(host) {
 				var nodeToId = new Array();
+				var portToProgram = new Array();
+				var connByService = new Array();
 				netMapData = {
 					nodes: [],
 					links: [],
@@ -1112,7 +1115,7 @@ console.log(JSON.stringify(netMapData));
 						{ type: "alignment", axis: "x", offsets: [] }
 					],
 					groups: [
-						{ leaves: [0], groups: [1, 2, 3] },	// root
+						{ leaves: [0], groups: [] },	// root (child groups are added on demand)
 						{ leaves: [] }, // local node group
 						{ leaves: [] }, // group for remote nodes connecting from
 						{ leaves: [] }	// group for remote nodes connecting to
@@ -1126,40 +1129,95 @@ console.log(JSON.stringify(netMapData));
 							for(var c in connections) {
 								var fields = connections[c].split(/:/);
 								if(fields[4]) {
-									var localNode;
-									if(fields[2] !== "-")
-											localNode = fields[2];
+	 								var id, port = fields[1], program = fields[2];
+
+									// Resolve program for close-wait, time-wait listings
+									if(program !== "-" && !(port in portToProgram))
+										portToProgram[port] = program;
+									if(program === "-" && (port in portToProgram))
+										program = portToProgram[port];
+
+									// Reduce connections to per service connections with ids like
+									//   high:::java:::high
+									//   high:::apache2:::80
+									//   ...
+									id = fields[1]+":::"+program+":::"+fields[4];
+									var s;
+									if(program !== "-")
+											s = program;
 									else
-											localNode = "???";
-									if(fields[1] !== "high")
-											localNode += ":" + fields[1];
+											s = "???";
+									if(port !== "high")
+											s += ":" + port;
+
+									if(!(id in connByService))
+										connByService[id] = { service: s, in: [], out: [] };
+
+									if(fields[1] !== 'high')
+										connByService[id].in.push(fields[3]);
+									else
+										connByService[id].out.push(fields[3]);
 
 									$('#netMapTable').append('<tr><td>'+host+'</td><td>'+fields[0]+'</td><td>'+fields[1]+'</td><td>'+fields[2]+'</td><td>'+fields[3]+'</td><td>'+fields[4]+'</td></tr>');
-									if(!nodeToId[localNode]) {
-										nodeToId[localNode] = netMapData.nodes.length;
-										netMapData.groups[1].leaves.push(nodeToId[localNode]);
-										netMapData.constraints[0].offsets.push({node: nodeToId[localNode], offset:0});
-										netMapData.nodes.push({name: localNode});
-									}
-									if(!nodeToId[fields[3]]) {
-										nodeToId[fields[3]] = netMapData.nodes.length;
-										if(fields[1] !== "high") {
-											netMapData.groups[2].leaves.push(nodeToId[fields[3]]);
-											netMapData.constraints[1].offsets.push({node: nodeToId[fields[3]], offset:0});
-										} else {
-											netMapData.groups[3].leaves.push(nodeToId[fields[3]]);
-											netMapData.constraints[2].offsets.push({node: nodeToId[fields[3]], offset:0});
-										}
-										netMapData.nodes.push({name: fields[3]});
-									}
-									if(fields[1] !== "high")
-										netMapData.links.push({target: nodeToId[localNode], source: nodeToId[fields[3]]});
-									else
-										netMapData.links.push({source: nodeToId[localNode], target: nodeToId[fields[3]]});
 								}
 							}
 						}
 					});
+					for(var id in connByService) {
+						var tmp = id.split(/:::/);
+						var program = connByService[id].service;
+						var lPort = tmp[0];
+						var rPort = tmp[2];
+
+						if(!(program in nodeToId)) {
+							nodeToId[program] = netMapData.nodes.length;
+							netMapData.groups[1].leaves.push(nodeToId[program]);
+							netMapData.constraints[0].offsets.push({node: nodeToId[program], offset:0});
+							netMapData.nodes.push({name: program});
+						}
+						if(connByService[id].in.length > 0) {
+							var remote = id+"-in";
+							nodeToId[remote] = netMapData.nodes.length;
+							netMapData.groups[3].leaves.push(nodeToId[remote]);
+							netMapData.constraints[2].offsets.push({node: nodeToId[remote], offset:0});
+							netMapData.nodes.push({
+								name: connByService[id].in.join(","),
+								height: 40*Math.min(5, connByService[id].in.length)
+							});
+							netMapData.links.push({source: nodeToId[program], target: nodeToId[remote]});
+						}
+						if(connByService[id].out.length > 0) {
+							var remote = id+"-out";
+							nodeToId[remote] = netMapData.nodes.length;
+							netMapData.groups[2].leaves.push(nodeToId[remote]);
+							netMapData.constraints[1].offsets.push({node: nodeToId[remote], offset:0});
+							netMapData.nodes.push({name: connByService[id].out.join(",")});
+							netMapData.links.push({target: nodeToId[program], source: nodeToId[remote]});
+						}
+					}
+
+console.log(JSON.stringify(netMapData.groups));
+					if(netMapData.groups[3].leaves.length > 0)
+						netMapData.groups[0].groups.push(3);
+					else
+						netMapData.groups.splice(3,3);
+					if(netMapData.groups[2].leaves.length > 0)
+						netMapData.groups[0].groups.push(2);
+					else
+						netMapData.groups.splice(2,2);
+					if(netMapData.groups[1].leaves.length > 0)
+						netMapData.groups[0].groups.push(1);
+					else
+						netMapData.groups.splice(1,1);
+
+console.log(JSON.stringify(netMapData.groups));
+					if(netMapData.constraints[2].offsets.length == 0)
+						delete netMapData.constraints.splice(2,2);
+					if(netMapData.constraints[1].offsets.length == 0)
+						delete netMapData.constraints.splice(1,1);
+					if(netMapData.constraints[0].offsets.length == 0)
+						delete netMapData.constraints.splice(0,0);
+
 					updateNetMapGraph();
 				});
 			}
