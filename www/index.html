@@ -611,7 +611,7 @@ svg .link-line {
 				console.log("Parsing done");
 				$("#resultTable"+name+" tbody").append(rows);
 				console.log("Table setup done.");
-				$("#resultTable"+name).tablesorter({sortList: [[0,0]]});
+				$("#resultTable"+name).tablesorter({sortList: [[2,1],[0,0]]});
 				console.log("Table sorting done.");
 
 				if(groupBy.length >= 0) {
