@@ -13,7 +13,7 @@
 		<script src="jquery-ui.min.js"></script>
 		<meta charset="utf-8">
 		<style type="text/css">
-			body {
+			body.main {
 				font-family: Helvetica;
 				background:#eee;
 				margin:0;
@@ -413,9 +413,19 @@ svg .link-line {
 	stroke-width: 2.0px;
 	marker-end: url(#end-arrow);
 }
+svg .nodes body {
+	background:#eee;
+	border:1px solid #777;
+	padding-left:6px;
+	padding-right:6px;
+	overflow:hidden;
+	text-overflow:ellipsis;
+	word-break:break-all;
+	height:100%;
+}
 		</style>
 	</head>
-	<body>
+	<body class='main'>
 		<div id='menu'>
 			<div id='logo'>
 			<a href='https://github.com/lwindolf/polscan'>Polscan</a>
@@ -868,19 +878,32 @@ svg .link-line {
 
 			function addFilterSettings(id, params, callback) {
 				$(id).append('<div id="filterSettings">');
-				$('#filterSettings').append("<span class='label datepicker'>Date</span> <input type='text' id='datepicker' size='10'/> "+
-				"<span id='calendar'></span>" +
-				'<span class="label">Findings</span> <select id="findingsGroup"></select> ');
+				var fbox = $('#filterSettings');
+				fbox.append("<span class='label datepicker'>Date</span> <input type='text' id='datepicker' size='10'/> "+
+				"<span id='calendar'></span>");
+				if(params.view !== 'netmap')
+					fbox.append('<span class="label">Findings</span> <select id="findingsGroup"></select> ');
 
-				if(params.view == 'hostmap')
-					$('#filterSettings').append('<span class="label">Group Hosts by</span> <select id="hostmapGroupType"></select> ');
+				if(params.view === 'netmap') {
+					fbox.append('Host <input type="text" value="'+(params.h !== undefined?params.h:'')+'" list="availableHosts" id="selectedHost"/>' +	
+					' <datalist id="availableHosts"/>');
+					getData("hosts", function(data) {
+						$.each(data.results, function(host) {
+							$('#availableHosts').append('<option value="'+host+'">');
+						});
+					});
+				}
+
+				if(params.view === 'hostmap')
+					fbox.append('<span class="label">Group Hosts by</span> <select id="hostmapGroupType"></select> ');
 				if(!params.view || params.view == 'results') {
-					$('#filterSettings').append('<span class="label">Group Hosts By</span> <select id="groupById"><option name="none"></option></select> ');
+					fbox.append('<span class="label">Group Hosts By</span> <select id="groupById"><option name="none"></option></select> ');
 					if(params.gI && params.gI != '')
 						$('#groupById').append('<option name="'+params.gI+'" selected>'+params.gI+'</option>');
 				}
 
-				$('#filterSettings').append('<span class="label">Filter by</span> <select id="hostmapFilterType"></select><select id="hostmapFilterValue"/></select> ');
+				if(params.view !== 'netmap')
+					fbox.append('<span class="label">Filter by</span> <select id="hostmapFilterType"></select><select id="hostmapFilterValue"/></select> ');
 
 				if(!params.view || params.view == 'results')
 					$('#filterSettings').append('<span class="label">Search</span> <input type="text" width="100%" id="search"/> ')
@@ -959,9 +982,9 @@ var width = $('#netmap').width();
     var color = d3.scale.category20();
 
     var d3cola = cola.d3adaptor()
-            .flowLayout("x", 400)
+            .flowLayout("x", Math.min(300,$(window).width()/3))
 			//.symnetricDiffLinkLengths(6)
-        .linkDistance(100)
+        .linkDistance(200)
 		.convergenceThreshold(0.1)
         .avoidOverlaps(true)
         //.handleDisconnected(false)
@@ -1029,7 +1052,22 @@ console.log(JSON.stringify(netMapData));
         var pad = 5;
         var node = nodeArea.selectAll(".node")
             .data(graph.nodes)
-          .enter().append("rect")
+			.attr("class", "node")
+			.enter().append("g")
+			.each(function(d) {
+				d3.select(this)
+				.append("foreignObject")
+	            .attr("x", function (d) { return -d.width/2 + pad; })
+   		        .attr("y", function (d) { return -d.height/2 + pad; })
+   		        .attr("width", function (d) { return d.width - 2 * pad; })
+   		        .attr("height", function (d) { return d.height - 2 * pad; })
+				.attr("class", "nodes")
+				.append("xhtml:body")
+				.html(d.name);
+			})
+            .call(d3cola.drag);
+
+/*          .enter().append("rect")
             .attr("class", "node")
             .attr("x", function (d) { return -d.width/2 + pad; })
             .attr("y", function (d) { return -d.height/2 + pad; })
@@ -1049,6 +1087,8 @@ console.log(JSON.stringify(netMapData));
             .attr("class", "label")
             .text(function (d) { return d.name; })
             .call(d3cola.drag);
+
+*/
 
         node.append("title")
             .text(function (d) { return d.name; });
@@ -1076,9 +1116,7 @@ console.log(JSON.stringify(netMapData));
 			}).attr("y2", function (d) {
 				return d.arrowStart.y;
 			});
-	   /*     node.attr("x", function (d) { return d.x - d.width / 2 + pad; })
-                .attr("y", function (d) { return d.y - d.height / 2 + pad; });
-        */    
+            
             group.attr("x", function (d) { return d.bounds.x; })
                 .attr("y", function (d) { return d.bounds.y; })
                 .attr("width", function (d) { return d.bounds.width(); })
@@ -1094,11 +1132,11 @@ console.log(JSON.stringify(netMapData));
                     return d.bounds.Y;
                 });
 
-            label.attr("x", function (d) { return d.x -d.width/2 + pad; })
+/*            label.attr("x", function (d) { return d.x -d.width/2 + pad; })
                  .attr("y", function (d) {
                      var h = this.getBBox().height;
                      return d.y + h/4;
-                 });
+                 });*/
         });
 			}
 
@@ -1191,7 +1229,10 @@ console.log(JSON.stringify(netMapData));
 							nodeToId[remote] = netMapData.nodes.length;
 							netMapData.groups[2].leaves.push(nodeToId[remote]);
 							netMapData.constraints[1].offsets.push({node: nodeToId[remote], offset:0});
-							netMapData.nodes.push({name: connByService[id].out.join(",")});
+							netMapData.nodes.push({
+								name: connByService[id].out.join(","),
+								height: 40*Math.min(5, connByService[id].out.length)
+							});
 							netMapData.links.push({target: nodeToId[program], source: nodeToId[remote]});
 						}
 					}
@@ -1224,14 +1265,12 @@ console.log(JSON.stringify(netMapData.groups));
 
 			function loadNetworkMap(params) {
 				clean();
-				$('#results').append('<div class="overviewBox"><div id="netmap" style="padding:12px;height:800px;width:100%;margin-bottom:12px;clear:both;border:1px solid black;"/><div id="selectedGroup"/><table id="netMapTable" class="resultTable"><tr><th>Host</th><th>Local IP</th><th>Local Port</th><th>Program</th><th>Remote IP</th><th>Remote Port</th></tr></table></div><div id="netMapNav"/>');
-
+				$('#results').append('<div class="overviewBox"><div id="netMapNav"/><div id="netmap" style="height:800px;width:100%;margin-bottom:12px;clear:both;border:1px solid #aaa;"/><div id="selectedGroup"/><table id="netMapTable" class="resultTable"><tr><th>Host</th><th>Local IP</th><th>Local Port</th><th>Program</th><th>Remote IP</th><th>Remote Port</th></tr></table></div>');
 
 				addFilterSettings('#netMapNav', params, function() {
+					setLocationHash({ view: 'netmap', h: $('#selectedHost').val() });
 				});
-				params.h = "lzone.de";
-				if(params.h)
-					addHostToNetMap(params.h);
+				addHostToNetMap(params.h);
 			}
 
 			function loadScannerResults(params) {
