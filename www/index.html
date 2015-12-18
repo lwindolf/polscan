@@ -1002,7 +1002,7 @@ svg .nodes body {
         .linkDistance(200)
 		.convergenceThreshold(0.1)
         .avoidOverlaps(true)
-        //.handleDisconnected(false)
+        .handleDisconnected(false)
         .size([width, height]);
 
     var svg = d3.select("#netmap").append("svg")
@@ -1070,6 +1070,18 @@ console.log(JSON.stringify(netMapData));
 			.attr("class", "node")
 			.enter().append("g")
 			.each(function(d) {
+				// Prepare host name links for all non-IPs
+				var html;
+				$.each(d.name.split(","), function(i, h) {
+					if(html)
+						html += "<br/>";
+					else
+						html = "";
+					if(-1 === h.search(/^[0-9]/) && d.type != "local")
+						html += "<a href='#view=netmap&h="+h+"'>"+h+"</a>";
+					else
+						html += h;
+				});
 				d3.select(this)
 				.append("foreignObject")
 	            .attr("x", function (d) { return -d.width/2 + pad; })
@@ -1078,23 +1090,11 @@ console.log(JSON.stringify(netMapData));
    		        .attr("height", function (d) { return d.height - 2 * pad; })
 				.attr("class", "nodes")
 				.append("xhtml:body")
-				.html(d.name);
+				.html(html);
 			})
             .call(d3cola.drag);
 
 /*          .enter().append("rect")
-            .attr("class", "node")
-            .attr("x", function (d) { return -d.width/2 + pad; })
-            .attr("y", function (d) { return -d.height/2 + pad; })
-            .attr("width", function (d) { return d.width - 2 * pad; })
-            .attr("height", function (d) { return d.height - 2 * pad; })
-            .attr("rx", 5).attr("ry", 5)
-            .style("fill", function (d) { return color(graph.groups.length); })
-            .call(d3cola.drag)
-            .on('mouseup', function (d) {
-                d.fixed = 0;
-                d3cola.alpha(1); // fire it off again to satify gridify
-            });
 
         var label = nodeArea.selectAll(".label")
             .data(graph.nodes)
@@ -1227,7 +1227,7 @@ console.log(JSON.stringify(netMapData));
 							nodeToId[program] = netMapData.nodes.length;
 							netMapData.groups[1].leaves.push(nodeToId[program]);
 							netMapData.constraints[0].offsets.push({node: nodeToId[program], offset:0});
-							netMapData.nodes.push({name: program});
+							netMapData.nodes.push({name: program, type: 'local'});
 						}
 						if(connByService[id].in.length > 0) {
 							var remote = id+"-in";
