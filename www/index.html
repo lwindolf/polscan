@@ -1187,7 +1187,7 @@ console.log(JSON.stringify(netMapData));
 							var connections = item.message.split(/ /);
 							for(var c in connections) {
 								var fields = connections[c].split(/:/);
-								if(fields[4]) {
+								if(fields[5]) {
 	 								var id, port = fields[1], program = fields[2];
 
 									// Resolve program for close-wait, time-wait listings
@@ -1212,12 +1212,12 @@ console.log(JSON.stringify(netMapData));
 									if(!(id in connByService))
 										connByService[id] = { service: s, in: [], out: [] };
 
-									if(fields[1] !== 'high')
-										connByService[id].in.push(fields[3]);
-									else
+									if(fields[5] === 'in')
 										connByService[id].out.push(fields[3]);
+									else
+										connByService[id].in.push(fields[3]);
 
-									$('#netMapTable').append('<tr><td>'+host+'</td><td>'+fields[0]+'</td><td>'+fields[1]+'</td><td>'+fields[2]+'</td><td>'+fields[3]+'</td><td>'+fields[4]+'</td></tr>');
+									$('#netMapTable').append('<tr><td>'+host+'</td><td>'+fields.join('</td><td>')+'</td></tr>');
 								}
 							}
 						}
@@ -1287,7 +1287,7 @@ console.log(JSON.stringify(netMapData.groups));
 
 			function loadNetworkMap(params) {
 				clean();
-				$('#results').append('<div class="overviewBox"><div id="netMapNav"/><div id="netmap" style="height:800px;width:100%;margin-bottom:12px;clear:both;border:1px solid #aaa;"/><div id="selectedGroup"/><table id="netMapTable" class="resultTable"><tr><th>Host</th><th>Local IP</th><th>Local Port</th><th>Program</th><th>Remote IP</th><th>Remote Port</th></tr></table></div>');
+				$('#results').append('<div class="overviewBox"><div id="netMapNav"/><div id="netmap" style="height:800px;width:100%;margin-bottom:12px;clear:both;border:1px solid #aaa;"/><div id="selectedGroup"/><table id="netMapTable" class="resultTable"><tr><th>Host</th><th>Local IP</th><th>Local Port</th><th>Program</th><th>Remote IP</th><th>Remote Port</th><th>In/Out</th><th>Count</th></tr></table></div>');
 
 				addFilterSettings('#netMapNav', params, function() {
 					setLocationHash({ view: 'netmap', h: $('#selectedHost').val() });
