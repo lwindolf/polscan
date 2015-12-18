@@ -254,37 +254,37 @@
 			#filterSettings select {
 				max-width:20%;
 			}
-			#filterSettings #calendar {
+			#filterSettings.sidebar #calendar {
 				display:none;
 			}
 		}
 		@media (min-width: 1024px) {
-			#filterSettings {
+			#filterSettings.sidebar {
 				float: left;
 				margin:0;
 				margin-right:12px;
 			}
-			#filterSettings #datepicker, #filterSettings .datepicker {
+			#filterSettings.sidebar #datepicker, #filterSettings.sidebar .datepicker {
 				display:none;
 			}
-			#filterSettings .label {
+			#filterSettings.sidebar .label {
 				font-weight:bold;
 				margin-top:12px;
 			}
-			#filterSettings hr {
+			#filterSettings.sidebar hr {
 				display:block;
 			}
-			#filterSettings select {
+			#filterSettings.sidebar select {
 				display:block;
 				width:300px;
 				margin-bottom:6px;
 			}
-			#filterSettings input[type='text'] {
+			#filterSettings.sidebar input[type='text'] {
 				display:block;
 				width:292px;
 				margin-bottom:6px;
 			}
-			textarea#copyHostList {
+			#filterSettings.sidebar textarea#copyHostList {
 				height:250px;
 			}
 		}
@@ -397,8 +397,6 @@
 				float:left;
 			}
 
-
-
 .link {
   stroke: #aaa;
 }
@@ -446,7 +444,7 @@ svg .nodes body {
 			<div id='menuOptions'>
 			<a href="#">Overview</a>
 			<a href="#view=hostmap">Hosts Map</a>
-<!--			<a href="#view=netmap">Net Map</a>-->
+			<a href="#view=netmap">Net Map</a>
 
 			Findings: 
 			<a href="#view=results&fG=all">All</a>
@@ -898,12 +896,10 @@ svg .nodes body {
 			}
 
 			function addFilterSettings(id, params, callback) {
-				$(id).append('<div id="filterSettings">');
+				$(id).append('<div id="filterSettings" class="'+(params.view !== 'netmap'?'sidebar':'')+'">');
 				var fbox = $('#filterSettings');
 				fbox.append("<span class='label datepicker'>Date</span> <input type='text' id='datepicker' size='10'/> "+
 				"<span id='calendar'></span>");
-				if(params.view !== 'netmap')
-					fbox.append('<span class="label">Findings</span> <select id="findingsGroup"></select> ');
 
 				if(params.view === 'netmap') {
 					fbox.append('Host <input type="text" value="'+(params.h !== undefined?params.h:'')+'" list="availableHosts" id="selectedHost"/>' +	
@@ -913,32 +909,30 @@ svg .nodes body {
 							$('#availableHosts').append('<option value="'+host+'">');
 						});
 					});
-				}
+				} else {
+					fbox.append('<span class="label">Findings</span> <select id="findingsGroup"></select> ');
+					if(params.view === 'hostmap')
+						fbox.append('<span class="label">Group Hosts by</span> <select id="hostmapGroupType"></select> ');
+					if(!params.view || params.view == 'results') {
+						fbox.append('<span class="label">Group Hosts By</span> <select id="groupById"><option name="none"></option></select> ');
+						if(params.gI && params.gI != '')
+							$('#groupById').append('<option name="'+params.gI+'" selected>'+params.gI+'</option>');
+					}
 
-				if(params.view === 'hostmap')
-					fbox.append('<span class="label">Group Hosts by</span> <select id="hostmapGroupType"></select> ');
-				if(!params.view || params.view == 'results') {
-					fbox.append('<span class="label">Group Hosts By</span> <select id="groupById"><option name="none"></option></select> ');
-					if(params.gI && params.gI != '')
-						$('#groupById').append('<option name="'+params.gI+'" selected>'+params.gI+'</option>');
-				}
-
-				if(params.view !== 'netmap')
 					fbox.append('<span class="label">Filter by</span> <select id="hostmapFilterType"></select><select id="hostmapFilterValue"/></select> ');
 
-				if(!params.view || params.view == 'results')
-					$('#filterSettings').append('<span class="label">Search</span> <input type="text" width="100%" id="search"/> ')
-				$('#filterSettings').append('<input id="filterSettingsGo" type="button" value="Apply"/> ');
+					if(!params.view || params.view == 'results')
+						fbox.append('<span class="label">Search</span> <input type="text" width="100%" id="search"/> ')
+				}
+				fbox.append('<input id="filterSettingsGo" type="button" value="Apply"/> ');
 
-				if(!params.view || params.view == 'results')
-					$('#filterSettings').append('<hr/><input type="button" value="Switch to Hosts Map" onclick="setLocationHash({ view: \'hostmap\' });"/><input type="button" value="Get Hosts" title="Click here to get a text field with a whitespace separated list of all hosts in the result list" onclick="onCopyHosts();"/> ' + 
-					'<div id="hostlist"/>');
+				if(params.view !== 'netmap')
+					addCalendar("#calendar", params.d);
 
 				$(id + " *").attr('disabled', true);
 				$("#datepicker").datepicker({
 					dateFormat: "yy/mm/dd"
 				});
-				addCalendar("#calendar", params.d);
 				getData('host_groups', function(data) {
 					try {
 						loadFindingGroups('findingsGroup', params.fG);
@@ -997,8 +991,8 @@ svg .nodes body {
 			var viewBoxX, viewBoxY;
 
 			function updateNetMapGraph() {
-var width = $('#netmap').width();
-    height = $('#netmap').height();
+				var width = $('#netmap').width();
+    			var	height = $('#netmap').height();
 
     var color = d3.scale.category20();
 
@@ -1287,7 +1281,7 @@ console.log(JSON.stringify(netMapData.groups));
 
 			function loadNetworkMap(params) {
 				clean();
-				$('#results').append('<div class="overviewBox"><div id="netMapNav"/><div id="netmap" style="height:800px;width:100%;margin-bottom:12px;clear:both;border:1px solid #aaa;"/><div id="selectedGroup"/><table id="netMapTable" class="resultTable"><tr><th>Host</th><th>Local IP</th><th>Local Port</th><th>Program</th><th>Remote IP</th><th>Remote Port</th><th>In/Out</th><th>Count</th></tr></table></div>');
+				$('#results').append('<div class="overviewBox"><div id="netMapNav"/><div id="netmap" style="height:800px;margin-bottom:12px;border:1px solid #aaa;"/><div id="selectedGroup"/><table id="netMapTable" class="resultTable"><tr><th>Host</th><th>Local IP</th><th>Local Port</th><th>Program</th><th>Remote IP</th><th>Remote Port</th><th>In/Out</th><th>Count</th></tr></table></div>');
 
 				addFilterSettings('#netMapNav', params, function() {
 					setLocationHash({ view: 'netmap', h: $('#selectedHost').val() });
