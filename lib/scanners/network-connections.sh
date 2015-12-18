@@ -3,11 +3,11 @@
 
 # group: Network
 # name: Connections
-# description: Pseudo scanner collecting connections using netstat -tal. Results are used for graphing host connections. This scanner enables the 'Net Map' feature. If scanners run as root/sudo will resolve local program names.
+# description: Pseudo scanner collecting connections using "netstat -talp --numeric-hosts". Results are used for graphing host connections. This scanner enables the 'Net Map' feature. If scanners run as root/sudo will resolve local program names.
 # feature: netmap
 
 OUR_NETWORKS=${OUR_NETWORKS-127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16}
-LISTEN_FILTER=${LISTEN_FILTER-53|22|5666|4949|25|631}
+LISTEN_FILTER=${LISTEN_FILTER-ssh|22|5666|4949}
 
 declare -a netmasks
 
@@ -57,13 +57,17 @@ load_nets
 
 # Analyze listening services
 unset listen_ports
+declare -A listen_ports
 while read proto recvq sendq localaddr remoteaddr state program rest; do
 	localport=${localaddr##*:}
+	program=${program/ */}
+	program=${program/:*/}
+	program=${program/#*\//}
 
 	if [[ ! $localport =~ $LISTEN_FILTER ]]; then
-		listen_ports[$localport]=1
+		listen_ports[$localport]=$program
 	fi
-done < <(/bin/netstat -taln | grep -v " 127" | grep "^tcp.*LISTEN")
+done < <(/bin/netstat -tlp --numeric-hosts | grep -v " 127" | grep "^tcp.*LISTEN")
 
 # Analyze connections
 while read proto recvq sendq localaddr remoteaddr state program rest; do
@@ -79,14 +83,25 @@ while read proto recvq sendq localaddr remoteaddr state program rest; do
 		continue
 	fi
 
-	if [ "$remoteport" -gt 1023 ]; then
+	if [[ $remoteport =~ ^[0-9]*$ ]] && [ "$remoteport" -gt 1023 ]; then
 		remoteport=high	# reduce client ports
 	fi
-	if [ "$localport" -gt 1023 ]; then
+	if [[ $localport =~ ^[0-9]*$ ]] && [ "${listen_ports[$localport]}" == "" ] && [ "$localport" -gt 1023 ]; then
 		localport=high	# reduce client ports
 	fi
 
-	results="$results$localip:$localport:$program:$remoteip:$remoteport "
-done < <(/bin/netstat -talnp | egrep -v " 127|LISTEN" | grep "^tcp")
+	# Guess at connection direction
+	if [ "${listen_ports[$localport]}" != "" ]; then
+		direction=in
+		if [ "$program" == "-" ]; then
+			program=${listen_ports[$localport]}
+		fi
+	elif [ $remoteport == "high" ]; then
+		direction=out	# probably true
+	else
+		direction=out
+	fi
+	results="$results$localip:$localport:$program:$remoteip:$remoteport:$direction "
+done < <(/bin/netstat -tap --numeric-hosts | egrep -v "( 127| ::1|LISTEN)" | grep "^tcp")
 
-result_ok $(/bin/echo $results | xargs -n 1 | sort -u)
+result_ok $(/bin/echo $results | xargs -n 1 | uniq -c | awk '{print $2 ":" $1}')
