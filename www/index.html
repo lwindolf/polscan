@@ -161,6 +161,7 @@
 			.resultTable th {
 				background: #ddd;
 				border: 1px solid #aaa;
+				word-wrap: none;
 			}
 			.resultTable td {
 				padding: 6px 12px;
@@ -178,10 +179,10 @@
 				background:white;
 			}
 			th.headerSortUp:after {
-				content: " ↑";
+				content: "\00a0↑";
 			}
 			th.headerSortDown:after {
-				content: " ↓";
+				content: "\00a0↓";
 			}
 			td.groupByValue, td.message {
 				word-break: break-all;
@@ -342,19 +343,31 @@
 			}
 			.hostMapGroup {
 				width:100%;
-				background:#ddd;
-				border-bottom:1px dashed #fff;
 			}
-			.hostMapGroup tr {
+			#hostmap th {
+				background:#555;
+				color:white;
+				font-weight:normal;
+			}
+			#hostmap tr.hostMapGroup {
 				background:#ddd;
 			}
-			.hostMapGroup .title {
-				font-size:80%;
+			#hostmap .hostMapGroup td {
+				border:0;
+			}
+		@media (min-width: 1024px) {
+			.hostMapGroup .groupName {
 				width:200px;
-				margin:3px 0;
-				padding:0 6px;
+				float:left;
+			}
+		}
+			.hostMapGroup .groupName {
+				display:block;
+			}
+			.hostMapGroup td.boxesBox {
 			}
 			.hostMapGroup .boxes {
+				float:left;
 			}
 			.hostMapBox {
 				width:12px;
@@ -423,7 +436,7 @@ svg .link-line {
 			<div id='menuOptions'>
 			<a href="#">Overview</a>
 			<a href="#view=hostmap">Hosts Map</a>
-			<a href="#view=netmap">Net Map</a>
+<!--			<a href="#view=netmap">Net Map</a>-->
 
 			Findings: 
 			<a href="#view=results&fG=all">All</a>
@@ -611,7 +624,7 @@ svg .link-line {
 				console.log("Parsing done");
 				$("#resultTable"+name+" tbody").append(rows);
 				console.log("Table setup done.");
-				$("#resultTable"+name).tablesorter({sortList: [[2,1],[0,0]]});
+				$("#resultTable"+name).tablesorter({sortList: [[0,0]]});
 				console.log("Table sorting done.");
 
 				if(groupBy.length >= 0) {
@@ -719,11 +732,19 @@ svg .link-line {
 						var groupName = getGroupByHost(params.gT, host);
 						var groupClassName = groupName.replace(/[\.#]/g, "");
 						if($('#hostmap').find('#'+groupClassName).length == 0)
-							$('#hostmap').append('<div class="hostMapGroup" id="'+groupClassName+'"><table><tr><td class="title">'+groupName+'</td><td class="boxes"></td></tr></table></div>');
+							$('#hostmap').append('<tr class="hostMapGroup" id="'+groupClassName+'"><td class="boxesBox"><span class="groupName">'+groupName+'</span><span class="boxes"/></td><td class="fcount"/><td class="wcount"/><td class="count"/></tr>');
 						$('#' + groupClassName + ' .boxes').append(html);
 					}
 
+					$('#hostmap tr').each(function(t) {
+						var count;
+
+						$(this).find('.count').html($(this).find('.boxes .hostMapBox').length);
+						$(this).find('.fcount').html($(this).find('.boxes .hostMapBox.FAILED').length);
+						$(this).find('.wcount').html($(this).find('.boxes .hostMapBox.WARNING').length);
+					});
 					addHostMapTooltip();
+					$("#hostmap").tablesorter({sortList: [[1,1],[2,1],[3,1],[0,0]]});
 				});
 			}
 
@@ -920,7 +941,7 @@ svg .link-line {
 
 			function loadHostMap(params) {
 				clean();
-				$('#results').append('<div class="overviewBox"><div id="hostMapNav"/><div id="hostmap"/><div id="selectedGroup"/></div>');
+				$('#results').append('<div class="overviewBox"><div id="hostMapNav"/><table id="hostmap" class="resultTable tablesorter"><thead><tr><th>Group</th><th>C</th><th>W</th><th>Nr</th></tr></thead></table><div id="selectedGroup"/></div>');
 	
 				addFilterSettings('#hostMapNav', params, function() {
 					setLocationHash({ view: 'hostmap', gT: $('#hostmapGroupType').val() });
@@ -1005,7 +1026,7 @@ console.log(JSON.stringify(netMapData));
             .links(graph.links)
 			.groups(graph.groups)
 			.constraints(graph.constraints)
-            .start(100,0,0)
+            .start(10,0,0)
 
         var group = nodeArea.selectAll(".group")
             .data(graph.groups)
@@ -1112,7 +1133,7 @@ console.log(JSON.stringify(netMapData));
 						{ type: "alignment", axis: "x", offsets: [] }
 					],
 					groups: [
-						{ leaves: [0], groups: [1, 2, 3] },	// root
+						{ leaves: [0], groups: [] },	// root (child groups as added on demand)
 						{ leaves: [] }, // local node group
 						{ leaves: [] }, // group for remote nodes connecting from
 						{ leaves: [] }	// group for remote nodes connecting to
@@ -1160,6 +1181,25 @@ console.log(JSON.stringify(netMapData));
 							}
 						}
 					});
+					if(netMapData.groups[3].leaves.length == 0)
+						delete netMapData.groups[3];
+					else
+						netMapData.groups[0].leaves.push(3);
+					if(netMapData.groups[2].leaves.length == 0)
+						delete netMapData.groups[2];
+					else
+						netMapData.groups[0].leaves.push(2);
+					if(netMapData.groups[1].leaves.length == 0)
+						delete netMapData.groups[1];
+					else
+						netMapData.groups[0].leaves.push(1);
+
+					if(netMapData.constraints[2].offsets.length == 0)
+						delete netMapData.constraints[2];
+					if(netMapData.constraints[1].offsets.length == 0)
+						delete netMapData.constraints[1];
+					if(netMapData.constraints[0].offsets.length == 0)
+						delete netMapData.constraints[0];
 					updateNetMapGraph();
 				});
 			}
@@ -1171,7 +1211,6 @@ console.log(JSON.stringify(netMapData));
 
 				addFilterSettings('#netMapNav', params, function() {
 				});
-				params.h = "lzone.de";
 				if(params.h)
 					addHostToNetMap(params.h);
 			}
