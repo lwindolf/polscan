@@ -4,6 +4,6 @@
 # tags: CCE-27087-6
 # solution-cmd: apt-get purge avahi-daemon
 
-if pgrep -f "avahi*"; then
+if pgrep -f "avahi*" >/dev/null; then
 	result_failed "Avahi processes are running!"
 fi
