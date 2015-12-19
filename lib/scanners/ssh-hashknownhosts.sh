@@ -2,7 +2,7 @@
 # name: HashKnownHosts
 # description: Checks /etc/ssh/ssh_config for HashKnownHosts yes
 
-if grep -q "HashKnownHosts yes" /etc/ssh/ssh_config; then
+if grep -q "HashKnownHosts yes" /etc/ssh/ssh_config 2>/dev/null; then
 	result_ok
 else
 	result_failed
