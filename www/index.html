@@ -86,7 +86,13 @@
 			.UNKNOWN {
 				background: #eee;
 				border: 1px dotted #aaa;
-				color: #7f7;
+				color: #eee;
+				padding: 0 6px;
+			}
+			.KNOWN {
+				background: #eee;
+				border: 1px solid #777;
+				color: #eee;
 				padding: 0 6px;
 			}
 			.OK {
@@ -434,6 +440,25 @@ svg .nodes body {
 	word-break:break-all;
 	height:100%;
 }
+
+#legend {
+	float:right;
+	background:#666;
+	color:white;
+	width:100px;
+	overflow:hidden;
+	border:1px solid #aaa;
+	border-radius:6px; 
+	padding:6px;
+	margin-left:12px;
+	text-align:center;
+}
+.legendItem {
+	color:black;
+	display:block;
+	padding:0 3px;
+	margin-top:1px;
+}
 		</style>
 	</head>
 	<body class='main'>
@@ -672,10 +697,10 @@ svg .nodes body {
 				}
 
 				$.getJSON(baseUrl + name + ".json", {})
-		        	 .done(function(data) {
-					currentResultSet = cacheName;
-					resultCache[cacheName] = data;
-					callback(data);
+				.done(function(data) {
+                    currentResultSet = cacheName;
+                    resultCache[cacheName] = data;
+					callback(resultCache[cacheName]);
 				})
 				.fail(function(j, t, e) {
 					error('Fetching results for group "'+name+'" failed! Maybe there is no data for this day?<br/><br/>Exception: ' + e);
@@ -990,11 +1015,11 @@ svg .nodes body {
 			var netMapData;
 			var viewBoxX, viewBoxY;
 
+    var color = d3.scale.category20();
 			function updateNetMapGraph() {
 				var width = $('#netmap').width();
     			var	height = $('#netmap').height();
 
-    var color = d3.scale.category20();
 
     var d3cola = cola.d3adaptor()
             .flowLayout("x", Math.min(300,$(window).width()/3))
@@ -1155,6 +1180,13 @@ console.log(JSON.stringify(netMapData));
         });
 			}
 
+			var hostByIp;
+			function resolveIp(ip) {
+				if(hostByIp[ip])
+					return hostByIp[ip];
+				return ip;
+			}
+
 			function addHostToNetMap(host) {
 				var nodeToId = new Array();
 				var portToProgram = new Array();
@@ -1174,6 +1206,22 @@ console.log(JSON.stringify(netMapData));
 						{ leaves: [] }	// group for remote nodes connecting to
 					]
 				};
+				// build host name resolve list once
+				if(!hostByIp) {
+					hostByIp = new Array();
+					getData("Network", function(data) {
+						$.each(data.results, function(i, item) {
+							if(item.host == host && item.policy == "Connections") {
+								var connections = item.message.split(/ /);
+								for(var c in connections) {
+									var fields = connections[c].split(/:/);
+									hostByIp[fields[0]] = item.host;
+								}
+							}
+						});
+					});
+				}
+
 				// get connections for this host
 				getData("Network", function(data) {
 					$.each(data.results, function(i, item) {
@@ -1207,9 +1255,9 @@ console.log(JSON.stringify(netMapData));
 										connByService[id] = { service: s, in: [], out: [] };
 
 									if(fields[5] === 'in')
-										connByService[id].out.push(fields[3]);
+										connByService[id].out.push(resolveIp(fields[3]));
 									else
-										connByService[id].in.push(fields[3]);
+										connByService[id].in.push(resolveIp(fields[3]));
 
 									$('#netMapTable').append('<tr><td>'+host+'</td><td>'+fields.join('</td><td>')+'</td></tr>');
 								}
@@ -1287,6 +1335,59 @@ console.log(JSON.stringify(netMapData.groups));
 					setLocationHash({ view: 'netmap', h: $('#selectedHost').val() });
 				});
 				addHostToNetMap(params.h);
+				loadNetworkList(params);
+			}
+
+			function loadNetworkList(params) {
+				$('.overviewBox').prepend('<div id="legend"><b>Legend</b></div><table id="netBlockList" class="resultTable tablesorter"><thead><tr><th>Block</th><th>Services</th></tr></thead></table>');
+
+				getData("Network", function(data) {
+					var programs = new Array();
+					var ips = new Array();
+					var blocks = new Array();
+					var pcolor = new Array()
+	
+					$.each(data.results, function (i, f) {
+						if(f.policy === 'Connections') {
+							$.each(f.message.split(/ /), function(i, c) {
+								var fields = c.split(/:/);
+								if(fields[5] == 'in') {
+									var ip = fields[3];
+									ip = fields[0];
+									programs[fields[2]] = 1;
+									blocks[ip.replace(/\.[0-9]*$/, '')] = 1;
+									if(undefined === ips[ip])
+										ips[ip] = [];
+									if(-1 === ips[ip].indexOf(fields[2]))
+										ips[ip].push(fields[2]);
+								}
+							});
+						}
+					});
+					var i = 0;
+					for(var p in programs) {
+						pcolor[p] = color(i++);
+						$('#legend').append("<span class='legendItem' style='background:"+pcolor[p]+"'>"+p+"</span>");
+						
+					}
+					for(var b in blocks) {
+						$('#netBlockList').append('<tr id="'+b.replace(/\./g,'_')+'"><td>'+b+'.0/24</td><td class="boxes"></td></tr>');
+						for(var i = 1; i < 256; i++) {
+							var content = '', cl = 'UNKNOWN';
+							if(ips[b + '.' + i]){
+								content += "<table style='border:0' cellspacing='0' cellpadding='1px' width='100%'><tr>";
+								for(var p in ips[b+'.'+i])
+									content += "<td title='178 "+ips[b+'.'+i][p]+"' style='border:0;padding:1px;height:10px;background:"+pcolor[ips[b+'.'+i][p]]+"'></td>";;
+								content += "</tr></table>";
+								cl = 'KNOWN';
+							}
+
+							var html = "<div class='hostMapBox "+cl+"' title='"+i+"'>";
+							html += content +"</div>";
+							$('#'+b.replace(/\./g,'_')+' .boxes').append(html);
+						}
+					}
+				});
 			}
 
 			function loadScannerResults(params) {
