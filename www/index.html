@@ -1390,7 +1390,7 @@ console.log(JSON.stringify(netMapData));
 								cl = 'KNOWN';
 							}
 
-							var html = "<div class='hostMapBox "+cl+"' title='"+resolveIp(b+"."+i)+" "+(ips[b+'.'+i]?ips[b+'.'+i].join(","):"")+"'>";
+							var html = "<div class='hostMapBox "+cl+"' title='"+resolveIp(b+"."+i)+" "+(ips[b+'.'+i]?ips[b+'.'+i].join(","):"")+"' onclick='setLocationHash({view:\"netmap\",h:\""+resolveIp(b+"."+i)+"\"});'>";
 							html += content +"</div>";
 							$('#'+b.replace(/\./g,'_')+' .boxes').append(html);
 						}
