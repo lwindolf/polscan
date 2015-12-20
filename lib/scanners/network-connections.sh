@@ -101,7 +101,7 @@ while read proto recvq sendq localaddr remoteaddr state program rest; do
 	else
 		direction=out
 	fi
-	results="$results$localip:$localport:$program:$remoteip:$remoteport:$direction "
+	results="$results$program:$localip:$localport:$remoteip:$remoteport:$direction "
 done < <(/bin/netstat -tap --numeric-hosts | egrep -v "( 127| ::1|LISTEN)" | grep "^tcp")
 
 result_ok $(/bin/echo $results | xargs -n 1 | sort | uniq -c | awk '{print $2 ":" $1}')

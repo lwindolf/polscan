@@ -1234,10 +1234,10 @@ console.log(JSON.stringify(netMapData));
 							for(var c in connections) {
 								var fields = connections[c].split(/:/);
 								if(fields[5]) {
-	 								var id, port = fields[1], program = fields[2];
+	 								var id, port = fields[2], program = fields[0];
 
 									// For now we do not visualize local connections
-									if(fields[0] == fields[3])
+									if(fields[1] == fields[3])
 										continue;
 
 									// Resolve program for close-wait, time-wait listings
@@ -1250,7 +1250,7 @@ console.log(JSON.stringify(netMapData));
 									//   high:::java:::high
 									//   high:::apache2:::80
 									//   ...
-									id = fields[1]+":::"+program+":::"+fields[4];
+									id = port+":::"+program+":::"+fields[4];
 									var s;
 									if(program !== "-")
 											s = program;
@@ -1325,7 +1325,7 @@ console.log(JSON.stringify(netMapData));
 								var connections = item.message.split(/ /);
 								for(var c in connections) {
 									var fields = connections[c].split(/:/);
-									hostByIp[fields[0]] = item.host;
+									hostByIp[fields[1]] = item.host;
 								}
 							}
 						});
@@ -1340,7 +1340,7 @@ console.log(JSON.stringify(netMapData));
 				});
 				if(params.h) {
 					addHostToNetGraph(params.h);
-					$('#results').append('<div id="netmap" style="height:800px;margin-bottom:12px;border:1px solid #aaa;"/><div id="selectedGroup"/><table id="netMapTable" class="resultTable"><tr><th>Host</th><th>Local IP</th><th>Local Port</th><th>Program</th><th>Remote IP</th><th>Remote Port</th><th>In/Out</th><th>Count</th></tr></table></div>');
+					$('#results').append('<div id="netmap" style="height:800px;margin-bottom:12px;border:1px solid #aaa;"/><div id="selectedGroup"/><table id="netMapTable" class="resultTable"><tr><th>Host</th><th>Program</th><th>Local IP</th><th>Local Port</th><th>Remote IP</th><th>Remote Port</th><th>In/Out</th><th>Count</th></tr></table></div>');
 				} else {
 					loadNetworkList(params);
 				}
@@ -1360,14 +1360,14 @@ console.log(JSON.stringify(netMapData));
 							$.each(f.message.split(/ /), function(i, c) {
 								var fields = c.split(/:/);
 								if(fields[5] == 'in') {
-									var ip = fields[3];
-									ip = fields[0];
-									programs[fields[2]] = 1;
-									blocks[ip.replace(/\.[0-9]*$/, '')] = 1;
+									var ip = fields[1];
+									var b = ip.replace(/\.[0-9]*$/, '');
+									programs[fields[0]] = 1;
+									blocks[b] = 1;
 									if(undefined === ips[ip])
 										ips[ip] = [];
-									if(-1 === ips[ip].indexOf(fields[2]))
-										ips[ip].push(fields[2]);
+									if(-1 === ips[ip].indexOf(fields[0]))
+										ips[ip].push(fields[0]);
 								}
 							});
 						}
