@@ -936,13 +936,13 @@ svg .nodes body {
 					});
 				} else {
 					fbox.append('<span class="label">Findings</span> <select id="findingsGroup"></select> ');
-					if(params.view === 'hostmap')
-						fbox.append('<span class="label">Group Hosts by</span> <select id="hostmapGroupType"></select> ');
-					if(!params.view || params.view == 'results') {
-						fbox.append('<span class="label">Group Hosts By</span> <select id="groupById"><option name="none"></option></select> ');
-						if(params.gI && params.gI != '')
-							$('#groupById').append('<option name="'+params.gI+'" selected>'+params.gI+'</option>');
-					}
+				}
+				if(!params.view || params.view == 'results') {
+					fbox.append('<span class="label">Group Hosts By</span> <select id="groupById"><option name="none"></option></select> ');
+					if(params.gI && params.gI != '')
+						$('#groupById').append('<option name="'+params.gI+'" selected>'+params.gI+'</option>');
+				} else {
+					fbox.append('<span class="label">Group Hosts by</span> <select id="hostmapGroupType"></select> ');
 				}
 
 				fbox.append('<span class="label">Filter by</span> <select id="hostmapFilterType"></select><select id="hostmapFilterValue"/></select> ');
@@ -1315,7 +1315,8 @@ console.log(JSON.stringify(netMapData));
 
 			function loadNetworkMap(params) {
 				clean();
-				$('#results').append('<div class="overviewBox"><div id="netMapNav"/>');
+				$('#results').append('<div class="overviewBox"><div id="netMapNav"/><h3>IPs with active TCP services</h3>');
+
 				// build host name resolve list once
 				if(!hostByIp) {
 					hostByIp = new Array();
@@ -1334,9 +1335,12 @@ console.log(JSON.stringify(netMapData));
 					return;
 				}
 
-
 				addFilterSettings('#netMapNav', params, function() {
-					setLocationHash({ view: 'netmap', h: $('#selectedHost').val() });
+					setLocationHash({
+						view: 'netmap',
+						h: $('#selectedHost').val(),
+						gT: $('#hostmapGroupType').val()
+					});
 				});
 				if(params.h) {
 					addHostToNetGraph(params.h);
@@ -1354,8 +1358,10 @@ console.log(JSON.stringify(netMapData));
 				getData("Network", function(data) {
 					var programs = new Array();
 					var ips = new Array();
-					var blocks = new Array();
+					var groups = new Array();
 					var pcolor = new Array()
+					if(!params.gT)
+						params.gT = "Network Blocks";
 	
 					$.each(data.results, function (i, f) {
 						if(-1 == filteredHosts.indexOf(f.host))
@@ -1365,9 +1371,19 @@ console.log(JSON.stringify(netMapData));
 								var fields = c.split(/:/);
 								if(fields[5] == 'in') {
 									var ip = fields[1];
-									var b = ip.replace(/\.[0-9]*$/, '');
+									var group;
+
 									programs[fields[0]] = 1;
-									blocks[b] = 1;
+									if(params.gT !== "Network Blocks")
+										group = getGroupByHost(params.gT, f.host);
+									else
+										group = ip.replace(/\.[0-9]*$/, '') + ".0/24";
+
+									if(!groups[group])
+										groups[group] = [];
+									if(-1 === groups[group].indexOf(ip))
+										groups[group].push(ip);
+
 									if(undefined === ips[ip])
 										ips[ip] = [];
 									if(-1 === ips[ip].indexOf(fields[0]))
@@ -1382,22 +1398,23 @@ console.log(JSON.stringify(netMapData));
 						$('#legend').append("<span class='legendItem' style='background:"+pcolor[p]+"'>"+p+"</span>");
 						
 					}
-					for(var b in blocks) {
-						$('#netBlockList').append('<tr id="'+b.replace(/\./g,'_')+'"><td>'+b+'.0/24</td><td class="boxes"></td></tr>');
-						for(var i = 1; i < 256; i++) {
+					for(var b in groups) {
+						$('#netBlockList').append('<tr id="'+b.replace(/[\.\/]/g,'_')+'"><td>'+b+'</td><td class="boxes"></td></tr>');
+console.log("group "+b+" = "+JSON.stringify(groups[b]));
+						for(var i in groups[b]) {
 							var content = '', cl = 'UNKNOWN';
-							if(ips[b + '.' + i]){
+							var ip = groups[b][i];
+							if(ips[ip]){
 								content += "<table style='border:0' cellspacing='0' cellpadding='1px' width='100%'><tr>";
-								for(var p in ips[b+'.'+i])
-									content += "<td style='border:0;padding:1px;height:10px;background:"+pcolor[ips[b+'.'+i][p]]+"'></td>";;
+								for(var p in ips[ip])
+									content += "<td style='border:0;padding:1px;height:10px;background:"+pcolor[ips[ip][p]]+"'></td>";;
 								content += "</tr></table>";
 								cl = 'KNOWN';
 							}
 
-							var html = "<div class='hostMapBox "+cl+"' title='"+resolveIp(b+"."+i)+" ("+b+"."+i+") "+(ips[b+'.'+i]?ips[b+'.'+i].join(","):"")+"' onclick='setLocationHash({view:\"netmap\",h:\""+resolveIp(b+"."+i)+"\"});'>";
+							var html = "<div class='hostMapBox "+cl+"' title='"+resolveIp(ip)+" ("+ip+") "+(ips[ip]?ips[ip].join(","):"")+"' onclick='setLocationHash({view:\"netmap\",h:\""+resolveIp(ip)+"\"});'>";
 							html += content +"</div>";
-							if(0 == b.search(/172/) || cl === 'KNOWN')
-								$('#'+b.replace(/\./g,'_')+' .boxes').append(html);
+							$('#'+b.replace(/[\.\/]/g,'_')+' .boxes').append(html);
 						}
 					}
 
