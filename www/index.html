@@ -943,12 +943,12 @@ svg .nodes body {
 						if(params.gI && params.gI != '')
 							$('#groupById').append('<option name="'+params.gI+'" selected>'+params.gI+'</option>');
 					}
-
-					fbox.append('<span class="label">Filter by</span> <select id="hostmapFilterType"></select><select id="hostmapFilterValue"/></select> ');
-
-					if(!params.view || params.view == 'results')
-						fbox.append('<span class="label">Search</span> <input type="text" width="100%" id="search"/> ')
 				}
+
+				fbox.append('<span class="label">Filter by</span> <select id="hostmapFilterType"></select><select id="hostmapFilterValue"/></select> ');
+
+				if(!params.view || params.view == 'results')
+					fbox.append('<span class="label">Search</span> <input type="text" width="100%" id="search"/> ')
 				fbox.append('<input id="filterSettingsGo" type="button" value="Apply"/> ');
 
 				if(params.view !== 'netmap')
@@ -1347,6 +1347,8 @@ console.log(JSON.stringify(netMapData));
 			}
 
 			function loadNetworkList(params) {
+				var filteredHosts = get_hosts_filtered(params)
+
 				$('.overviewBox').append('<div id="legend"><b>Legend</b></div><table id="netBlockList" class="resultTable tablesorter"><thead><tr><th>Block</th><th>Services</th></tr></thead></table>');
 
 				getData("Network", function(data) {
@@ -1356,6 +1358,8 @@ console.log(JSON.stringify(netMapData));
 					var pcolor = new Array()
 	
 					$.each(data.results, function (i, f) {
+						if(-1 == filteredHosts.indexOf(f.host))
+							return;
 						if(f.policy === 'Connections') {
 							$.each(f.message.split(/ /), function(i, c) {
 								var fields = c.split(/:/);
@@ -1390,11 +1394,14 @@ console.log(JSON.stringify(netMapData));
 								cl = 'KNOWN';
 							}
 
-							var html = "<div class='hostMapBox "+cl+"' title='"+resolveIp(b+"."+i)+" "+(ips[b+'.'+i]?ips[b+'.'+i].join(","):"")+"' onclick='setLocationHash({view:\"netmap\",h:\""+resolveIp(b+"."+i)+"\"});'>";
+							var html = "<div class='hostMapBox "+cl+"' title='"+resolveIp(b+"."+i)+" ("+b+"."+i+") "+(ips[b+'.'+i]?ips[b+'.'+i].join(","):"")+"' onclick='setLocationHash({view:\"netmap\",h:\""+resolveIp(b+"."+i)+"\"});'>";
 							html += content +"</div>";
-							$('#'+b.replace(/\./g,'_')+' .boxes').append(html);
+							if(0 == b.search(/172/) || cl === 'KNOWN')
+								$('#'+b.replace(/\./g,'_')+' .boxes').append(html);
 						}
 					}
+
+					$("#netBlockList").tablesorter({sortList: [[0,1]]});
 				});
 			}
 
