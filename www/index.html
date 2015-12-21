@@ -1394,7 +1394,7 @@ console.log(JSON.stringify(netMapData));
 								cl = 'KNOWN';
 							}
 
-							var html = "<div class='hostMapBox "+cl+"' title='"+resolveIp(b+"."+i)+" "+(ips[b+'.'+i]?ips[b+'.'+i].join(","):"")+"'>";
+							var html = "<div class='hostMapBox "+cl+"' title='"+resolveIp(b+"."+i)+" ("+b+"."+i+") "+(ips[b+'.'+i]?ips[b+'.'+i].join(","):"")+"'>";
 							html += content +"</div>";
 							if(0 == b.search(/172/) || cl === 'KNOWN')
 								$('#'+b.replace(/\./g,'_')+' .boxes').append(html);
