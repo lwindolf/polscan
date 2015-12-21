@@ -1392,9 +1392,12 @@ console.log(JSON.stringify(netMapData));
 
 							var html = "<div class='hostMapBox "+cl+"' title='"+resolveIp(b+"."+i)+" "+(ips[b+'.'+i]?ips[b+'.'+i].join(","):"")+"'>";
 							html += content +"</div>";
-							$('#'+b.replace(/\./g,'_')+' .boxes').append(html);
+							if(0 == b.search(/172/) || cl === 'KNOWN')
+								$('#'+b.replace(/\./g,'_')+' .boxes').append(html);
 						}
 					}
+
+					$("#netBlockList").tablesorter({sortList: [[0,1]]});
 				});
 			}
 
