@@ -139,7 +139,7 @@ rm $TMPFILE
 # Per group results
 for g in $groups; do
 	(
-		ls | xargs -n1 grep -H "^$g " |\
+		ls | xargs -n1 grep -H "^$g (OK|WARNING|FAILED) " |\
 		sed 's/:/ /' |\
 		while read host group severity details; do
 			policy=${details/#|||/}
@@ -154,7 +154,7 @@ done
 (
 	for g in $groups; do
 		echo "- $g" >&2
-		count=$(ls | xargs -n1 grep "^$g " | wc -l)
+		count=$(ls | xargs -n1 grep "^$g (OK|WARNING|FAILED) " | wc -l)
 		echo -n '{"group": "'$g'", "WARNING": '${pgroups[warn_$g]-0}', "FAILED": '${pgroups[fail_$g]-0}', "count": '${count-0}'},'
 	done
 	for s in $(
@@ -238,7 +238,7 @@ done
 ) | sed "1s/^,//;s/\],\}/\]\}/;s/, \]/\]/g" | write_json list histogram "labels\": [${labels}], \"histogram"
 
 if [ -d "$RESULT_BASE_DIR/$ONE_DAY_AGO/" ]; then
-        diff=$(diff -u <(cd "$RESULT_BASE_DIR/$ONE_DAY_AGO" && grep "|||" * | sort) <(cd "$RESULT_BASE_DIR/$DATE" && grep "|||" * | sort) | grep "^[-+]" | grep -v " OK |||")
+        diff=$(diff -u <(cd "$RESULT_BASE_DIR/$ONE_DAY_AGO" && grep -F "|||" * | sort) <(cd "$RESULT_BASE_DIR/$DATE" && grep -F "|||" * | sort) | grep "^[-+]" | grep -v " (INVENTORY|OK) [|][|][|]")
         new_today=$(echo "$diff" | grep "^+[^+]")
         solved_today=$(echo "$diff" | grep "^-[^-]")
 
