@@ -6,5 +6,5 @@
 if [ -d "$RESULT_DIR" ]; then
 	for f in ${RESULT_DIR}/*; do
 		sed "/Network INVENTORY ...Primary Net/!d;s/.* /Primary-Network::/;s/\$/ ${f/*\/}/" $f
-	done
+	done | grep -v ":: "
 fi
