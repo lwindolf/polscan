@@ -764,7 +764,7 @@ svg .nodes body {
 						}
 						html += "' onclick='setLocationHash({ fG: \"all\", sT: \""+host+"\"}, true)'>&nbsp;</div> ";
 						var groupName = getGroupByHost(params.gT, host);
-						var groupClassName = groupName.replace(/[\.#]/g, "");
+						var groupClassName = groupName.replace(/[\.#\/]/g, "_");
 						if($('#hostmap').find('#'+groupClassName).length == 0)
 							$('#hostmap').append('<tr class="hostMapGroup" id="'+groupClassName+'"><td class="boxesBox"><span class="groupName">'+groupName+'</span><span class="boxes"/></td><td class="fcount"/><td class="wcount"/><td class="count"/></tr>');
 						$('#' + groupClassName + ' .boxes').append(html);
@@ -1318,7 +1318,7 @@ console.log(JSON.stringify(netMapData));
 				clean();
 				$('#results').append('<div class="overviewBox"><div id="netMapNav"/><h3>IPs with active TCP services</h3>');
 
-				// build host name resolve list once
+				// FIXME: Is this really necessary?
 				if(!hostByIp) {
 					hostByIp = new Array();
 					getData("Network", function(data) {
@@ -1354,7 +1354,7 @@ console.log(JSON.stringify(netMapData));
 			function loadNetworkList(params) {
 				var filteredHosts = get_hosts_filtered(params)
 
-				$('.overviewBox').append('<div id="legend"><b>Legend</b></div><table id="netBlockList" class="resultTable tablesorter"><thead><tr><th>Block</th><th>Services</th></tr></thead></table>');
+				$('.overviewBox').append('<div id="legend"><b>Legend</b></div><table id="netBlockList" class="resultTable tablesorter"><thead><tr><th>Group</th><th>Services</th></tr></thead></table>');
 
 				getData("Network", function(data) {
 					var programs = new Array();
