@@ -102,6 +102,11 @@ while read proto recvq sendq localaddr remoteaddr state program rest; do
 		direction=out
 	fi
 	results="$results$program:$localip:$localport:$remoteip:$remoteport:$direction "
+	if [ $direction == "in" ]; then
+		inventory="${inventory}${program} "
+	fi
 done < <(/bin/netstat -tap --numeric-hosts | egrep -v "( 127| ::1|LISTEN)" | grep "^tcp")
 
 result_ok $(/bin/echo $results | xargs -n 1 | sort | uniq -c | awk '{print $2 ":" $1}')
+
+result_inventory "active TCP services" $(/bin/echo $inventory | xargs -n 1 | sort -u)
