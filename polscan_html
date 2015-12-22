@@ -139,7 +139,7 @@ rm $TMPFILE
 # Per group results
 for g in $groups; do
 	(
-		ls | xargs -n1 grep -H "^$g (OK|WARNING|FAILED) " |\
+		ls | xargs -n1 egrep -H "^$g (OK|WARNING|FAILED) " |\
 		sed 's/:/ /' |\
 		while read host group severity details; do
 			policy=${details/#|||/}
