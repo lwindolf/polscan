@@ -782,6 +782,18 @@ svg .nodes body {
 				});
 			}
 
+			// Add all inventory type names to a <select>
+			function loadInventoryTypes(id, selected) {
+				getData("overview", function(data) {
+					$.each(data.overview, function(i, item) {
+						if(item.inventory) {
+							$('#'+id).append('<option value="'+item.inventory+'">'+item.inventory+'</option>');
+						}
+					});
+					$('#'+id+" option[value='"+selected+"']").attr('selected', true);
+				});
+			}
+
 			// Add all findings group names to a <select>
 			function loadFindingGroups(id, selected) {
 				$('#'+id).append(
@@ -928,17 +940,11 @@ svg .nodes body {
 				"<span id='calendar'></span>");
 
 				if(params.view === 'netmap') {
-					fbox.append('Host <input type="text" value="'+(params.h !== undefined?params.h:'')+'" list="availableHosts" id="selectedHost"/>' +	
-					' <datalist id="availableHosts"/>');
-					getData("hosts", function(data) {
-						$.each(data.results, function(host) {
-							$('#availableHosts').append('<option value="'+host+'">');
-						});
-					});
+					fbox.append('<span class="label">Type</span> <select id="inventoryType"></select> ');
 				} else {
 					fbox.append('<span class="label">Findings</span> <select id="findingsGroup"></select> ');
 				}
-				if(!params.view || params.view == 'results') {
+				if(params.view == 'results') {
 					fbox.append('<span class="label">Group Hosts By</span> <select id="groupById"><option name="none"></option></select> ');
 					if(params.gI && params.gI != '')
 						$('#groupById').append('<option name="'+params.gI+'" selected>'+params.gI+'</option>');
@@ -948,9 +954,19 @@ svg .nodes body {
 
 				fbox.append('<span class="label">Filter by</span> <select id="hostmapFilterType"></select><select id="hostmapFilterValue"/></select> ');
 
-				if(!params.view || params.view == 'results')
+				if(params.view == 'results')
 					fbox.append('<span class="label">Search</span> <input type="text" width="100%" id="search"/> ')
 				fbox.append('<input id="filterSettingsGo" type="button" value="Apply"/> ');
+				if(params.view == 'netmap') {
+/*					fbox.append('Host <input type="text" value="'+(params.h !== undefined?params.h:'')+'" list="availableHosts" id="selectedHost"/>' +	
+					' <datalist id="availableHosts"/>' +
+					'<input id="filterSettingsGo" type="button" value="Show"/> ');
+					getData("hosts", function(data) {
+						$.each(data.results, function(host) {
+							$('#availableHosts').append('<option value="'+host+'">');
+						});
+					});*/
+				}
 
 				if(params.view !== 'netmap')
 					addCalendar("#calendar", params.d);
@@ -961,6 +977,7 @@ svg .nodes body {
 				});
 				getData('host_groups', function(data) {
 					try {
+						loadInventoryTypes('inventoryType', params.iT);
 						loadFindingGroups('findingsGroup', params.fG);
 						loadHostGroupTypes(resultCache['host_groups'].results, 'hostmapGroupType', params.gT, true);
 						loadHostGroupTypes(resultCache['host_groups'].results, 'hostmapFilterType', params.fT, true);
@@ -1316,7 +1333,7 @@ console.log(JSON.stringify(netMapData));
 
 			function loadNetworkMap(params) {
 				clean();
-				$('#results').append('<div class="overviewBox"><div id="netMapNav"/><h3>IPs with active TCP services</h3>');
+				$('#results').append('<div class="overviewBox"><div id="netMapNav"/>');
 
 				// FIXME: Is this really necessary?
 				if(!hostByIp) {
@@ -1340,85 +1357,68 @@ console.log(JSON.stringify(netMapData));
 					setLocationHash({
 						view: 'netmap',
 						h: $('#selectedHost').val(),
-						gT: $('#hostmapGroupType').val()
+						gT: $('#hostmapGroupType').val(),
+						iT: $('#inventoryType').val()
 					});
 				});
 				if(params.h) {
 					addHostToNetGraph(params.h);
 					$('#results .overviewBox').append('<div id="netmap" style="height:800px;margin-bottom:12px;border:1px solid #aaa;"/><div id="selectedGroup"/><table id="netMapTable" class="resultTable"><tr><th>Host</th><th>Program</th><th>Local IP</th><th>Local Port</th><th>Remote IP</th><th>Remote Port</th><th>In/Out</th><th>Count</th></tr></table></div>');
 				} else {
-					loadNetworkList(params);
+					loadInventoryMap(params);
 				}
 			}
 
-			function loadNetworkList(params) {
+			function loadInventoryMap(params) {
+				if(params.iT === undefined) {
+					params.iT = 'Network active TCP services';
+					setLocationHash(params);
+					return;
+				}
+				if(!params.gT)
+					params.gT = "Primary-Network";
+
 				var filteredHosts = get_hosts_filtered(params)
 
-				$('.overviewBox').append('<div id="legend"><b>Legend</b></div><table id="netBlockList" class="resultTable tablesorter"><thead><tr><th>Group</th><th>Services</th></tr></thead></table>');
+				$('.overviewBox').append('<div id="legend"><b>Legend</b></div><table id="inventoryMap" class="resultTable tablesorter"><thead><tr><th>Group</th><th>Results</th></tr></thead></table>');
 
-				getData("Network", function(data) {
-					var programs = new Array();
+				getData("inventory "+params.iT, function(data) {
 					var ips = new Array();
 					var groups = new Array();
 					var pcolor = new Array()
-					if(!params.gT)
-						params.gT = "Network Blocks";
 	
 					$.each(data.results, function (i, f) {
 						if(-1 == filteredHosts.indexOf(f.host))
 							return;
-						if(f.policy === 'Connections') {
-							$.each(f.message.split(/ /), function(i, c) {
-								var fields = c.split(/:/);
-								if(fields[5] == 'in') {
-									var ip = fields[1];
-									var group;
 
-									programs[fields[0]] = 1;
-									if(params.gT !== "Network Blocks")
-										group = getGroupByHost(params.gT, f.host);
-									else
-										group = ip.replace(/\.[0-9]*$/, '') + ".0/24";
+						var values = f.values.split(/ /).filter(function(i) {
+							return i != '';
+						});
 
-									if(!groups[group])
-										groups[group] = [];
-									if(-1 === groups[group].indexOf(ip))
-										groups[group].push(ip);
-
-									if(undefined === ips[ip])
-										ips[ip] = [];
-									if(-1 === ips[ip].indexOf(fields[0]))
-										ips[ip].push(fields[0]);
-								}
-							});
-						}
-					});
-					var i = 0;
-					for(var p in programs) {
-						pcolor[p] = color(i++);
-						$('#legend').append("<span class='legendItem' style='background:"+pcolor[p]+"'>"+p+"</span>");
-						
-					}
-					for(var b in groups) {
-						$('#netBlockList').append('<tr id="'+b.replace(/[\.\/]/g,'_')+'"><td>'+b+'</td><td class="boxes"></td></tr>');
-console.log("group "+b+" = "+JSON.stringify(groups[b]));
-						for(var i in groups[b]) {
-							var content = '', cl = 'UNKNOWN';
-							var ip = groups[b][i];
-							if(ips[ip]){
-								content += "<table style='border:0' cellspacing='0' cellpadding='1px' width='100%'><tr>";
-								for(var p in ips[ip])
-									content += "<td style='border:0;padding:1px;height:10px;background:"+pcolor[ips[ip][p]]+"'></td>";;
-								content += "</tr></table>";
-								cl = 'KNOWN';
+						// Update legend
+						$.each(values, function(i, c) {
+							if(!pcolor[c]) {
+								pcolor[c] = color(Object.keys(pcolor).length);
+								$('#legend').append("<span class='legendItem' style='background:"+pcolor[c]+"'>"+c+"</span>");
 							}
+						});
 
-							var html = "<div class='hostMapBox "+cl+"' title='"+resolveIp(ip)+" ("+ip+") "+(ips[ip]?ips[ip].join(","):"")+"' onclick='setLocationHash({view:\"netmap\",h:\""+resolveIp(ip)+"\"});'>";
-							html += content +"</div>";
-							$('#'+b.replace(/[\.\/]/g,'_')+' .boxes').append(html);
+						// Add host to group
+						var groupName = getGroupByHost(params.gT, f.host);
+						var groupClassName = groupName.replace(/[\.#\/]/g, "_");
+						if($('#inventoryMap').find('#'+groupClassName).length == 0)
+							$('#inventoryMap').append('<tr class="hostMapGroup" id="'+groupClassName+'"><td><span class="groupName">'+groupName+'</span></td><td><span class="boxes"/></td></tr>');
+
+						var content = '';
+						if(values.length > 0) {
+							content += "<table style='border:0' cellspacing='0' cellpadding='1px' width='100%'><tr>";
+							for(var p in values)
+								content += "<td style='border:0;padding:1px;height:10px;background:"+pcolor[values[p]]+"'></td>";;
+							content += "</tr></table>";
 						}
-					}
-
+						content = "<div class='hostMapBox KNOWN' title='"+f.host+" "+(values.length > 0?values.join(","):"")+"' onclick='setLocationHash({view:\"netmap\",h:\""+f.host+"\"});'>" + content + "</div>";
+						$('#' + groupClassName + ' .boxes').append(content);
+					});
 					$("#netBlockList").tablesorter({sortList: [[0,1]]});
 				});
 			}
