@@ -57,6 +57,7 @@ declare -A host_groups
 
 load_host_groups() {
 	export HOST_LIST	# Some providers might want to use it
+	export RESULT_DIR	# Some providers might want to use it
 
 	while read host_group host rest; do
 		host_groups[''$host_group]="${host_groups[''$host_group]}${host} "
