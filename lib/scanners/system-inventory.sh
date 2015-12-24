@@ -1,0 +1,22 @@
+# group: System
+# name: Inventory
+# description: Inventory only scanner determining kernel version with uname -r, CPU+RAM GB count, OS release, RAID vendor
+
+result_inventory "Kernel Version" $(uname -r)
+
+cpucount=$(grep -c processor /proc/cpuinfo)
+memory=$(grep MemTotal: /proc/meminfo | awk '{printf("%d\n", $2/1024/1024 + 0.5)}')
+
+result_inventory "CPU RAM" "${cpucount}x${memory}"
+
+result_inventory "OS Release" $(/usr/bin/lsb_release -si)_$(/usr/bin/lsb_release -sr)
+
+# For RAID Vendor we rely on the superb Nagios check from Debian package 
+# nagios-plugins-contrib which prints in format "<status>: <vendor>:[<results]"
+result_inventory "RAID Vendor" $(/usr/lib/nagios/plugins/check_raid | grep OK: | cut -d : -f 2)
+
+# FIXME; switch to comma separated lists instead of space separated,
+# so we do not need to replace whitespaces here!
+result_inventory "Server Type" $(/usr/sbin/dmidecode -s system-product-name | grep -v '^#' | head -1 | sed "s/ /_/g")
+
+result_inventory "CPU Type" $(/usr/sbin/dmidecode -s processor-version | grep -v "^#" | head -1 | sed "s/ /_/g")
