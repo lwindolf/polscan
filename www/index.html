@@ -445,7 +445,9 @@ svg .nodes body {
 	float:right;
 	background:#666;
 	color:white;
-	width:100px;
+	min-width:100px;
+	max-width:10%;
+
 	overflow:hidden;
 	border:1px solid #aaa;
 	border-radius:6px; 
@@ -1399,7 +1401,7 @@ console.log(JSON.stringify(netMapData));
 						$.each(values, function(i, c) {
 							if(!pcolor[c]) {
 								pcolor[c] = color(Object.keys(pcolor).length);
-								$('#legend').append("<span class='legendItem' style='background:"+pcolor[c]+"'>"+c+"</span>");
+								$('#legend').append("<span class='legendItem' title='"+c+"' style='background:"+pcolor[c]+"'>"+c+"</span>");
 							}
 						});
 
