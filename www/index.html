@@ -478,6 +478,9 @@ svg .nodes body {
 			<a href="#view=results&fG=all">All</a>
 			<a href="#view=results&fG=new">New</a>
 			<a href="#view=results&fG=solved">Solved</a>
+
+			&#9881;
+			<a href="#view=policies">Policies</a>
 			</div>
 		</div>
 
@@ -487,6 +490,7 @@ svg .nodes body {
 		</div>
 
 		<script>
+			var views = {};
 			var resultCache = new Array();
 			var hostGroupNamespaces = new Array();
 			var hostGroups;
@@ -736,54 +740,6 @@ svg .nodes body {
 				return results;
 			}
 
-			function addHostsToMap(params) {
-				getData(params.fG, function(data) {
-					var findingsByHost = new Array();
-					var filteredHosts = get_hosts_filtered(params)
-
-					$.each(data.results, function(i, item) {
-						findingsByHost[item.host] += item.severity.substring(0,1);
-					});
-
-					for (h in filteredHosts) {
-						var host = filteredHosts[h];
-						var value = findingsByHost[host];
-						var html = "<div host='"+host+"' class='hostMapBox ";
-						var count;
-
-						if(!value)
-							value = "";
-						if(-1 != value.indexOf('F')) {
-							count = (value.match(/F/g) || []).length;
-							html += "FAILED bcf"+((count>10)?10:count);
-						} else if(-1 != value.indexOf('W')) {
-							count = (value.match(/W/g) || []).length;
-							html += "WARNING bcw"+((count>10)?10:count);
-						} else if(-1 != value.indexOf('O')) {
-							html += "OK";
-						} else {
-							html += "UNKNOWN";
-						}
-						html += "' onclick='setLocationHash({ fG: \"all\", sT: \""+host+"\"}, true)'>&nbsp;</div> ";
-						var groupName = getGroupByHost(params.gT, host);
-						var groupClassName = groupName.replace(/[\.#\/]/g, "_");
-						if($('#hostmap').find('#'+groupClassName).length == 0)
-							$('#hostmap').append('<tr class="hostMapGroup" id="'+groupClassName+'"><td class="boxesBox"><span class="groupName">'+groupName+'</span><span class="boxes"/></td><td class="fcount"/><td class="wcount"/><td class="count"/></tr>');
-						$('#' + groupClassName + ' .boxes').append(html);
-					}
-
-					$('#hostmap tr').each(function(t) {
-						var count;
-
-						$(this).find('.count').html($(this).find('.boxes .hostMapBox').length);
-						$(this).find('.fcount').html($(this).find('.boxes .hostMapBox.FAILED').length);
-						$(this).find('.wcount').html($(this).find('.boxes .hostMapBox.WARNING').length);
-					});
-					addHostMapTooltip();
-					$("#hostmap").tablesorter({sortList: [[1,1],[2,1],[3,1],[0,0]]});
-				});
-			}
-
 			// Add all inventory type names to a <select>
 			function loadInventoryTypes(id, selected) {
 				getData("overview", function(data) {
@@ -849,65 +805,6 @@ svg .nodes body {
 				for(var i = 0; i < hgValues.length; i++) {
 					$('#'+id).append('<option '+(value==hgValues[i]?'selected ':'')+'value="'+hgValues[i]+'">'+hgValues[i]+'</option>');
 				}
-			}
-
-			function addHostMapTooltip() {
-				
-				var changeTooltipPosition = function(event) {
-					var tooltipX = event.pageX + 8;
-					var tooltipY = event.pageY + 8;
-
-					if(tooltipX > $(window).width() * 2 / 3 - 16)
-						tooltipX = $(window).width() * 2 / 3 - 16;
-
-					$('div.tooltip').css({
-						top: tooltipY,
-						left: tooltipX,
-						width: $(window).width() / 3
-					});
-				};
-
-				var showTooltip = function(event) {
-					var host = $(this).attr('host');
-					var details = "";
-					var okFound = false;
-					var cache = resultCache[$('#findingsGroup').val().replace('-', '_')];
-
-					if(!cache)
-						console.log("Fatal: no cache for "+$('#findingsGroup').val());
-					else
-						$.each(cache.results, function(i, item) {
-							if(item.host == host) {
-								if(item.severity == "OK") {
-									okFound = true;
-								} else {
-									details += "<tr>";
-									if(item.group)
-										details += "<td class='group'>" + item.group + "</td>";
-									details += "<td class='policy "+item.severity+"'>" + item.policy + "</td><td class='message'>" + ((item.message.length>100)?item.message.substring(0,100)+" [...]":item.message) + "</td></tr>";
-								}
-							}
-						});
-					if(details == "")
-						if(okFound)
-							details = "<br/><br/>No problematic findings here.";
-						else
-							details = "<br/><br/>No findings at all. This usually means the policies of this group don't apply to this host.";
-
-	  				$('div.tooltip').remove();
-					$('<div class="tooltip"><b>'+host+'</b><table class="resultTable">'+details+'</table></div>').appendTo('#hostmap');
-					changeTooltipPosition(event);
-				};
-
-				var hideTooltip = function() {
-				   $('div.tooltip').remove();
-				};
-
-				$("div.hostMapBox").bind({
-				   mousemove : changeTooltipPosition,
-				   mouseenter : showTooltip,
-				   mouseleave: hideTooltip
-				});
 			}
 
 			function addCalendar(id, initialDate) {
@@ -1000,21 +897,6 @@ svg .nodes body {
 				$("#search").val(params.sT);
 				$('#filterSettingsGo').click(callback);
 			}
-
-			function loadHostMap(params) {
-				clean();
-				$('#results').append('<div class="overviewBox"><div id="hostMapNav"/><table id="hostmap" class="resultTable tablesorter"><thead><tr><th>Group</th><th>C</th><th>W</th><th>Nr</th></tr></thead></table><div id="selectedGroup"/></div>');
-	
-				addFilterSettings('#hostMapNav', params, function() {
-					setLocationHash({ view: 'hostmap', gT: $('#hostmapGroupType').val() });
-				});
-
-				if(params.fG)
-					addHostsToMap(params);
-				else
-					$('#filterSettingsGo').trigger('click');
-			}
-
 
     function getAlignmentBounds(vs, c) {
         var os = c.offsets;
@@ -1367,91 +1249,18 @@ console.log(JSON.stringify(netMapData));
 					addHostToNetGraph(params.h);
 					$('#results .overviewBox').append('<div id="netmap" style="height:800px;margin-bottom:12px;border:1px solid #aaa;"/><div id="selectedGroup"/><table id="netMapTable" class="resultTable"><tr><th>Host</th><th>Program</th><th>Local IP</th><th>Local Port</th><th>Remote IP</th><th>Remote Port</th><th>In/Out</th><th>Count</th></tr></table></div>');
 				} else {
-					loadInventoryMap(params);
+					loadView("netmap", params);
 				}
 			}
 
-			function loadInventoryMap(params) {
-				if(params.iT === undefined) {
-					params.iT = 'Network active TCP services';
-					setLocationHash(params);
-					return;
-				}
-				if(!params.gT)
-					params.gT = "Primary-Network";
-
-				var filteredHosts = get_hosts_filtered(params)
-
-				$('.overviewBox').append('<div id="legend"><b>Legend</b></div><table id="inventoryMap" class="resultTable tablesorter"><thead><tr><th>Group</th><th>Results</th></tr></thead></table>');
-
-				getData("inventory "+params.iT, function(data) {
-					var ips = new Array();
-					var groups = new Array();
-					var pcolor = new Array()
-	
-					$.each(data.results, function (i, f) {
-						if(-1 == filteredHosts.indexOf(f.host))
-							return;
-
-						var values = f.values.split(/ /).filter(function(i) {
-							return i != '';
-						});
-
-						// Update legend
-						$.each(values, function(i, c) {
-							if(!pcolor[c]) {
-								pcolor[c] = color(Object.keys(pcolor).length);
-								$('#legend').append("<span class='legendItem' title='"+c+"' style='background:"+pcolor[c]+"'>"+c+"</span>");
-							}
-						});
-
-						// Add host to group
-						var groupName = getGroupByHost(params.gT, f.host);
-						var groupClassName = groupName.replace(/[\.#\/]/g, "_");
-						if($('#inventoryMap').find('#'+groupClassName).length == 0)
-							$('#inventoryMap').append('<tr class="hostMapGroup" id="'+groupClassName+'"><td><span class="groupName">'+groupName+'</span></td><td><span class="boxes"/></td></tr>');
-
-						var content = '';
-						if(values.length > 0) {
-							content += "<table style='border:0' cellspacing='0' cellpadding='1px' width='100%'><tr>";
-							for(var p in values)
-								content += "<td style='border:0;padding:1px;height:10px;background:"+pcolor[values[p]]+"'></td>";;
-							content += "</tr></table>";
-						}
-						content = "<div class='hostMapBox KNOWN' title='"+f.host+" "+(values.length > 0?values.join(","):"")+"' onclick='setLocationHash({view:\"netmap\",h:\""+f.host+"\"});'>" + content + "</div>";
-						$('#' + groupClassName + ' .boxes').append(content);
-					});
-					$("#netBlockList").tablesorter({sortList: [[0,1]]});
-				});
-			}
-
-			function loadScannerResults(params) {
-				console.log("Loading results start (search="+params.sT+")");
-				clean();
-
-				getData(params.fG, function(data) {
-					$('#results').html('<div id="filter">');
-					addFilterSettings('#filter', params, function() {
-						setLocationHash({ sT: $('#search').val(), gI: $('#groupById').val() });
-					});
-
-					if(!params.gI)
-						createResultTable(params, '#results', data.results);
-					else
-						createGroupTable(params, '#results', data.results);
-	
-					var badgeTitle;
-					if(!params.fG || params.fG == "all") {
-						if(params.sT)
-							badgeTitle = "<small>Filter</small><br/> " + params.sT;
-						else
-							badgeTitle = "Overall";
-					} else {
-						badgeTitle = "<small>Group</small><br/> " + params.fG;
-					}
-	
-					createBadges('#row1', failed, warning, badgeTitle);
-					createHistogram(params.sT?params.sT:params.fG);
+			function loadView(name, params) {
+				$.getScript("view_"+name+".js")
+				.done(function(s, t) {
+					var v = new views[name[0].toUpperCase()+name.slice(1)+"View"]('#results', params);
+					v.update(params);
+				})
+				.fail(function(jxqhr, x, e) {
+					error("Failed to load script dependency for view '"+name+"'! ("+e+")");
 				});
 			}
 
@@ -1493,17 +1302,20 @@ console.log(JSON.stringify(netMapData));
 
 					$("#menu a.current").removeClass("current");
 
-					if(params.view == "hostmap") {
-						loadHostMap(params);
+					if(params.view == "policies") {
+						loadView(params.view, params);
+						$("#menu a[href='#view=policies']").addClass("current");
+					} else if(params.view == "hostmap") {
+						loadView(params.view, params);
 						$("#menu a[href='#view=hostmap']").addClass("current");
 					} else if(params.view == "netmap") {
 						loadNetworkMap(params);
 						$("#menu a[href='#view=netmap']").addClass("current");
 					} else if(!params.fG) {
-						loadOverview();
+						loadView("overview", params);
 						$("#menu a[href='#']").addClass("current");
 					} else {
-						loadScannerResults(params);
+						loadView("results", params);
 						$("#menu a[href='#view=results&fG="+params.fG+"']").addClass("current");
 					}
 				});
@@ -1659,130 +1471,6 @@ console.log(JSON.stringify(netMapData));
 						}
 					}
 				});
-			}
-
-			function loadOverview() {
-
-				clean();
-				$("<div id='overviewBoxContainer'>").appendTo("#results");
-				$("<div id='col2'>").appendTo("#overviewBoxContainer");
-				$("<div id='col1'>").appendTo("#overviewBoxContainer");
-
-				getData("overview", function(data) {
-					$("#row1").append("<div class='chart'><span id='overviewCalendar'/></div>");
-					addCalendar("#overviewCalendar", data.date);
-					createBadges('#row1', data.FAILED, data.WARNING);
-					$("#loadmessage").hide();
-
-					var groupFailed = new Array();
-					var groupWarning = new Array();
-					var pieGroupHosts = new Array();
-		   			$.each(data.overview, function(i, item) {
-						if(item.group) {
-							var compliant = 1;
-							var tmp = '<span class="name">' +
-							item.group +
-							'</span>';
-							if(item.FAILED > 0) {
-								groupFailed.push({
-									"label": item.group,
-									"value": item.FAILED,
-									"color": "#ff0000"
-								});
-								compliant = 0;
-								tmp += ' <span class="FAILED" title="Total failures found">' +
-								item.FAILED +
-								'</span>';
-							}
-							if(item.WARNING > 0) {
-								groupWarning.push({
-									"label": item.group,
-									"value": item.WARNING,
-									"color": "#ee0"
-								});
-								compliant = 0;
-								tmp += ' <span class="WARNING" title="Total warnings seen">' +
-								item.WARNING +
-								'</span>'
-							}
-							if(compliant) {
-								tmp += ' <span class="compliant" title="100% compliance for this group">compliant</span>';
-							}
-						}
-		   			});
-
-					$("<div id='findingsPies' class='overviewBox dark'>").appendTo("#row1");
-					$("<div id='pieChartFailed' class='pie'>").appendTo("#findingsPies");
-					$("<div id='pieChartWarning' class='pie'>").appendTo("#findingsPies");
-					addPieChart('pieChartFailed', 'Problems', 260, '#fff', groupFailed);
-					addPieChart('pieChartWarning', 'Warnings', 260, '#777' ,groupWarning);
-					// FIXME: addPieChart('pieChartHosts', 'Warnings', 260, pieGroupHosts);
-
-					$( "<div id='policies' class='overviewBox'>" ).appendTo( "#row2" )
-					$( "<h3>Findings / Changes per Policy</h3><table class='resultTable tablesorter' id='findingsPerPolicy'><thead><tr><th>Group</th><th>Policy</th><th>Problems</th><th>Change</th><th>Warnings</th><th>Change</th></tr></thead><tbody></tbody></table>").appendTo("#policies")
-
-		   			getData("histogram", function(data) {
-					$.each(data.histogram, function(i, item ) {
-						if(-1 != item.id.indexOf(":::")) {
-							var compliant = 1;
-							var group, policy, failed, failed2, warning, warning2, diff;
-							try {
-								group = item.id.split(/:::/)[0];
-								policy = item.id.split(/:::/)[1];
-								failed = item.FAILED[item.FAILED.length-1];
-								failed2 = item.FAILED[item.FAILED.length-2];
-								warning = item.WARNING[item.WARNING.length-1];
-								warning2 = item.WARNING[item.WARNING.length-2];
-							} catch(e) {
-								console.log("Failed to get values for "+item.id+" Exception:"+e);
-							}
-							var tmp = '<tr><td class="group" title="'+item.description+'" filter="' + group + '">' + group + '</td><td class="policy" filter="' + group + '---' + policy + '">' + (policy?policy:"") + '</td>';
-							tmp += '<td>';
-							if(failed > 0)
-								tmp += '<span class="FAILED" title="Total failures found">' + failed + '</span>';
-							else
-								tmp += '<span title="Total failures found">0</span>';
-							tmp += '</td><td class="change">';
-							diff = failed - failed2;
-							if(diff != 0)
-								tmp += '<span class="'+(diff>0?"FAILED":"compliant")+' changes" filter="'+(diff>0?'new':'solved')+'---' + policy + '" title="Total change problems">+' + Math.abs(diff) + '</span>';
-							tmp += '</td><td>';
-							if(warning > 0)
-								tmp += '<span class="WARNING" title="Total warnings seen">' + warning + '</span>';
-							else
-								tmp += '<span title="Total warnings found">0</span>';
-							tmp += '</td><td class="change">';
-							diff = warning - warning2;
-							if(diff != 0)
-								tmp += '<span class="'+(diff>0?"WARNING":"compliant")+' changes" filter="'+(diff>0?'new':'solved')+'---' + policy + '" title="Total change warnings">+' + Math.abs(diff) + '</span>';
-							tmp += '</td>';
-							tmp += '</tr>';
-							$("#findingsPerPolicy").append(tmp);
-
-						}
-		   			});
-					$("#findingsPerPolicy").tablesorter({sortList: [[3,1],[2,1],[5,1],[4,1]]});
-
-					$("#findingsPerPolicy .group").click(function() {
-						setLocationHash({ fG: $(this).attr('filter') });
-					});
-					$("#findingsPerPolicy .policy").click(function() {
-						var fields = $(this).attr('filter').split(/---/);
-						setLocationHash({
-							fG: fields[0],
-							sT: fields[1]
-						});
-					});
-					$("#findingsPerPolicy .change").click(function() {
-						var fields = $(this).find('.changes').attr('filter').split(/---/);
-						setLocationHash({
-							fG: fields[0],
-							sT: fields[1]
-						});
-					});
-        			});
-					});
-				createHistogram('all');
 			}
 		</script>
 	</body>
