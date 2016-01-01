@@ -1298,7 +1298,7 @@ console.log(JSON.stringify(netMapData));
 
 					$("#menu a.current").removeClass("current");
 
-					if(params.view.match(/(policies|hostmap|inventory)/)) {
+					if(params.view && params.view.match(/(policies|hostmap|inventory)/)) {
 						loadView(params.view, params);
 						$("#menu a[href='#view="+params.view+"']").addClass("current");
 					} else if(params.view == "netmap") {
