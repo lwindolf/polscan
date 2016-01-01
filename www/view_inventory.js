@@ -4,8 +4,7 @@
    host boxes. Suitable for mapping out inventory where each
    host has less than 5 findings */
 
-// FIXME: refactor name "netmap"
-views.NetmapView = function NetmapView(parentDiv, params) {
+views.InventoryView = function InventoryView(parentDiv, params) {
 	this.parentDiv = parentDiv;
 };
 
@@ -22,7 +21,7 @@ function legendSort(a, b) {
 	return aNr[1] - bNr[1];
 }
 
-views.NetmapView.prototype.update = function(params) {
+views.InventoryView.prototype.update = function(params) {
 	if(params.iT === undefined) {
 		params.iT = 'Network active TCP services';
 		setLocationHash(params);
@@ -31,9 +30,18 @@ views.NetmapView.prototype.update = function(params) {
 	if(!params.gT)
 		params.gT = "Primary-Network";
 
-	var filteredHosts = get_hosts_filtered(params)
+	clean();
+	$(this.parentDiv).append('<div id="inventoryNav"/><div id="legend"><b>Legend</b></div><table id="inventoryMap" class="resultTable tablesorter"><thead><tr><th>Group</th><th>Results</th></tr></thead></table>');
 
-		$('.overviewBox').append('<div id="legend"><b>Legend</b></div><table id="inventoryMap" class="resultTable tablesorter"><thead><tr><th>Group</th><th>Results</th></tr></thead></table>');
+	addFilterSettings('#inventoryNav', params, function() {
+		setLocationHash({
+			view: 'inventory',
+			gT: $('#hostmapGroupType').val(),
+			iT: $('#inventoryType').val()
+		});
+	});
+
+	var filteredHosts = get_hosts_filtered(params)
 
 	getData("inventory "+params.iT, function(data) {
 			var pcolor = [];

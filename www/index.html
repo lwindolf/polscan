@@ -472,7 +472,7 @@ svg .nodes body {
 			<a href="#">Overview</a>
 			Maps:
 			<a href="#view=hostmap">Findings</a>
-			<a href="#view=netmap">Inventory</a>
+			<a href="#view=inventory">Inventory</a>
 
 			Findings: 
 			<a href="#view=results&fG=all">All</a>
@@ -838,7 +838,7 @@ svg .nodes body {
 				fbox.append("<span class='label datepicker'>Date</span> <input type='text' id='datepicker' size='10'/> "+
 				"<span id='calendar'></span>");
 
-				if(params.view === 'netmap') {
+				if(params.view === 'inventory') {
 					fbox.append('<span class="label">Type</span> <select id="inventoryType"></select> ');
 				} else {
 					fbox.append('<span class="label">Findings</span> <select id="findingsGroup"></select> ');
@@ -1240,16 +1240,12 @@ console.log(JSON.stringify(netMapData));
 				addFilterSettings('#netMapNav', params, function() {
 					setLocationHash({
 						view: 'netmap',
-						h: $('#selectedHost').val(),
-						gT: $('#hostmapGroupType').val(),
-						iT: $('#inventoryType').val()
+						h: $('#selectedHost').val()
 					});
 				});
 				if(params.h) {
 					addHostToNetGraph(params.h);
 					$('#results .overviewBox').append('<div id="netmap" style="height:800px;margin-bottom:12px;border:1px solid #aaa;"/><div id="selectedGroup"/><table id="netMapTable" class="resultTable"><tr><th>Host</th><th>Program</th><th>Local IP</th><th>Local Port</th><th>Remote IP</th><th>Remote Port</th><th>In/Out</th><th>Count</th></tr></table></div>');
-				} else {
-					loadView("netmap", params);
 				}
 			}
 
@@ -1302,12 +1298,9 @@ console.log(JSON.stringify(netMapData));
 
 					$("#menu a.current").removeClass("current");
 
-					if(params.view == "policies") {
+					if(params.view.match(/(policies|hostmap|inventory)/)) {
 						loadView(params.view, params);
-						$("#menu a[href='#view=policies']").addClass("current");
-					} else if(params.view == "hostmap") {
-						loadView(params.view, params);
-						$("#menu a[href='#view=hostmap']").addClass("current");
+						$("#menu a[href='#view="+params.view+"']").addClass("current");
 					} else if(params.view == "netmap") {
 						loadNetworkMap(params);
 						$("#menu a[href='#view=netmap']").addClass("current");
