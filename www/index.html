@@ -1380,7 +1380,11 @@ console.log(JSON.stringify(netMapData));
 				  '</span> Warnings</div></div>').appendTo(id);
 			}
 
-			function createHistogram(id, name) {
+			function createHistogram(id, group, policy) {
+				var name = group;
+				if(policy)
+					name = group + ":::" + policy;
+
 				getData("histogram", function(data) {
 					var chartData = {
 						labels: [],
@@ -1412,7 +1416,7 @@ console.log(JSON.stringify(netMapData));
 							fillColor: "rgba(250,250,250,0.2)"
 						}
 
-						$(id).append('<div class="chart"><div class="chartTitle">'+name+' Issue Trends</div><canvas id="histogramChart" width="600" height="200"></canvas></div>');
+						$(id).append('<div class="chart"><div class="chartTitle">'+(policy?policy:group)+' Issue Trends</div><canvas id="histogramChart" width="600" height="200"></canvas></div>');
 						var ctx = $("#histogramChart").get(0).getContext("2d");
 						var myLineChart = new Chart(ctx).Line(chartData, {
 							animation: false,

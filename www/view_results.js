@@ -14,7 +14,7 @@ views.ResultsView.prototype.update = function(params) {
 	getData(params.fG, function(data) {
 		$(id).append("<div id='badgeRow'/><div id='tableRow'/>");
 
-		addFilterSettings('#row1', params, function() {
+		addFilterSettings('#tableRow', params, function() {
 			setLocationHash({ sT: $('#search').val(), gI: $('#groupById').val() });
 		});
 
@@ -34,6 +34,6 @@ views.ResultsView.prototype.update = function(params) {
 		}
 
 		createBadges('#badgeRow', failed, warning, badgeTitle);
-		createHistogram('#badgeRow', params.sT?params.sT:params.fG);
+		createHistogram('#badgeRow', params.fG, params.sT);
 	});
 };
