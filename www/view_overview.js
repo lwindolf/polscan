@@ -7,6 +7,7 @@ views.OverviewView = function OverviewView(parentDiv, params) {
 
 views.OverviewView.prototype.update = function(params) {
 	clean();
+	$(this.parentDiv).css('margin-left:0;');
 	$("<div id='overviewBoxContainer'>").appendTo(this.parentDiv);
 	$("<div id='col2'>").appendTo("#overviewBoxContainer");
 	$("<div id='col1'>").appendTo("#overviewBoxContainer");
@@ -21,37 +22,37 @@ views.OverviewView.prototype.update = function(params) {
 			var groupWarning = new Array();
 			var pieGroupHosts = new Array();
 			$.each(data.overview, function(i, item) {
-					if(item.group) {
+				if(item.group) {
 					var compliant = 1;
 					var tmp = '<span class="name">' +
 					item.group +
 					'</span>';
 					if(item.FAILED > 0) {
-					groupFailed.push({
+						groupFailed.push({
 							"label": item.group,
 							"value": item.FAILED,
 							"color": "#ff0000"
 							});
-					compliant = 0;
-					tmp += ' <span class="FAILED" title="Total failures found">' +
-					item.FAILED +
-					'</span>';
+						compliant = 0;
+						tmp += ' <span class="FAILED" title="Total failures found">' +
+						item.FAILED +
+						'</span>';
 					}
 					if(item.WARNING > 0) {
-					groupWarning.push({
+						groupWarning.push({
 							"label": item.group,
 							"value": item.WARNING,
 							"color": "#ee0"
 							});
-					compliant = 0;
-					tmp += ' <span class="WARNING" title="Total warnings seen">' +
+						compliant = 0;
+						tmp += ' <span class="WARNING" title="Total warnings seen">' +
 						item.WARNING +
 						'</span>'
 					}
 					if(compliant) {
 						tmp += ' <span class="compliant" title="100% compliance for this group">compliant</span>';
 					}
-					}
+				}
 			});
 
 			$("<div id='findingsPies' class='overviewBox dark'>").appendTo("#row1");
@@ -124,5 +125,5 @@ views.OverviewView.prototype.update = function(params) {
 				});
 			});
 		});
-	createHistogram('all');
+	createHistogram('#row1', 'all');
 };

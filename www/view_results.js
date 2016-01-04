@@ -12,15 +12,16 @@ views.ResultsView.prototype.update = function(params) {
 	clean();
 
 	getData(params.fG, function(data) {
-		$(id).html('<div id="filter">');
-		addFilterSettings('#filter', params, function() {
+		$(id).append("<div id='badgeRow'/><div id='tableRow'/>");
+
+		addFilterSettings('#row1', params, function() {
 			setLocationHash({ sT: $('#search').val(), gI: $('#groupById').val() });
 		});
 
 		if(!params.gI)
-			createResultTable(params, id, data.results);
+			createResultTable(params, '#tableRow', data.results);
 		else
-			createGroupTable(params, id, data.results);
+			createGroupTable(params, '#tableRow', data.results);
 
 		var badgeTitle;
 		if(!params.fG || params.fG == "all") {
@@ -31,8 +32,8 @@ views.ResultsView.prototype.update = function(params) {
 		} else {
 			badgeTitle = "<small>Group</small><br/> " + params.fG;
 		}
-	
-		createBadges('#row1', failed, warning, badgeTitle);
-		createHistogram(params.sT?params.sT:params.fG);
+
+		createBadges('#badgeRow', failed, warning, badgeTitle);
+		createHistogram('#badgeRow', params.sT?params.sT:params.fG);
 	});
 };

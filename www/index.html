@@ -210,6 +210,7 @@
 				background:white;
 			}
 			.badgesTitle, .chartTitle {
+				text-transform:capitalize;
 				text-align:center;
 				font-size:120%;
 				font-weight:bold;
@@ -247,6 +248,9 @@
 			#histogramChart {
 				margin:12px;
 			}
+			#tableRow {
+				float: left;
+			}
 			#filterSettings {
 				background: #ddd;
 				border: 1px solid #aaa;
@@ -265,10 +269,17 @@
 			}
 		}
 		@media (min-width: 1024px) {
+			#results.sidebar {
+				margin-left:340px;
+			}
 			#filterSettings.sidebar {
-				float: left;
 				margin:0;
-				margin-right:12px;
+				position:absolute;
+				top:0;
+				left:0;
+				padding-top:50px;
+				height:100%;
+				z-index:-1;
 			}
 			#filterSettings.sidebar #datepicker, #filterSettings.sidebar .datepicker {
 				display:none;
@@ -843,7 +854,7 @@ svg .nodes body {
 				} else {
 					fbox.append('<span class="label">Findings</span> <select id="findingsGroup"></select> ');
 				}
-				if(params.view == 'results') {
+				if(!params.view || params.view === 'results') {
 					fbox.append('<span class="label">Group Hosts By</span> <select id="groupById"><option name="none"></option></select> ');
 					if(params.gI && params.gI != '')
 						$('#groupById').append('<option name="'+params.gI+'" selected>'+params.gI+'</option>');
@@ -853,10 +864,10 @@ svg .nodes body {
 
 				fbox.append('<span class="label">Filter by</span> <select id="hostmapFilterType"></select><select id="hostmapFilterValue"/></select> ');
 
-				if(params.view == 'results')
+				if(!params.view || params.view === 'results')
 					fbox.append('<span class="label">Search</span> <input type="text" width="100%" id="search"/> ')
 				fbox.append('<input id="filterSettingsGo" type="button" value="Apply"/> ');
-				if(params.view == 'netmap') {
+				if(params.view === 'netmap') {
 /*					fbox.append('Host <input type="text" value="'+(params.h !== undefined?params.h:'')+'" list="availableHosts" id="selectedHost"/>' +	
 					' <datalist id="availableHosts"/>' +
 					'<input id="filterSettingsGo" type="button" value="Show"/> ');
@@ -1254,6 +1265,12 @@ console.log(JSON.stringify(netMapData));
 				.done(function(s, t) {
 					var v = new views[name[0].toUpperCase()+name.slice(1)+"View"]('#results', params);
 					v.update(params);
+
+					// Ugly: all view except overview need a sidebar
+					if (name === "overview")
+						$('#results').removeClass('sidebar');
+					else
+						$('#results').addClass('sidebar');
 				})
 				.fail(function(jxqhr, x, e) {
 					error("Failed to load script dependency for view '"+name+"'! ("+e+")");
@@ -1363,7 +1380,7 @@ console.log(JSON.stringify(netMapData));
 				  '</span> Warnings</div></div>').appendTo(id);
 			}
 
-			function createHistogram(id) {
+			function createHistogram(id, name) {
 				getData("histogram", function(data) {
 					var chartData = {
 						labels: [],
@@ -1372,7 +1389,7 @@ console.log(JSON.stringify(netMapData));
 					// Find ouf values
 					var valueIndex;
 					$.each(data.histogram, function(i, set) {
-						if(set.id && set.id == id) {
+						if(set.id && set.id == name) {
 							console.log("Found histogram data set at "+i);
 							valueIndex = i;
 						}
@@ -1384,18 +1401,18 @@ console.log(JSON.stringify(netMapData));
 						});
 						chartData.datasets[0] = {
 							data: data.histogram[valueIndex].FAILED,
-							label: id,
+							label: name,
 							strokeColor: "rgba(220,50,50,1)",
 							fillColor: "rgba(250,250,250,0.2)"
 						}
 						chartData.datasets[1] = {
 							data: data.histogram[valueIndex].WARNING,
-							label: id,
+							label: name,
 							strokeColor: "#cc0",
 							fillColor: "rgba(250,250,250,0.2)"
 						}
 
-						$('#row1').append('<div class="chart"><div class="chartTitle">Issue Trends</div><canvas id="histogramChart" width="600" height="200"></canvas></div>');
+						$(id).append('<div class="chart"><div class="chartTitle">'+name+' Issue Trends</div><canvas id="histogramChart" width="600" height="200"></canvas></div>');
 						var ctx = $("#histogramChart").get(0).getContext("2d");
 						var myLineChart = new Chart(ctx).Line(chartData, {
 							animation: false,
