@@ -24,14 +24,12 @@ views.ResultsView.prototype.update = function(params) {
 			createGroupTable(params, '#tableRow', data.results);
 
 		var badgeTitle;
-		if(!params.fG || params.fG == "all") {
-			if(params.sT)
-				badgeTitle = "<small>Filter</small><br/> " + params.sT;
-			else
-				badgeTitle = "Overall";
-		} else {
+		if(params.sT)
+			badgeTitle = "<small>Filter</small><br/> " + params.sT;
+		else if(params.fG)
 			badgeTitle = "<small>Group</small><br/> " + params.fG;
-		}
+		else
+			badgeTitle = "Overall";
 
 		createBadges('#badgeRow', failed, warning, badgeTitle);
 		createHistogram('#badgeRow', params.fG, params.sT);
