@@ -19,7 +19,7 @@ result_inventory "RAID Vendor" $(/usr/lib/nagios/plugins/check_raid | grep OK: |
 # so we do not need to replace whitespaces here!
 result_inventory "Server Type" $(/usr/sbin/dmidecode -s system-product-name | grep -v '^#' | head -1 | sed "s/ /_/g")
 
-result_inventory "CPU Type" $(/usr/sbin/dmidecode -s processor-version | grep -v "^#" | head -1 | sed "s/ /_/g")
+result_inventory "CPU Type" $(/usr/sbin/dmidecode -s processor-version | grep -v "^#" | head -1 | sed "s/^ *//;s/ /_/g")
 
 # Slotted Uptime (7d,14d,31d,3m,6m,1y). This can help spotting issues per HW type/age/server role.
 days=$(( $(cat /proc/uptime  | cut -d . -f 1) / 86400))
