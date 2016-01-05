@@ -12,27 +12,26 @@ views.ResultsView.prototype.update = function(params) {
 	clean();
 
 	getData(params.fG, function(data) {
-		$(id).html('<div id="filter">');
-		addFilterSettings('#filter', params, function() {
+		$(id).append("<div id='badgeRow'/><div id='tableRow'/>");
+
+		addFilterSettings('#tableRow', params, function() {
 			setLocationHash({ sT: $('#search').val(), gI: $('#groupById').val() });
 		});
 
 		if(!params.gI)
-			createResultTable(params, id, data.results);
+			createResultTable(params, '#tableRow', data.results);
 		else
-			createGroupTable(params, id, data.results);
+			createGroupTable(params, '#tableRow', data.results);
 
 		var badgeTitle;
-		if(!params.fG || params.fG == "all") {
-			if(params.sT)
-				badgeTitle = "<small>Filter</small><br/> " + params.sT;
-			else
-				badgeTitle = "Overall";
-		} else {
+		if(params.sT)
+			badgeTitle = "<small>Filter</small><br/> " + params.sT;
+		else if(params.fG)
 			badgeTitle = "<small>Group</small><br/> " + params.fG;
-		}
-	
-		createBadges('#row1', failed, warning, badgeTitle);
-		createHistogram(params.sT?params.sT:params.fG);
+		else
+			badgeTitle = "Overall";
+
+		createBadges('#badgeRow', failed, warning, badgeTitle);
+		createHistogram('#badgeRow', params.fG, params.sT);
 	});
 };
