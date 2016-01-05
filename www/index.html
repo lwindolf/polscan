@@ -134,6 +134,7 @@
 			}
 			#menuOptions {
 				padding: 12px;
+				z-index:0;
 			}
 			#menuOptions a {
 				color: #ddd;
@@ -277,9 +278,8 @@
 				position:absolute;
 				top:0;
 				left:0;
-				padding-top:50px;
+				margin-top:46px;
 				height:100%;
-				z-index:-1;
 			}
 			#filterSettings.sidebar #datepicker, #filterSettings.sidebar .datepicker {
 				display:none;
@@ -901,7 +901,6 @@ svg .nodes body {
 
 					$("#datepicker").val(data.date);
 					$("#calendar").datepicker("setDate", data.date);
-
 					$(id + " *").removeAttr('disabled');
 				});
 
