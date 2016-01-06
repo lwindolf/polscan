@@ -17,21 +17,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-BASE=$(dirname $0)
-BASE=$(readlink -e $BASE)
+BASE=$(dirname "$0")
+BASE=$(readlink -e "$BASE")
 if [ "$BASE" == "/usr/bin" ]; then
 	CONF_DIR=/etc/polscan/
 	LIB_DIR=/usr/lib/polscan/
 else
-	CONF_DIR=${BASE}/etc/
-	LIB_DIR=${BASE}/lib
+	CONF_DIR="${BASE}/etc/"
+	LIB_DIR="${BASE}/lib"
 fi
 
 # Command line parsing, setup environment
-source $LIB_DIR/polscan-common.inc
+source "$LIB_DIR/polscan-common.inc"
 
 # 0. Prepare output dir
-if [ ! -d $RESULT_DIR ]; then
+if [ ! -d "$RESULT_DIR" ]; then
 	mkdir -vp "$RESULT_DIR" || exit 1
 fi
 
@@ -39,7 +39,7 @@ fi
 if [ "$HOST_LIST" == "" ]; then 
 	echo "Fetching host list (provider '$HOST_LIST_PROVIDER')..."
 	HLP="$LIB_DIR/host-list-providers/$HOST_LIST_PROVIDER"
-	if [ ! -f $HLP ]; then
+	if [ ! -f "$HLP" ]; then
 		echo "ERROR: Could not find host list provider $HLP"
 		exit 1
 	fi
@@ -64,15 +64,15 @@ if [ "$REMOTE_SCANNER_LIST" != "" ]; then
 
 	# 2. Build remote scanner script
 	RSS=/tmp/polscan-remote-scanner.$$
-	cat $LIB_DIR/scanner-header.inc >$RSS || exit 1
-	cat $LIB_DIR/scanner-functions.inc >>$RSS || exit 1
+	cat "$LIB_DIR/scanner-header.inc" >$RSS || exit 1
+	cat "$LIB_DIR/scanner-functions.inc" >>$RSS || exit 1
 	for scanner in $REMOTE_SCANNER_LIST; do
 		file=$LIB_DIR/scanners/$scanner
-		if [ ! -f $file ]; then
+		if [ ! -f "$file" ]; then
 			echo "WARNING: Unknown policy '$scanner'!"
 		else
-			group=`get_policy_group "$file"`
-			name=`get_policy_name "$file"`
+			group=$(get_policy_group "$file")
+			name=$(get_policy_name "$file")
 			echo "policy_name='$name'; policy_group='$group'" >>$RSS
 			cat "$file" >>$RSS
 		fi
@@ -84,35 +84,36 @@ if [ "$REMOTE_SCANNER_LIST" != "" ]; then
 	for remote in $HOST_LIST; do
 		current_host=${remote/*@/}
 
-		if ! echo $remote | grep -q @; then
+		if ! echo "$remote" | grep -q @; then
 			# Default user if none given from host list and SSH_USER is set
 			if [ "$SSH_USER" != "" ]; then
 				remote=$SSH_USER@$remote
 			fi
 		fi
 
-		if ! echo $remote | grep -q "root@"; then
+		if ! echo "$remote" | grep -q "root@"; then
 			sudo=$SUDO_CMD
 		fi
 
 		echo " -> $remote [$i/$host_count]"
 
-		/bin/cat $RSS | $SSH_CMD $remote $sudo "/bin/bash < <(/bin/cat -)" \
-			>${RESULT_DIR}/$current_host \
-			2>${RESULT_DIR}/${current_host}.err
+		$SSH_CMD "$remote" "$sudo" "/bin/bash < <(/bin/cat -)" \
+			<"$RSS" \
+			>"${RESULT_DIR}/$current_host" \
+			2>"${RESULT_DIR}/${current_host}.err"
 
 		if [ $? -ne 0 ]; then
 			# Scanner should never set return code, if we get one
 			# we have a scripting/connectivity issue that we want
 			# to track under name "polscan"
 			(
-				errors=$(grep -v "$REMOTE_STDERR_WHITELIST" ${RESULT_DIR}/${current_host}.err 2>/dev/null)
+				errors=$(grep -v "$REMOTE_STDERR_WHITELIST" "${RESULT_DIR}/${current_host}.err" 2>/dev/null)
 				printf "\nPolscan FAILED |||Polscan remote scan||| %s\n" "$errors"
-			) >>${RESULT_DIR}/$current_host
+			) >>"${RESULT_DIR}/$current_host"
 		fi
-		rm ${RESULT_DIR}/${current_host}.err
+		rm "${RESULT_DIR}/${current_host}.err"
 
-		i=$(( $i + 1 ))
+		i=$(( i + 1 ))
 	done
 fi
 rm $RSS
@@ -124,11 +125,11 @@ if [ "$STANDALONE_SCANNER_LIST" != "" ]; then
 	for scanner in $STANDALONE_SCANNER_LIST; do
 		echo " -> Running '$scanner'..."
 		scanner_file=$LIB_DIR/standalone/$scanner
-		group=`get_policy_group "$scanner_file"`
-		policy=`get_policy_name "$scanner_file"`
+		group=$(get_policy_group "$scanner_file")
+		policy=$(get_policy_name "$scanner_file")
 		$scanner_file |\
 		while read host severity data; do
-			echo "$group $severity |||$policy||| $data" >>$RESULT_DIR/$host
+			echo "$group $severity |||$policy||| $data" >>"$RESULT_DIR/$host"
 		done
 	done
 fi
