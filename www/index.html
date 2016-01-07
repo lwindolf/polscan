@@ -495,8 +495,6 @@ svg .nodes body {
 			</div>
 		</div>
 
-		<div id='errors'>
-		</div>
 		<div id='results'>
 		</div>
 
@@ -606,6 +604,30 @@ svg .nodes body {
 				console.timeEnd("sorting");
 			}
 
+			var resultTableLoadTimeout;
+
+			function addResultRows(id, rows, offset, count) {
+				var r = "";
+				for(var i = offset; i < offset+count; i++) {
+					if(rows[i])
+						r += "<tr>" + rows[i];
+				}
+ 				$(id+" tbody").append(r);
+				if(offset + count < rows.length) {
+					resultTableLoadTimeout = setTimeout(function() {
+						$('#loadmessage i').html('Loading results ('+Math.ceil(100*offset/rows.length)+'%)...');
+						addResultRows(id, rows, offset+count, count);
+					}, 100);
+				} else {
+					// Enable table sorting
+					$('#loadmessage i').html('Sorting results...');
+					console.log("Table setup done.");
+					$(id).tablesorter({sortList: [[0,0]]});
+					console.log("Table sorting done.");
+					$('#loadmessage').hide();
+				}
+			}
+
 			function createResultTable(params, id, data) {
 				var filteredHosts = get_hosts_filtered(params)
 				var group = '';
@@ -617,6 +639,8 @@ svg .nodes body {
 				if (name == 'all' || name == 'new' || name == 'solved')
 					group = '<th>Group</th>';
 
+				clearTimeout(resultTableLoadTimeout);
+				$('#loadmessage').show();
 				$("<table id='resultTable"+name+"' class='resultTable tablesorter'>")
 				.html("<thead><tr><th>Host</th>"+group+"<th>Policy</th><th title='Severity'>&nbsp;</th><th>Details</th></thead>")
 				.appendTo(id);
@@ -673,10 +697,7 @@ svg .nodes body {
 					}
 				});
 				console.log("Parsing done");
-				$("#resultTable"+name+" tbody").append(rows);
-				console.log("Table setup done.");
-				$("#resultTable"+name).tablesorter({sortList: [[0,0]]});
-				console.log("Table sorting done.");
+				addResultRows("#resultTable"+name, rows.split(/<tr>/), 0, 100);
 
 				if(groupBy.length >= 0) {
 					var groupingEnabled = false;
@@ -1431,7 +1452,7 @@ console.log(JSON.stringify(netMapData));
 			}
 
 			function clean() {
-				$('#results').html('<div id="row1"></div><div id="loadmessage"><i>Loading ...</i></div><div id="row2"/>');
+				$('#results').html('<div id="errors"/><div id="row1"></div><div id="loadmessage"><i>Loading ...</i></div><div id="row2"/>');
 				$('#errors').hide();
 				$('#loadmessage').hide();
 			}
