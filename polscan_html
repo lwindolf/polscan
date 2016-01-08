@@ -268,7 +268,7 @@ if [ -d "$RESULT_BASE_DIR/$ONE_DAY_AGO/" ]; then
 	# in one result set and those with a "Polscan" failure
 	# inside as diffing those produces false solved/new
 	# counts.
-        diff=$(diff -u <(cd "$RESULT_BASE_DIR/$ONE_DAY_AGO" && grep -F "|||" * | sort) <(cd "$RESULT_BASE_DIR/$DATE" && grep -F "|||" * | sort) | grep "^[-+]" | grep -v " (INVENTORY|OK) [|][|][|]")
+        diff=$(diff -u <(cd "$RESULT_BASE_DIR/$ONE_DAY_AGO" && grep -F "|||" * | sort) <(cd "$RESULT_BASE_DIR/$DATE" && grep -F "|||" * | sort) | grep "^[-+]" | egrep -v " (INVENTORY|OK) [|][|][|]")
         new_today=$(echo "$diff" | grep "^+[^+]")
         solved_today=$(echo "$diff" | grep "^-[^-]")
 
