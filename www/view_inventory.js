@@ -44,8 +44,9 @@ views.InventoryView.prototype.update = function(params) {
 	var filteredHosts = get_hosts_filtered(params)
 
 	getData("inventory "+params.iT, function(data) {
-			var pcolor = [];
+			var legendIndex = {};
 			var legend = [];
+			var pcolor = [];
 
 			$.each(data.results, function (i, f) {
 					if(-1 == filteredHosts.indexOf(f.host))
@@ -57,10 +58,10 @@ views.InventoryView.prototype.update = function(params) {
 
 					// Update legend
 					$.each(values, function(i, c) {
-						if(!pcolor[c]) {
-							pcolor[c] = color(Object.keys(pcolor).length);
-							legend.push(c);
-						}
+						if(-1 !== legend.indexOf(c))
+							return;
+						legendIndex[c] = legend.length;
+						legend.push(c);
 					});
 
 					// Add host to group
@@ -73,16 +74,31 @@ views.InventoryView.prototype.update = function(params) {
 					if(values.length > 0) {
 						content += "<table style='border:0' cellspacing='0' cellpadding='1px' width='100%'><tr>";
 						for(var p in values)
-							content += "<td style='border:0;padding:1px;height:10px;background:"+pcolor[values[p]]+"'></td>";;
+							content += "<td style='border:0;padding:1px;height:10px' class='legendIndex"+legendIndex[values[p]]+"'></td>";
 						content += "</tr></table>";
 					}
 					content = "<div class='hostMapBox KNOWN' title='"+f.host+" "+(values.length > 0?values.join(","):"")+"' onclick='setLocationHash({view:\"netmap\",h:\""+f.host+"\"});'>" + content + "</div>";
 					$('#' + groupClassName + ' .boxes').append(content);
 			});
 
+			// Determine which palette to use (shaded for numeric values)
+			// and high contrast for non-numeric values
+			var numeric = 1;
+			for(var l in legend) {
+				if(!legend[l].match(/^[0-9]+$/))
+					numeric = 0;
+			}
+
+			// Create colors for numeric legend by title
+			// and for non-numeric legends by index
+			var lastElem = legend.sort(legendSort)[legend.length-1];
 			for(var l in legend.sort(legendSort)) {
-				var c = legend[l];
-				$('#legend').append("<span class='legendItem' title='"+c+"' style='background:"+pcolor[c]+"'>"+c+"</span>");
+				var name = legend[l];
+				$('#legend').append("<span class='legendItem legendIndex"+legendIndex[name]+"' title='"+name+"'>"+name+"</span>");
+				if(numeric)
+					$('.legendIndex'+legendIndex[name]).css("background", "rgb("+Math.ceil(255-(180*name/lastElem))+", "+Math.ceil(225-(220*name/lastElem))+", "+0+")");
+				else
+					$('.legendIndex'+legendIndex[name]).css("background", color(legendIndex[name]));
 			}
 
 			$("#netBlockList").tablesorter({sortList: [[0,1]]});
