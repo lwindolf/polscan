@@ -6,18 +6,17 @@
 # source: https://bugs.launchpad.net/ubuntu/+source/procps/+bug/50093
 # source: http://wiki.debian.org/BridgeNetworkConnections
 
-modified=$(/bin/egrep -vh "^ *#|^ *$" /etc/sysctl.conf /etc/sysctl.d/*.conf 2>/dev/null | sed "s/ *= */ = /" 2>/dev/null)
 all=$(/sbin/sysctl -a 2>/dev/null)
-results=
-
-for m in "$modified"; do
-	if ! echo "$all" | grep -q "$m"; then
-		results="$results $m"
-	fi
-done
+results=$(
+while read m; do
+	/bin/echo "$all" | grep -q "$m"
+done < <(
+	/bin/egrep -vh "^ *#|^ *$" /etc/sysctl.conf /etc/sysctl.d/*.conf 2>/dev/null | sed "s/ *= */ = /" 2>/dev/null
+) | grep -v '^$'
+)
 
 if [ "$results" == "" ]; then
 	result_ok
 else
-	result_failed "The following sysctl settings are not active: $m"
+	result_failed "The following sysctl settings are not active: $results"
 fi
