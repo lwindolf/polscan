@@ -100,7 +100,7 @@ function addResultRows(id, rows, offset, count) {
 		$('#loadmessage i').html('Sorting results...');
 		console.log("Table setup done.");
 		resultTableLoadTimeout = setTimeout(function() {
-			$(id).tablesorter({sortList: [[0,0]]});
+			$(id).tablesorter({sortList: [[2,1],[0,0]]});
 			console.log("Table sorting done.");
 			$('#loadmessage').hide();
 		}, 100);
