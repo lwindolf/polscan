@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# name: Ansible
+# description: Ansible ping based host list provider
+
+ansible all -m ping 2>/dev/null
