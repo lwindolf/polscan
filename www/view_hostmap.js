@@ -115,7 +115,7 @@ views.HostmapView.prototype.addHostsToMap = function(params) {
 		});
 
 		addHostMapTooltip();
-        $("#hostmap").tablesorter({sortList: [[1,1],[2,1],[3,1],[0,0]]});
+	        $("#hostmap").tablesorter({sortList: [[1,1],[2,1],[3,1],[0,0]]});
 	});
 };
 
@@ -123,12 +123,12 @@ views.HostmapView.prototype.update = function(params) {
 	clean();
 	$(this.parentDiv).append('<div class="overviewBox"><div id="hostMapNav"/><table id="hostmap" class="resultTable tablesorter"><thead><tr><th>Group</th><th>C</th><th>W</th><th>Nr</th></tr></thead></table><div id="selectedGroup"/></div>');
 	
+	if(!params.fG)
+		params.fG = "new";
+
 	addFilterSettings('#hostMapNav', params, function() {
 		setLocationHash({ view: 'hostmap', gT: $('#hostmapGroupType').val() });
 	});
 
-	if(params.fG)
-		this.addHostsToMap(params);
-	else
-		$('#filterSettingsGo').trigger('click');
+	this.addHostsToMap(params);
 };
