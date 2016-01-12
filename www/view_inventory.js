@@ -101,6 +101,6 @@ views.InventoryView.prototype.update = function(params) {
 					$('.legendIndex'+legendIndex[name]).css("background", color(legendIndex[name]));
 			}
 
-			$("#netBlockList").tablesorter({sortList: [[0,1]]});
+			$("#inventoryMap").tablesorter({sortList: [[0,0]]});
 	});
 };
