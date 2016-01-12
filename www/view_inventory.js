@@ -96,7 +96,7 @@ views.InventoryView.prototype.update = function(params) {
 				var name = legend[l];
 				$('#legend').append("<span class='legendItem legendIndex"+legendIndex[name]+"' title='"+name+"'>"+name+"</span>");
 				if(numeric)
-					$('.legendIndex'+legendIndex[name]).css("background", "rgb("+Math.ceil(255-(180*name/lastElem))+", "+Math.ceil(225-(220*name/lastElem))+", "+0+")");
+					$('.legendIndex'+legendIndex[name]).css("background", "rgb("+Math.ceil(153-(153*name/lastElem))+", "+Math.ceil(255-(255*name/lastElem))+", 102)");
 				else
 					$('.legendIndex'+legendIndex[name]).css("background", color(legendIndex[name]));
 			}
