@@ -4,7 +4,7 @@
 
 output=$(systemctl list-units 2>/dev/null)
 if [ "$output" != "" ]; then
-	masked=$(echo "$output" | grep " masked " | cut -d " " -f2)
+	masked=$(/bin/echo "$output" | grep " masked " | cut -d " " -f2)
 	if [ "$masked" != "" ]; then
 		result_warning "There are masked services: "
 	else

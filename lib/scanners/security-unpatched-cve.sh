@@ -11,7 +11,7 @@ if [ -f /usr/bin/debsecan ]; then
 		result_ok
 	fi
 
-	count=$(echo $cves | grep -v '^ *$' | wc -w)
+	count=$(/bin/echo $cves | grep -v '^ *$' | wc -w)
 	if [ "$count" -gt 100 ]; then
 		count=$(( count / 100 * 100 ))
 	elif [ "$count" -gt 10 ]; then
