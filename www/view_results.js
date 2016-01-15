@@ -5,20 +5,52 @@ views.ResultsView = function ResultsView(parentDiv, params) {
 	this.parentDiv = parentDiv;
 };
 
+var resultTableLoadTimeout;
+
+function sortTable(id, sortOrder) {
+	$('#loadmessage i').html('Sorting results...');
+	console.log("Table setup done.");
+	resultTableLoadTimeout = setTimeout(function() {
+		$(id).tablesorter(sortOrder);
+		console.log("Table sorting done.");
+		$('#loadmessage').hide();
+	}, 100);
+}
+
+function addResultRows(id, rows, offset, count, sortOrder) {
+	var r = "";
+	for(var i = offset; i < offset+count; i++) {
+		if(rows[i])
+			r += "<tr>" + rows[i];
+	}
+	$(id+" tbody").append(r);
+	if(offset + count < rows.length) {
+		resultTableLoadTimeout = setTimeout(function() {
+			$('#loadmessage i').html('Loading results ('+Math.ceil(100*offset/rows.length)+'%)...');
+			addResultRows(id, rows, offset+count, count, sortOrder);
+		}, 100);
+	} else {
+		// Enable table sorting
+		if(sortOrder != null)
+			sortTable(id, sortOrder);
+	}
+}
+
 function createGroupTable(params, id, results) {
 	var filteredHosts = get_hosts_filtered(params)
 
+	clearTimeout(resultTableLoadTimeout);
+	$('#loadmessage').show();
 	$('.resultTable').empty();
 	$('.resultTable').remove();
 	$("<table id='resultTable"+params.fG+"' class='resultTable tablesorter'>")
-	.html("<thead><tr><th>"+params.gI+"</th><th>Count</th><th>Hosts</th></thead>")
+	.html("<thead><tr><th>"+params.gI+"</th><th>Count</th><th>Hosts</th></thead><tbody/>")
 	.appendTo(id);
-	$('<tbody id="groupedData">').appendTo('#resultTable'+params.fG);
 
 	console.log("Grouping hosts by '"+params.gI+"'");
-	console.time("grouping");
 	var hosts = new Array();
 	var values = new Array();
+	var view = this;
 	$.each(results, function( i, item ) {
 			if(item.message.indexOf(params.gI) == -1)
 				return;
@@ -32,7 +64,11 @@ function createGroupTable(params, id, results) {
 			if(-1 == filteredHosts.indexOf(item.host))
 				return;
 
-			// Split message after colon by commata (if there is at 
+			if(item.severity == 'FAILED')
+				view.failed++;
+			else if(item.severity == 'WARNING')
+				view.warning++;
+			// Split message after colon by commata (if there is at
 			// least one or by spaces...
 			var listStr = item.message.substring(params.gI.length + 2);
 			var list;
@@ -54,62 +90,29 @@ function createGroupTable(params, id, results) {
 				hosts[list[key]].push(item.host);
 			}
 	});
-	console.timeEnd("grouping");
+	console.log("Parsing done.");
 
-	console.time("table");
-	console.time("tablebuild");
 	var rows = new Array(250);
 	for(var key in values) {
 		var hostlinks = "";
 		for(var h in hosts[key])
 			hostlinks += "<a href='javascript:setLocationHash({ fG: \"all\", sT: \""+hosts[key][h]+"\"}, true);'>"+hosts[key][h]+"</a> ";
-		rows.push('<tr><td class="groupByValue">' + key + '</td>' +
+		rows.push('<td class="groupByValue">' + key + '</td>' +
 				'<td class="count">' + hosts[key].length + '</td>' +
-				'<td class="hosts">' + hostlinks + '</td></tr>');
+				'<td class="hosts">' + hostlinks + '</td>');
 		// Avoid OOM
 		if(rows.length >= 250) {
-			document.getElementById('groupedData').innerHTML += rows.join(" ");
+			console.log("addResultRows()");
+			addResultRows("#resultTable"+params.fG, rows, 0, 500, null);
 			rows = new Array(250);
 		}
 	}
-	document.getElementById('groupedData').innerHTML += rows.join(" ");
-	console.timeEnd("tablebuild");
-	console.timeEnd("table");
-
-	console.time("sorting");
-	$("#resultTable"+params.fG).tablesorter({sortList: [[1,1]]});
-	console.timeEnd("sorting");
-}
-
-var resultTableLoadTimeout;
-
-function addResultRows(id, rows, offset, count) {
-	var r = "";
-	for(var i = offset; i < offset+count; i++) {
-		if(rows[i])
-			r += "<tr>" + rows[i];
-	}
-	$(id+" tbody").append(r);
-	if(offset + count < rows.length) {
-		resultTableLoadTimeout = setTimeout(function() {
-			$('#loadmessage i').html('Loading results ('+Math.ceil(100*offset/rows.length)+'%)...');
-			addResultRows(id, rows, offset+count, count);
-		}, 100);
-	} else {
-		// Enable table sorting
-		$('#loadmessage i').html('Sorting results...');
-		console.log("Table setup done.");
-		resultTableLoadTimeout = setTimeout(function() {
-			$(id).tablesorter({sortList: [[2,1],[0,0]]});
-			console.log("Table sorting done.");
-			$('#loadmessage').hide();
-		}, 100);
-	}
+	sortTable("#resultTable"+params.fG, {sortList: [[1,1]]});
 }
 
 function createResultTable(params, id, data) {
 	var filteredHosts = get_hosts_filtered(params)
-		var group = '';
+	var group = '';
 	var name = params.fG;
 
 	if(!name)
@@ -127,8 +130,7 @@ function createResultTable(params, id, data) {
 
 	groupBy = new Array();
 	var rows = "";
-	warning = 0;
-	failed = 0;
+	var view = this;
 	$.each(data, function( i, item ) {
 			var severity = 0;
 
@@ -145,11 +147,11 @@ function createResultTable(params, id, data) {
 				return;
 
 			if(item.severity == 'FAILED') {
-				failed++;
+				view.failed++;
 				severity = 2;
 			}
 			if(item.severity == 'WARNING') {
-				warning++;
+				view.warning++;
 				severity = 1;
 			}
 
@@ -176,7 +178,7 @@ function createResultTable(params, id, data) {
 			}
 	});
 	console.log("Parsing done");
-	addResultRows("#resultTable"+name, rows.split(/<tr>/), 0, 100);
+	addResultRows("#resultTable"+name, rows.split(/<tr>/), 0, 100, {sortList: [[2,1],[0,0]]});
 
 	if(groupBy.length >= 0) {
 		var groupingEnabled = false;
@@ -208,11 +210,14 @@ views.ResultsView.prototype.update = function(params) {
 	clean();
 
 	getData(params.fG, function(data) {
+			this.failed = 0;
+			this.warning = 0;
+
 			$(id).append("<div id='badgeRow'/><div id='tableRow'/>");
 
 			addFilterSettings('#tableRow', params, function() {
-					setLocationHash({ sT: $('#search').val(), gI: $('#groupById').val() });
-					});
+				setLocationHash({ sT: $('#search').val(), gI: $('#groupById').val() });
+			});
 
 			if(!params.gI)
 				createResultTable(params, '#tableRow', data.results);
@@ -227,7 +232,7 @@ views.ResultsView.prototype.update = function(params) {
 			else
 				badgeTitle = "Overall";
 
-			createBadges('#badgeRow', failed, warning, badgeTitle);
+			createBadges('#badgeRow', this.failed, this.warning, badgeTitle);
 			createHistogram('#badgeRow', params.fG, params.sT);
 	});
 };
