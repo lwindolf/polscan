@@ -4,9 +4,9 @@
 
 output=$(systemctl list-units 2>/dev/null)
 if [ "$output" != "" ]; then
-	failed=$(/bin/echo "$output" | grep " loaded (maintenance|failed) " | cut -d " " -f2)
+	failed=$(/bin/echo "$output" | egrep " loaded (maintenance|failed) " | cut -d " " -f2)
 	if [ "$failed" != "" ]; then
-		result_warning "There are failed services: "
+		result_warning "There are failed services: " $failed
 	else
 		result_ok
 	fi
