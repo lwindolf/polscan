@@ -473,6 +473,92 @@ svg .nodes body {
 	margin-top:1px;
 	text-shadow: -1px 0 white, 0 1px white, 1px 0 white, 0 -1px white;
 }
+
+path.arc {
+  cursor: move;
+  fill: #fff;
+}
+
+.node {
+  font-size: 10px;
+}
+
+.node:hover {
+  fill: #1f77b4;
+}
+
+.link {
+  fill: none;
+  stroke: #1f77b4;
+  stroke-opacity: .4;
+  pointer-events: none;
+}
+
+.link.source, .link.target {
+  stroke-opacity: 1;
+  stroke-width: 2px;
+}
+
+.node.target {
+  fill: #d62728 !important;
+}
+
+.link.source {
+  stroke: #d62728;
+}
+
+.node.source {
+  fill: #2ca02c;
+}
+
+.link.target {
+  stroke: #2ca02c;
+}
+
+.node {
+  font: 300 11px "Helvetica Neue", Helvetica, Arial, sans-serif;
+  fill: #666;
+}
+
+.node:hover {
+  fill: #000;
+}
+
+.link {
+  stroke: steelblue;
+  stroke-opacity: .4;
+  fill: none;
+  pointer-events: none;
+}
+
+.node:hover,
+.node--source,
+.node--target {
+  font-weight: 700;
+}
+
+.node--source {
+  fill: #2ca02c;
+}
+
+.node--target {
+  fill: #d62728;
+}
+
+.link--source,
+.link--target {
+  stroke-opacity: 1;
+  stroke-width: 2px;
+}
+
+.link--source {
+  stroke: #d62728;
+}
+
+.link--target {
+  stroke: #2ca02c;
+}
+
 		</style>
 	</head>
 	<body class='main'>
@@ -485,6 +571,7 @@ svg .nodes body {
 			Maps:
 			<a href="#view=hostmap">Findings</a>
 			<a href="#view=inventory">Inventory</a>
+			<a href="#view=network">Net</a>
 
 			Findings: 
 			<a href="#view=results&fG=all">All</a>
@@ -1142,7 +1229,7 @@ console.log(JSON.stringify(netMapData));
 
 					$("#menu a.current").removeClass("current");
 
-					if(params.view && params.view.match(/(policies|hostmap|inventory)/)) {
+					if(params.view && params.view.match(/(policies|hostmap|inventory|network)/)) {
 						loadView(params.view, params);
 						$("#menu a[href='#view="+params.view+"']").addClass("current");
 					} else if(params.view == "netmap") {
