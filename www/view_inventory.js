@@ -95,10 +95,14 @@ views.InventoryView.prototype.update = function(params) {
 			for(var l in legend.sort(legendSort)) {
 				var name = legend[l];
 				$('#legend').append("<span class='legendItem legendIndex"+legendIndex[name]+"' title='"+name+"'>"+name+"</span>");
-				if(numeric)
-					$('.legendIndex'+legendIndex[name]).css("background", "rgb("+Math.ceil(153-(153*name/lastElem))+", "+Math.ceil(255-(255*name/lastElem))+", 102)");
-				else
+				if(numeric) {
+						if(0 != name)
+							$('.legendIndex'+legendIndex[name]).css("background", "rgb("+Math.ceil(153-(153*name/lastElem))+", "+Math.ceil(255-(255*name/lastElem))+", 102)");
+						else
+							$('.legendIndex'+legendIndex[name]).css("background", "white");
+				} else {
 					$('.legendIndex'+legendIndex[name]).css("background", color(legendIndex[name]));
+				}
 			}
 
 			$("#inventoryMap").tablesorter({sortList: [[0,0]]});
