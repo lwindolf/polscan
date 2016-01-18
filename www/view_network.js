@@ -9,39 +9,36 @@ views.NetworkView = function NetworkView(parentDiv, params) {
 function loadResolve() {
 	hostByIp = {};
 
-console.log("Resolving hosts...");
-                                        hostByIp = new Array();
-                                        getData("Network", function(data) {
-                                                $.each(data.results, function(i, item) {
-                                                        if(item.policy == "Connections") {
-                                                                var connections = item.message.split(/ /);
-                                                                for(var c in connections) {
-                                                                        var fields = connections[c].split(/:/);
-                                                                        hostByIp[fields[1]] = item.host;
-                                                                }
-                                                        }
-                                                });
-                                        });
-
+	console.log("Resolving hosts...");
+    hostByIp = new Array();
+    getData("Network", function(data) {
+        $.each(data.results, function(i, item) {
+            if(item.policy == "Connections") {
+                var connections = item.message.split(/ /);
+                for(var c in connections) {
+                    var fields = connections[c].split(/:/);
+                    hostByIp[fields[1]] = item.host;
+                }
+             }
+        });
+    });
 }
 
-                     var hostByIp;
-                     function resolveIp(ip) {
-
-                                if(hostByIp[ip])
-                                        return hostByIp[ip];
-                                return ip;
-                     }
-
+var hostByIp;
+function resolveIp(ip) {
+    if(hostByIp[ip])
+        return hostByIp[ip];
+    return ip;
+}
 
 views.NetworkView.prototype.update = function(params) {
 
 	clean();
 	$('#loadmessage').show();
 	$('#loadmessage i').html("Loading...");
-	$(this.parentDiv).append('<div id="inventoryNav"/><div id="netgraph"/>'); //<div id="legend"><b>Legend</b></div><table id="inventoryMap" class="resultTable tablesorter"><thead><tr><th>Group</th><th>Results</th></tr></thead></table>');
+	$(this.parentDiv).append('<div id="networkNav"/><div id="netgraph"/>'); //<div id="legend"><b>Legend</b></div><table id="inventoryMap" class="resultTable tablesorter"><thead><tr><th>Group</th><th>Results</th></tr></thead></table>');
 
-	addFilterSettings('#inventoryNav', params, function() {
+	addFilterSettings('#networkNav', params, function() {
 		setLocationHash({
 			view: 'network',
 		});
@@ -49,9 +46,10 @@ views.NetworkView.prototype.update = function(params) {
 
 	var filteredHosts = get_hosts_filtered(params);
 
+// FIXME: link to mbostock example id
 var diameter = $(window).height(),
     radius = diameter / 2,
-    innerRadius = radius - 100;
+    innerRadius = radius - 150;
 var cluster = d3.layout.cluster()
     .size([360, innerRadius])
     .sort(null)
@@ -65,7 +63,7 @@ var line = d3.svg.line.radial()
 var svg = d3.select("#netgraph").append("svg")
     .attr("width", diameter)
     .attr("height", diameter)
-  .append("g")
+    .append("g")
     .attr("transform", "translate(" + radius + "," + radius + ")");
 var link = svg.append("g").selectAll(".link"),
     node = svg.append("g").selectAll(".node");
@@ -76,7 +74,7 @@ loadResolve();
   var prevHost = "";
 	var i = 0, overflow = 0;
 	var selectedHosts = {};
-	var hostLimit = 150;
+	var hostLimit = 200;
 	$.each(filteredHosts, function(h, host) {
 		if(i < hostLimit) {
 			// Reverse hostname to allow DNS grouping
@@ -89,10 +87,17 @@ loadResolve();
 			overflow = 1;
 		}
 	});
-	classes.push({name: 'Unknown', size:1, imports:[]});
+
+	// Add two Unresolved and NotShown hosts where we can put all unresolvable connections
+	selectedHosts['Unresolved_Internal'] = {name: 'Unresolved_Internal', size:1, imports:[]};
+	selectedHosts['Unresolved_External'] = {name: 'Unresolved_External', size:1, imports:[]};
+	selectedHosts['Not_Shown'] = {name: 'Not_Shown', size:1, imports:[]};
+	classes.push(selectedHosts['Unresolved_Internal']);
+	classes.push(selectedHosts['Unresolved_External']);
+	classes.push(selectedHosts['Not_Shown']);
 
 	if(overflow)
-		$('#loadmessage i').html("Only displaying "+hostLimit+"/"+filteredHosts.length+" hosts. Please click a host name to further filter...");
+		$('#loadmessage i').html("Only displaying the first "+hostLimit+" of "+filteredHosts.length+" hosts in this filter/selection. Please choose a smaller group!");
 	else
 		$('#loadmessage').hide();
 
@@ -107,12 +112,26 @@ loadResolve();
 					var fields = m[c].split(/:/);
 					if(fields[5]) {
 						var resolved=resolveIp(fields[3]);
-						if(resolved.match(/^[0-9]/))
-							resolved="Unknown";
-						if(resolved in selectedHosts) {
-							//console.log("conn "+ host+ " <-> "+fields[3]+" ("+resolved+")");
-							hostData.imports.push(resolved.split(/\./).reverse().join('.'));
+						if(resolved.match(/^[0-9]/)) {
+							if(resolved.match(/^(172|196|10)\./))
+								resolved="Unresolved_Internal";
+							else
+								resolved="Unresolved_External";
+						} else {
+							if(!(resolved in selectedHosts)) {
+								if(classes.length < hostLimit) {
+									// We can add one more...
+									selectedHosts[resolved]={name: resolved.split(/\./).reverse().join('.'), size:1, imports:[]};
+									classes.push(selectedHosts[resolved]);
+								} else {
+									resolved="Not_Shown";
+								}
+							}
 						}
+
+						//console.log("conn "+ host+ " <-> "+fields[3]+" ("+resolved+")");
+						if(resolved in selectedHosts)
+							hostData.imports.push(resolved.split(/\./).reverse().join('.'));
 					}
 				}
 				}
@@ -142,7 +161,6 @@ loadResolve();
 });
 	
 function mouseovered(d) {
-console.log("mouse over");
   node
       .each(function(n) { n.target = n.source = false; });
   link
@@ -199,72 +217,4 @@ function packageImports(nodes) {
   });
   return imports;
 }
-
-/*
-
-	getData("inventory "+params.iT, function(data) {
-			var legendIndex = {};
-			var legend = [];
-			var pcolor = [];
-
-			$.each(data.results, function (i, f) {
-					if(-1 == filteredHosts.indexOf(f.host))
-						return;
-
-					var values = f.values.split(/ /).filter(function(i) {
-						return i != '';
-					});
-
-					// Update legend
-					$.each(values, function(i, c) {
-						if(-1 !== legend.indexOf(c))
-							return;
-						legendIndex[c] = legend.length;
-						legend.push(c);
-					});
-
-					// Add host to group
-					var groupName = getGroupByHost(params.gT, f.host);
-					var groupClassName = groupName.replace(/[\.#\/]/g, "_");
-					if($('#inventoryMap').find('#'+groupClassName).length == 0)
-						$('#inventoryMap').append('<tr class="hostMapGroup" id="'+groupClassName+'"><td><span class="groupName">'+groupName+'</span></td><td><span class="boxes"/></td></tr>');
-
-					var content = '';
-					if(values.length > 0) {
-						content += "<table style='border:0' cellspacing='0' cellpadding='1px' width='100%'><tr>";
-						for(var p in values)
-							content += "<td style='border:0;padding:1px;height:10px' class='legendIndex"+legendIndex[values[p]]+"'></td>";
-						content += "</tr></table>";
-					}
-					content = "<div class='hostMapBox KNOWN' title='"+f.host+" "+(values.length > 0?values.join(","):"")+"' onclick='setLocationHash({view:\"netmap\",h:\""+f.host+"\"});'>" + content + "</div>";
-					$('#' + groupClassName + ' .boxes').append(content);
-			});
-
-			// Determine which palette to use (shaded for numeric values)
-			// and high contrast for non-numeric values
-			var numeric = 1;
-			for(var l in legend) {
-				if(!legend[l].match(/^[0-9]+$/))
-					numeric = 0;
-			}
-
-			// Create colors for numeric legend by title
-			// and for non-numeric legends by index
-			var lastElem = legend.sort(legendSort)[legend.length-1];
-			for(var l in legend.sort(legendSort)) {
-				var name = legend[l];
-				$('#legend').append("<span class='legendItem legendIndex"+legendIndex[name]+"' title='"+name+"'>"+name+"</span>");
-				if(numeric) {
-						if(0 != name)
-							$('.legendIndex'+legendIndex[name]).css("background", "rgb("+Math.ceil(153-(153*name/lastElem))+", "+Math.ceil(255-(255*name/lastElem))+", 102)");
-						else
-							$('.legendIndex'+legendIndex[name]).css("background", "white");
-				} else {
-					$('.legendIndex'+legendIndex[name]).css("background", color(legendIndex[name]));
-				}
-			}
-
-			$("#inventoryMap").tablesorter({sortList: [[0,0]]});
-	});
-*/
 };

@@ -125,6 +125,8 @@ views.HostmapView.prototype.update = function(params) {
 	
 	if(!params.fG)
 		params.fG = "new";
+	if(!params.gT)
+		params.gT = "Domain";	// This usually does exist
 
 	addFilterSettings('#hostMapNav', params, function() {
 		setLocationHash({ view: 'hostmap', gT: $('#hostmapGroupType').val() });
