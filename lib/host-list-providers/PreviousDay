@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# name: PreviousDay
+# description: Result directory base host list provider. Provides resolvable hosts of that were in the previous result set. Using this provider along with a primary CM based source helps to track hosts that are somehow lost to the CM
+
+# Resolve "latest" link into directory name
+dir=$(readlink -e $(find $RESULT_DIR -type l -name latest) | sed "s/.json//")
+cd $dir || exit
+ls | while read name; do
+	if [ "$(dig +short $name)" != "" ]; then
+		echo $name
+	fi
+done
