@@ -3,7 +3,7 @@
 # description: There should be no read-only local filesystems
 # source: http://serverfault.com/questions/193971/determine-if-filesystem-or-partition-is-mounted-ro-or-rw-via-bash-script
 
-mounts=$(egrep "^/.*( ro,|,ro )" /proc/mounts | cut -d " " -f 2)
+mounts=$(egrep "^/.*( ro,|,ro )" /proc/mounts | grep -v iso9660 | cut -d " " -f 2)
 if [ "$mounts" == "" ]; then
 	result_ok
 else
