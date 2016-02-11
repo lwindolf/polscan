@@ -784,6 +784,7 @@ path.arc {
 				fbox.append("<span class='label datepicker'>Date</span> <input type='text' id='datepicker' size='10'/> "+
 				"<span id='calendar'></span>");
 
+				if(params.view !== 'netmap') {
 				if(params.view === 'inventory') {
 					fbox.append('<span class="label">Type</span> <select id="inventoryType"></select> ');
 				} else if(params.view !== 'network') {
@@ -802,15 +803,16 @@ path.arc {
 				if(!params.view || params.view === 'results')
 					fbox.append('<span class="label">Search</span> <input type="text" width="100%" id="search"/> ')
 				fbox.append('<input id="filterSettingsGo" type="button" value="Apply"/> ');
+				}
 				if(params.view === 'netmap') {
-/*					fbox.append('Host <input type="text" value="'+(params.h !== undefined?params.h:'')+'" list="availableHosts" id="selectedHost"/>' +	
+					fbox.append('Host <input type="text" value="'+(params.h !== undefined?params.h:'')+'" list="availableHosts" id="selectedHost"/>' +	
 					' <datalist id="availableHosts"/>' +
 					'<input id="filterSettingsGo" type="button" value="Show"/> ');
 					getData("hosts", function(data) {
 						$.each(data.results, function(host) {
 							$('#availableHosts').append('<option value="'+host+'">');
 						});
-					});*/
+					});
 				}
 
 				if(params.view !== 'netmap')
@@ -866,7 +868,6 @@ path.arc {
 			function updateNetMapGraph() {
 				var width = $('#netmap').width();
     			var	height = $('#netmap').height();
-
 
     var d3cola = cola.d3adaptor()
             .flowLayout("x", Math.min(300,$(window).width()/3))
@@ -1055,6 +1056,7 @@ console.log(JSON.stringify(netMapData));
 
 			var nodeToId;
 			function addHostToNetGraph(host) {
+console.log("addHostToNetGraph "+host);
 				var portToProgram = new Array();
 				var connByService = new Array();
 				nodeToId = new Array();
@@ -1087,6 +1089,7 @@ console.log(JSON.stringify(netMapData));
 									if(fields[1] == fields[3])
 										continue;
 
+console.log("c "+connections[c]);
 									// Resolve program for close-wait, time-wait listings
 									if(program !== "-" && !(port in portToProgram))
 										portToProgram[port] = program;
@@ -1114,7 +1117,7 @@ console.log(JSON.stringify(netMapData));
 									else
 										connByService[id].in.push(resolveIp(fields[3]));
 
-									$('#netMapTable').append('<tr><td>'+host+'</td><td>'+fields.join('</td><td>')+'</td></tr>');
+									$('#netMapTable tbody').append('<tr><td>'+host+'</td><td>'+fields.join('</td><td>')+'</td></tr>');
 								}
 							}
 						}
@@ -1189,8 +1192,8 @@ console.log(JSON.stringify(netMapData));
 					});
 				});
 				if(params.h) {
+					$('#results .overviewBox').append('<div id="netmap" style="height:800px;margin-bottom:12px;border:1px solid #aaa;"/><div id="selectedGroup"/><table id="netMapTable" class="resultTable"><thead><tr><th>Host</th><th>Program</th><th>Local IP</th><th>Local Port</th><th>Remote IP</th><th>Remote Port</th><th>In/Out</th><th>Count</th></tr></thead><tbody/></table></div>');
 					addHostToNetGraph(params.h);
-					$('#results .overviewBox').append('<div id="netmap" style="height:800px;margin-bottom:12px;border:1px solid #aaa;"/><div id="selectedGroup"/><table id="netMapTable" class="resultTable"><tr><th>Host</th><th>Program</th><th>Local IP</th><th>Local Port</th><th>Remote IP</th><th>Remote Port</th><th>In/Out</th><th>Count</th></tr></table></div>');
 				}
 			}
 
