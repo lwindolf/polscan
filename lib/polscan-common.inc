@@ -64,49 +64,18 @@ load_host_groups() {
 	done < <($LIB_DIR/host-group-providers/$HOST_GROUP_PROVIDERS | grep -v '^$')
 }
 
-
 ################################################################################
-# get_policy_group
+# get_policy_info
 #
 # $1	file name
+# $2	info type (e.g. 'tags', 'solution', 'solution-cmd')
 #
-# Returns group id of policy checked by that file
+# Returns list of tag string of policy checked by that file
 ################################################################################
-get_policy_group() {
+get_policy_info() {
 	sed "
-		/# group:/!d;
-		s/.*: *//;
-	" "$1"
-}
-
-################################################################################
-# get_policy_name
-#
-# $1	file name
-#
-# Returns descriptive name of policy checked by that file
-################################################################################
-get_policy_name() {
-	sed "
-		/# name:/!d;
-		s/.*: *//;
-	" "$1"
-}
-
-################################################################################
-# get_policy_description
-#
-# FIXME: Somehow allow multi line descriptions
-#
-# $1	file name
-#
-# Returns human readable description of policy checked by that file
-################################################################################
-get_policy_description() {
-	sed "
-		/# description:/!d;
-		s/.*: *//;
-		s/\"/'/g;
+		/# $2:/!d;
+		s/^[^:]*: *//;
 	" "$1"
 }
 

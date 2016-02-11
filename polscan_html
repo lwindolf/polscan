@@ -2,7 +2,7 @@
 
 # polscan_html: Process polscan results into static HTML
 
-# Copyright (C) 2015  Lars Windolf <lars.windolf@gmx.de>
+# Copyright (C) 2015-2016  Lars Windolf <lars.windolf@gmx.de>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -69,7 +69,6 @@ write_json() {
 		fi
 		cat |\
 		sed 's/[^[:print:]]//g' |\
-		sed 's/\\/\\\\/g' |\
 		sed '/^$/d' |\
 		sed '$s/,$//' 	# Strip last comma in lists
 		if [ "$result_type" == 'list' ]; then
@@ -188,10 +187,14 @@ done
 		get_scanners standalone | sed "s/^/standalone\//"
 	); do
 		echo "- $s" >&2
-		group=`get_policy_group "$LIB_DIR/$s"`
-		policy=`get_policy_name "$LIB_DIR/$s"`
-		description=`get_policy_description "$LIB_DIR/$s"`
-		echo -n '{"policy": "'$policy'", "parent": "'$group'", "description": "'$description'", "WARNING": '${policies[warn_$policy]-0}', "FAILED": '${policies[fail_$policy]-0}'},'
+		group=`get_policy_info "$LIB_DIR/$s" group`
+		policy=`get_policy_info "$LIB_DIR/$s" name`
+		description=`get_policy_info "$LIB_DIR/$s" description`
+		tags=`get_policy_info "$LIB_DIR/$s" tags`
+		solution=`get_policy_info "$LIB_DIR/$s" solution`
+		solution_cmd=`get_policy_info "$LIB_DIR/$s" solution-cmd`
+		references=`get_policy_info "$LIB_DIR/$s" 'source' | xargs`
+		echo -n '{"policy": "'$policy'", "parent": "'$group'", "description": "'${description//\"/\\\"}'", "solution": "'${solution//\"/\\\"}'", "solution_cmd": "'${solution_cmd//\"/\\\"}'", "tags": [ "'${tags// /\",\"}'" ], "references": [ "'${references// /\",\"}'" ], "WARNING": '${policies[warn_$policy]-0}', "FAILED": '${policies[fail_$policy]-0}'},'
 	done
 ) | write_json list overview 'WARNING": '${pall[warn]-0}', "FAILED": '${pall[fail]-0}', "overview'
 
@@ -216,14 +219,12 @@ declare -A histogram_labels
 
 histogram_ids['all']='all'
 i=0
-while [ $i -le 30 ]; 
-do
+while [ $i -le 30 ]; do
 	day=$(date -d "$i days ago" +%Y/%m/%d)
 	if [ -d "$RESULT_BASE_DIR/$day" ]; then
 		histogram_labels[$i]=$day
 		echo $day
-		while read nr group severity policy;
-		do
+		while read nr group severity policy; do
 			histogram_ids["group_${group// /_}"]=$group
 			histogram_ids["policy_${policy// /_}"]="${group}:::${policy}"
 			histogram["policy_${policy// /_}_${severity}_${day}"]=$nr
@@ -242,15 +243,12 @@ labels=$(
 )
 
 (
-for p in ${!histogram_ids[*]}
-do
+for p in ${!histogram_ids[*]}; do
 	echo -n ',{"id": "'${histogram_ids[$p]}'",'
-	for severity in FAILED WARNING
-	do
+	for severity in FAILED WARNING; do
 		echo -n ' "'$severity'": ['
 		i=30
-		while [ $i -ge 0 ]; 
-		do
+		while [ $i -ge 0 ]; do
 			day=$(date -d "$i days ago" +%Y/%m/%d)
 			if [ -d "$RESULT_BASE_DIR/$day" ]; then
 				echo -n "${histogram[${p}_${severity}_$day]-0}, "

@@ -1,6 +1,6 @@
 # group: PHP
 # name: display_errors = Off
-# description: Prevent exposing PHP error.
+# description: Prevent exposing PHP errors.
 # source: http://www.cyberciti.biz/tips/php-security-best-practices-tutorial.html
 
 # We fuzzy check for at least one occurence of display_errors=Off
