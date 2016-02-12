@@ -6,31 +6,6 @@ views.NetworkView = function NetworkView(parentDiv, params) {
 	this.parentDiv = parentDiv;
 };
 
-function loadResolve() {
-	hostByIp = {};
-
-	console.log("Resolving hosts...");
-    hostByIp = new Array();
-    getData("Network", function(data) {
-        $.each(data.results, function(i, item) {
-            if(item.policy == "Connections") {
-                var connections = item.message.split(/ /);
-                for(var c in connections) {
-                    var fields = connections[c].split(/:/);
-                    hostByIp[fields[1]] = item.host;
-                }
-             }
-        });
-    });
-}
-
-var hostByIp;
-function resolveIp(ip) {
-    if(hostByIp[ip])
-        return hostByIp[ip];
-    return ip;
-}
-
 views.NetworkView.prototype.update = function(params) {
 
 	clean();
@@ -67,8 +42,6 @@ var svg = d3.select("#netgraph").append("svg")
     .attr("transform", "translate(" + radius + "," + radius + ")");
 var link = svg.append("g").selectAll(".link"),
     node = svg.append("g").selectAll(".node");
-
-loadResolve();
 
   var classes = [];
   var prevHost = "";
