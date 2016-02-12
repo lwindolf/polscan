@@ -67,7 +67,7 @@ function updateNetMapGraph() {
 	svg.append('svg:defs').append('svg:marker').attr('id', 'end-arrow').attr('viewBox', '0 -5 10 10').attr('refX', 5).attr('markerWidth', 9).attr('markerHeight', 6).attr('orient', 'auto').append('svg:path').attr('d', 'M0,-5L10,0L0,5L2,0').attr('stroke-width', '0px').attr('fill', '#000');
 
     graph = netMapData;
-console.log(JSON.stringify(netMapData));
+
         graph.nodes.forEach(function (v) {
             v.width = 200;
 			if(v.height === undefined)
@@ -208,7 +208,7 @@ function addNetGraphNode(data, direction, program) {
 
 var nodeToId;
 function addHostToNetGraph(host) {
-console.log("addHostToNetGraph "+host);
+	console.log("addHostToNetGraph "+host);
 				var portToProgram = new Array();
 				var connByService = new Array();
 				nodeToId = new Array();
@@ -241,7 +241,6 @@ console.log("addHostToNetGraph "+host);
 									if(fields[1] == fields[3])
 										continue;
 
-console.log("c "+connections[c]);
 									// Resolve program for close-wait, time-wait listings
 									if(program !== "-" && !(port in portToProgram))
 										portToProgram[port] = program;
@@ -317,13 +316,14 @@ console.log("c "+connections[c]);
 
 views.NetmapView.prototype.update = function(params) {
 	clean();
-	$('#results').append('<div class="overviewBox"><div id="netMapNav"/>');
+	$('#results').append('<div class="overviewBox"><div id="netMapNav"/></div>');
 	addFilterSettings('#netMapNav', params, function() {
 		setLocationHash({
 			view: 'netmap',
 			h: $('#selectedHost').val()
 		});
 	});
+
 	$('#results .overviewBox').append('<div id="netmap" style="height:800px;margin-bottom:12px;border:1px solid #aaa;"/><div id="selectedGroup"/><table id="netMapTable" class="resultTable"><thead><tr><th>Host</th><th>Program</th><th>Local IP</th><th>Local Port</th><th>Remote IP</th><th>Remote Port</th><th>In/Out</th><th>Count</th></tr></thead><tbody/></table></div>');
 	if(params.h)
 		addHostToNetGraph(params.h);

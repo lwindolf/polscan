@@ -869,6 +869,7 @@ path.arc {
 			}
 
 			function loadView(name, params) {
+				params.view = name;
 				$.getScript("view_"+name+".js")
 				.done(function(s, t) {
 					var v = new views[name[0].toUpperCase()+name.slice(1)+"View"]('#results', params);

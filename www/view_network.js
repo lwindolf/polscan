@@ -7,11 +7,10 @@ views.NetworkView = function NetworkView(parentDiv, params) {
 };
 
 views.NetworkView.prototype.update = function(params) {
-
 	clean();
 	$('#loadmessage').show();
 	$('#loadmessage i').html("Loading...");
-	$(this.parentDiv).append('<div id="networkNav"/><div id="netgraph"/>'); //<div id="legend"><b>Legend</b></div><table id="inventoryMap" class="resultTable tablesorter"><thead><tr><th>Group</th><th>Results</th></tr></thead></table>');
+	$(this.parentDiv).append('<div id="networkNav"/><div id="networkSelectedName"><i>Hover over names to view FQDNs and click to see connection details.</i></div><div id="netgraph"/>'); //<div id="legend"><b>Legend</b></div><table id="inventoryMap" class="resultTable tablesorter"><thead><tr><th>Group</th><th>Results</th></tr></thead></table>');
 
 	addFilterSettings('#networkNav', params, function() {
 		setLocationHash({
@@ -129,11 +128,19 @@ var link = svg.append("g").selectAll(".link"),
       .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + (d.y + 8) + ",0)" + (d.x < 180 ? "" : "rotate(180)"); })
       .style("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
       .text(function(d) { return d.key; })
+      .on("click", clicked)
       .on("mouseover", mouseovered)
       .on("mouseout", mouseouted);
 });
+
+function clicked(d) {
+	loadView('netmap', {
+		h: d.name.split('.').reverse().join('.')
+	});
+}
 	
 function mouseovered(d) {
+  $('#networkSelectedName').html(d.name.split('.').reverse().join('.'));
   node
       .each(function(n) { n.target = n.source = false; });
   link
@@ -145,6 +152,7 @@ function mouseovered(d) {
       .classed("node--target", function(n) { return n.target; })
       .classed("node--source", function(n) { return n.source; });
 }
+
 function mouseouted(d) {
   link
       .classed("link--target", false)
@@ -154,6 +162,7 @@ function mouseouted(d) {
       .classed("node--source", false);
 }
 d3.select(self.frameElement).style("height", diameter + "px");
+
 // Lazily construct the package hierarchy from class names.
 function packageHierarchy(classes) {
   var map = {};
@@ -174,6 +183,7 @@ function packageHierarchy(classes) {
   });
   return map[""];
 }
+
 // Return a list of imports for the given array of nodes.
 function packageImports(nodes) {
   var map = {},
