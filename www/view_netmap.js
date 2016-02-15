@@ -263,12 +263,21 @@ function addHostToNetGraph(host) {
 									if(!(id in connByService))
 										connByService[id] = { service: s, in: [], out: [] };
 
+									var resolvedRemote = resolveIp(fields[3]);
 									if(fields[5] === 'in')
-										connByService[id].out.push(resolveIp(fields[3]));
+										connByService[id].out.push(resolvedRemote);
 									else
-										connByService[id].in.push(resolveIp(fields[3]));
+										connByService[id].in.push(resolvedRemote);
 
-									$('#netMapTable tbody').append('<tr><td>'+host+'</td><td>'+fields.join('</td><td>')+'</td></tr>');
+									$('#netMapTable tbody').append('<tr>'+
+										'<td>'+fields[0]+'</td>' +
+										'<td>'+fields[1]+'</td>' +
+										'<td>'+fields[2]+'</td>' +
+										'<td>'+(resolvedRemote.match(/^[0-9]/)?resolvedRemote:'<a href="#view=netmap&h='+resolvedRemote+'">'+resolvedRemote+'</a>')+'</td>' +
+										'<td>'+fields[4]+'</td>' +
+										'<td>'+fields[5]+'</td>' +
+										'<td>'+fields[6]+'</td>' +
+										'</tr>');
 								}
 							}
 						}
@@ -294,10 +303,12 @@ function addHostToNetGraph(host) {
 						netMapData.groups[0].groups.push(3);
 					else
 						netMapData.groups.splice(3,3);
+
 					if(netMapData.groups[2].leaves.length > 0)
 						netMapData.groups[0].groups.push(2);
 					else
 						netMapData.groups.splice(2,2);
+
 					if(netMapData.groups[1].leaves.length > 0)
 						netMapData.groups[0].groups.push(1);
 					else
@@ -311,6 +322,8 @@ function addHostToNetGraph(host) {
 						delete netMapData.constraints.splice(0,0);
 
 					updateNetMapGraph();
+
+					$("#netMapTable").tablesorter({sortList: [[1,1],[2,1],[3,1]]});
 				});
 }
 
@@ -324,7 +337,7 @@ views.NetmapView.prototype.update = function(params) {
 		});
 	});
 
-	$('#results .overviewBox').append('<div id="netmap" style="height:800px;margin-bottom:12px;border:1px solid #aaa;"/><div id="selectedGroup"/><table id="netMapTable" class="resultTable"><thead><tr><th>Host</th><th>Program</th><th>Local IP</th><th>Local Port</th><th>Remote IP</th><th>Remote Port</th><th>In/Out</th><th>Count</th></tr></thead><tbody/></table></div>');
+	$('#results .overviewBox').append('<div id="netmap" style="height:'+$(window).height()/2+'px;margin-bottom:12px;border:1px solid #aaa;"/><div id="selectedGroup"/><table id="netMapTable" class="resultTable tablesorter"><thead><tr><th>Program</th><th>Local IP</th><th>Local Port</th><th>Remote Host/IP</th><th>Remote Port</th><th>In/Out</th><th>Count</th></tr></thead><tbody/></table></div>');
 	if(params.h)
 		addHostToNetGraph(params.h);
 };

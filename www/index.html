@@ -802,7 +802,7 @@ path.arc {
 			}
 
 			function addFilterSettings(id, params, callback) {
-				$(id).append('<div id="filterSettings" class="'+(params.view !== 'netmap'?'sidebar':'')+'">');
+				$(id).append('<div id="filterSettings" class="sidebar">');
 				var fbox = $('#filterSettings');
 				fbox.append("<span class='label datepicker'>Date</span> <input type='text' id='datepicker' size='10'/> "+
 				"<span id='calendar'></span>");
@@ -838,8 +838,7 @@ path.arc {
 					});
 				}
 
-				if(params.view !== 'netmap')
-					addCalendar("#calendar", params.d);
+				addCalendar("#calendar", params.d);
 
 				$(id + " *").attr('disabled', true);
 				$("#datepicker").datepicker({
