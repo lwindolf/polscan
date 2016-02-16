@@ -329,7 +329,7 @@ function addHostToNetGraph(host) {
 
 views.NetmapView.prototype.update = function(params) {
 	clean();
-	$('#results').append('<div class="overviewBox"><div id="netMapNav"/></div>');
+	$('#results').append('<div><div id="netMapNav"/></div>');
 	addFilterSettings('#netMapNav', params, function() {
 		setLocationHash({
 			view: 'netmap',
@@ -337,7 +337,7 @@ views.NetmapView.prototype.update = function(params) {
 		});
 	});
 
-	$('#results .overviewBox').append('<div id="netmap" style="height:'+$(window).height()/2+'px;margin-bottom:12px;border:1px solid #aaa;"/><div id="selectedGroup"/><table id="netMapTable" class="resultTable tablesorter"><thead><tr><th>Program</th><th>Local IP</th><th>Local Port</th><th>Remote Host/IP</th><th>Remote Port</th><th>In/Out</th><th>Count</th></tr></thead><tbody/></table></div>');
+	$('#netMapNav').parent().append('<div id="netmap" style="height:'+$(window).height()*2/3+'px;margin-bottom:12px;border:1px solid #aaa;"/><div id="selectedGroup"/><table id="netMapTable" class="resultTable tablesorter"><thead><tr><th>Program</th><th>Local IP</th><th>Local Port</th><th>Remote Host/IP</th><th>Remote Port</th><th>In/Out</th><th>Count</th></tr></thead><tbody/></table></div>');
 	if(params.h)
 		addHostToNetGraph(params.h);
 };
