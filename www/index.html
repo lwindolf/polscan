@@ -217,19 +217,30 @@
 				font-weight:bold;
 				margin-top:6px;
 				overflow: hidden;
+				text-overflow: ellipsis;
 			}
 			.badgesTitle {
 				width: 250px;
+				height:50px;
 			}
 			.badge {
-				width: 75px;
+				width: 81px;
 				float: left;
 				padding:12px;
 				margin:12px;
 				text-align:center;
 				border-radius:6px;
 				background: #eee;
-				border: 2px solid #ccc;
+				border: 1px solid #ccc;
+			}
+			.badge.hosts {
+				width:204px;
+				padding:0px 12px;
+				clear:both;
+				margin-top:0;
+			}
+			.badge.first {
+				margin-right:0;
 			}
 			.badge.warning {
 				background: #ff4;
@@ -969,12 +980,10 @@ path.arc {
 				return (nr>1000)?Math.floor(nr/1000)+"k":nr;
 			}
 
-			function createBadges(id, failed, warning, name) {
-				if(!name)
-					name = "Overall";
+			function createBadges(id, failed, warning, name, hostCount) {
 				$("<div class='badges'><div class='badgesTitle'>" +
 				  name +
-				  "</div><div class='badge" +
+				  "</div><div class='badge first" +
 				  ((failed>0)?" problems":"") +
 				  "'><span class='count' title='"+failed+"'>" +
 				  shortenNumber(failed) +
@@ -983,6 +992,7 @@ path.arc {
 				  "'><span class='count' title='"+warning+"'>" +
 				  shortenNumber(warning) +
 				  '</span> Warnings</div></div>').appendTo(id);
+				$('<div class="badge hosts"><span class="count">'+hostCount+'</span> Hosts</div>').appendTo('.badges');
 			}
 
 			function createHistogram(id, group, policy) {

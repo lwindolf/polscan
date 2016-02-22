@@ -15,7 +15,7 @@ views.OverviewView.prototype.update = function(params) {
 	getData("overview", function(data) {
 			$("#row1").append("<div class='chart'><span id='overviewCalendar'/></div>");
 			addCalendar("#overviewCalendar", data.date);
-			createBadges('#row1', data.FAILED, data.WARNING);
+			createBadges('#row1', data.FAILED, data.WARNING, 'Overview', data.hostCount);
 			$("#loadmessage").hide();
 
 			var groupFailed = new Array();

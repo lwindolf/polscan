@@ -17,8 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-BASE=$(dirname $0)
-BASE=$(readlink -e $BASE)
+BASE=$(dirname "$0")
+BASE=$(readlink -e "$BASE")
 if [ "$BASE" == "/usr/bin" ]; then
 	CONF_DIR=/etc/polscan/
 	LIB_DIR=/usr/lib/polscan/
@@ -29,20 +29,20 @@ fi
 
 DATE=$1		# Allow passing date
 
-source $LIB_DIR/polscan-common.inc
+source "$LIB_DIR/polscan-common.inc"
 
 # Prepare output dir
-if [ ! -d $RESULT_DIR ]; then
+if [ ! -d "$RESULT_DIR" ]; then
 	echo "ERROR: No results found in '$RESULT_DIR'"
 	exit 1
 fi
 if [ ! -d "$JSON_DIR" ]; then
 	mkdir -p "$JSON_DIR" || exit 1
 fi
-cd $RESULT_DIR || exit 1
+cd "$RESULT_DIR" || exit 1
 
 # Determine host list from input result dir
-HOST_LIST=$(cd $RESULT_DIR && ls)
+HOST_LIST=$(cd "$RESULT_DIR" && ls)
 
 load_host_groups
 
@@ -196,7 +196,7 @@ done
 		references=`get_policy_info "$LIB_DIR/$s" 'source' | xargs`
 		echo -n '{"policy": "'$policy'", "parent": "'$group'", "description": "'${description//\"/\\\"}'", "solution": "'${solution//\"/\\\"}'", "solution_cmd": "'${solution_cmd//\"/\\\"}'", "tags": [ "'${tags// /\",\"}'" ], "references": [ "'${references// /\",\"}'" ], "WARNING": '${policies[warn_$policy]-0}', "FAILED": '${policies[fail_$policy]-0}'},'
 	done
-) | write_json list overview 'WARNING": '${pall[warn]-0}', "FAILED": '${pall[fail]-0}', "overview'
+) | write_json list overview 'WARNING": '${pall[warn]-0}', "FAILED": '${pall[fail]-0}', "hostCount": '$(echo $HOST_LIST | wc -w)', "overview'
 
 # Host infos
 (

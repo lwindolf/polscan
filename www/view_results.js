@@ -131,6 +131,7 @@ function createResultTable(params, id, data) {
 	groupBy = new Array();
 	var rows = "";
 	var view = this;
+	var visibleHosts = new Array();
 	$.each(data, function( i, item ) {
 			var severity = 0;
 
@@ -154,6 +155,7 @@ function createResultTable(params, id, data) {
 				view.warning++;
 				severity = 1;
 			}
+			visibleHosts[item.host] = 1;
 
 			rows += '<tr><td class="host">' + item.host + '</td>';
 			if(item.group)
@@ -177,6 +179,7 @@ function createResultTable(params, id, data) {
 				}
 			}
 	});
+	view.hostCount = Object.keys(visibleHosts).length;
 	console.log("Parsing done");
 	addResultRows("#resultTable"+name, rows.split(/<tr>/), 0, 100, {sortList: [[2,1],[0,0]]});
 
@@ -212,6 +215,7 @@ views.ResultsView.prototype.update = function(params) {
 	getData(params.fG, function(data) {
 			this.failed = 0;
 			this.warning = 0;
+			this.hostCount = 0;
 
 			$(id).append("<div id='badgeRow'/><div id='tableRow'/>");
 
@@ -232,7 +236,7 @@ views.ResultsView.prototype.update = function(params) {
 			else
 				badgeTitle = "Overall";
 
-			createBadges('#badgeRow', this.failed, this.warning, badgeTitle);
+			createBadges('#badgeRow', this.failed, this.warning, badgeTitle, this.hostCount);
 			createHistogram('#badgeRow', params.fG, params.sT);
 	});
 };
