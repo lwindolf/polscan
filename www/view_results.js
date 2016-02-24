@@ -23,22 +23,34 @@ function sortTable(id, sortOrder) {
 	}, 100);
 }
 
-function addResultRows(id, rows, offset, count, sortOrder) {
+function addResultRows(name, rows, offset, count, sortOrder) {
 	var r = "";
 	for(var i = offset; i < offset+count; i++) {
 		if(rows[i])
 			r += "<tr>" + rows[i];
 	}
-	$(id+" tbody").append(r);
+	$("#resultTable"+name+" tbody").append(r);
 	if(offset + count < rows.length) {
 		resultTableLoadTimeout = setTimeout(function() {
 			$('#loadmessage i').html('Loading results ('+Math.ceil(100*offset/rows.length)+'%)...');
-			addResultRows(id, rows, offset+count, count, sortOrder);
+			addResultRows(name, rows, offset+count, count, sortOrder);
 		}, 100);
 	} else {
 		// Enable table sorting
 		if(sortOrder != null)
-			sortTable(id, sortOrder);
+			sortTable("#resultTable"+name, sortOrder);
+
+		// Enable clicking
+console.log("add click");
+		$("#resultTable"+name+" .group").click(function() {
+			setLocationHash({ fG: $(this).html()}, true);
+		});
+		$("#resultTable"+name+" .policy").click(function() {
+			setLocationHash({ fG: name, sT: $(this).html()}, true);
+		});
+		$("#resultTable"+name+" .host").click(function() {
+			setLocationHash({ fG: name, sT: $(this).html()}, true);
+		});
 	}
 }
 
@@ -109,7 +121,7 @@ function createGroupTable(params, id, results) {
 		// Avoid OOM
 		if(rows.length >= 250) {
 			console.log("addResultRows()");
-			addResultRows("#resultTable"+params.fG, rows, 0, 500, null);
+			addResultRows(params.fG, rows, 0, 500, null);
 			rows = new Array(250);
 		}
 	}
@@ -187,7 +199,7 @@ function createResultTable(params, id, data) {
 	});
 	view.hostCount = Object.keys(visibleHosts).length;
 	console.log("Parsing done");
-	addResultRows("#resultTable"+name, rows.split(/<tr>/), 0, 100, {sortList: [[2,1],[0,0]]});
+	addResultRows(name, rows.split(/<tr>/), 0, 100, {sortList: [[2,1],[0,0]]});
 
 	if(groupBy.length >= 0) {
 		var groupingEnabled = false;
@@ -200,16 +212,6 @@ function createResultTable(params, id, data) {
 		if(groupingEnabled)
 			$('#groupById').removeAttr('disabled');
 	}
-
-	$("#resultTable"+name+" .group").click(function() {
-		setLocationHash({ fG: $(this).html()}, true);
-	});
-	$("#resultTable"+name+" .policy").click(function() {
-		setLocationHash({ fG: name, sT: $(this).html()}, true);
-	});
-	$("#resultTable"+name+" .host").click(function() {
-		setLocationHash({ fG: name, sT: $(this).html()}, true);
-	});
 }
 
 views.ResultsView.prototype.update = function(params) {
