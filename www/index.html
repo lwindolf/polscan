@@ -992,7 +992,8 @@ path.arc {
 				  "'><span class='count' title='"+warning+"'>" +
 				  shortenNumber(warning) +
 				  '</span> Warnings</div></div>').appendTo(id);
-				$('<div class="badge hosts"><span class="count">'+hostCount+'</span> Hosts</div>').appendTo('.badges');
+				if(hostCount !== undefined)
+					$('<div class="badge hosts"><span class="count">'+hostCount+'</span> Hosts</div>').appendTo('.badges');
 			}
 
 			function createHistogram(id, group, policy) {
@@ -1052,55 +1053,6 @@ path.arc {
 				$('#loadmessage').hide();
 			}
 
-			function addPieChart(id, title, size, pColor, data) {
-				return new d3pie(id, {
-					"header": {
-						"title": {
-							"text": title,
-							"color": "#fff",
-						},
-					},
-					"size": {
-						"canvasWidth": size*0.8,
-						"canvasHeight": size,
-						"pieOuterRadius": "90%"
-					},
-					"data": {
-						"sortOrder": "value-desc",
-						"content": data,
-					},
-					"tooltips": {
-						"enabled": true,
-						"type": "placeholder",
-						"string": "{label}: \n{value}, {percentage}%"
-					},
-					"labels": {
-						"outer": {
-							"format": "none"
-						},
-						"inner": {
-							"format": "label-percentage2",
-							"hideWhenLessThanPercentage": 8
-						},
-						"mainLabel": {
-							"fontSize": 16,
-						},
-						"percentage": {
-							"color": pColor,
-							"decimalPlaces": 0
-						},
-						"value": {
-							"color": "#adadad",
-							"fontSize": 10
-						}
-					},
-					'callbacks': {
-						'onClickSegment': function(segment) {
-							setLocationHash({ fG: segment.data.label});
-						}
-					}
-				});
-			}
 		</script>
 	</body>
 </html>
