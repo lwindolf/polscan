@@ -6,7 +6,7 @@
 views.NetmapView = function NetmapView(parentDiv, params) {
 	this.parentDiv = parentDiv;
 	this.filterOptions = {
-		filterby: true
+		host: true
 	};
 };
 

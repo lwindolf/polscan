@@ -836,6 +836,8 @@ path.arc {
 					params.fT = $('#hostmapFilterType').val();
 					params.fV = $('#hostmapFilterValue').val();
 				}
+				if(o.host)
+					params.h = $('#selectedHost').val();
 
 				setLocationHash(params, true);
 			}
@@ -874,12 +876,12 @@ path.arc {
 					$("#search").val(params.sT);
 				}
 
-				fbox.append('<input id="filterGo" type="button" value="Apply"/> ');
+				fbox.append('<input class="filterGo" type="button" value="Apply"/> ');
 
 				if(o.host) {
 					fbox.append('<hr/>Host <input type="text" value="'+(params.h !== undefined?params.h:'')+'" list="availableHosts" id="selectedHost"/>' +	
 					' <datalist id="availableHosts"/>' +
-					'<input id="filterGo" type="button" value="Show"/> ');
+					'<input class="filterGo" type="button" value="Show"/> ');
 					getData("hosts", function(data) {
 						$.each(data.results, function(host) {
 							$('#availableHosts').append('<option value="'+host+'">');
@@ -917,7 +919,7 @@ path.arc {
 					$("#filter *").removeAttr('disabled');
 				});
 
-				$('#filterGo').click(function() {
+				$('.filterGo').click(function() {
 					applyFilterSettings(o, params);
 				});
 			}
@@ -995,7 +997,8 @@ path.arc {
 			function setLocationHash(params) {
 				if(!params.d)
 					params.d = $('#datepicker').val();
-				params.view = currentViewName;
+				if(!params.view)
+					params.view = currentViewName;
 				window.location.hash = "#" + $.param(params);
 			}
 

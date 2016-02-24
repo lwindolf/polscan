@@ -131,7 +131,8 @@ var link = svg.append("g").selectAll(".link"),
 });
 
 function clicked(d) {
-	loadView('netmap', {
+	setLocationHash({
+	    view: 'netmap',
 		h: d.name.split('.').reverse().join('.')
 	});
 }
