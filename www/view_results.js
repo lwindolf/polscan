@@ -3,6 +3,12 @@
 
 views.ResultsView = function ResultsView(parentDiv, params) {
 	this.parentDiv = parentDiv;
+	this.filterOptions = {
+		findings: true,
+		groupbyid: true,
+		filterby: true,
+		search: true
+	};
 };
 
 var resultTableLoadTimeout;
@@ -218,10 +224,6 @@ views.ResultsView.prototype.update = function(params) {
 			this.hostCount = 0;
 
 			$(id).append("<div id='badgeRow'/><div id='tableRow'/>");
-
-			addFilterSettings('#tableRow', params, function() {
-				setLocationHash({ sT: $('#search').val(), gI: $('#groupById').val() });
-			});
 
 			if(!params.gI)
 				createResultTable(params, '#tableRow', data.results);

@@ -6,6 +6,11 @@
 
 views.InventoryView = function InventoryView(parentDiv, params) {
 	this.parentDiv = parentDiv;
+	this.filterOptions = {
+		inventory: true,
+		groupbyid: true,
+		filterby: true
+	};
 };
 
 /* Smart legend sorting by trying to extract leading float
@@ -31,15 +36,7 @@ views.InventoryView.prototype.update = function(params) {
 		params.gT = "Primary-Network";
 
 	clean();
-	$(this.parentDiv).append('<div id="inventoryNav"/><div id="legend"><b>Legend</b></div><table id="inventoryMap" class="resultTable tablesorter"><thead><tr><th>Group</th><th>Results</th></tr></thead></table>');
-
-	addFilterSettings('#inventoryNav', params, function() {
-		setLocationHash({
-			view: 'inventory',
-			gT: $('#hostmapGroupType').val(),
-			iT: $('#inventoryType').val()
-		});
-	});
+	$(this.parentDiv).append('<div id="legend"><b>Legend</b></div><table id="inventoryMap" class="resultTable tablesorter"><thead><tr><th>Group</th><th>Results</th></tr></thead></table>');
 
 	var filteredHosts = get_hosts_filtered(params)
 

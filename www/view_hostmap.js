@@ -5,6 +5,11 @@
 
 views.HostmapView = function HostmapView(parentDiv, params) {
 	this.parentDiv = parentDiv;
+	this.filterOptions = {
+		findings: true,
+		groupbyhg: true,
+		filterby: true
+	};
 };
 
 function addHostMapTooltip() {
@@ -121,16 +126,12 @@ views.HostmapView.prototype.addHostsToMap = function(params) {
 
 views.HostmapView.prototype.update = function(params) {
 	clean();
-	$(this.parentDiv).append('<div class="overviewBox"><div id="hostMapNav"/><table id="hostmap" class="resultTable tablesorter"><thead><tr><th>Group</th><th>C</th><th>W</th><th>Nr</th></tr></thead></table><div id="selectedGroup"/></div>');
+	$(this.parentDiv).append('<table id="hostmap" class="resultTable tablesorter"><thead><tr><th>Group</th><th>C</th><th>W</th><th>Nr</th></tr></thead></table><div id="selectedGroup"/>');
 	
 	if(!params.fG)
 		params.fG = "new";
 	if(!params.gT)
 		params.gT = "Domain";	// This usually does exist
-
-	addFilterSettings('#hostMapNav', params, function() {
-		setLocationHash({ view: 'hostmap', gT: $('#hostmapGroupType').val() });
-	});
 
 	this.addHostsToMap(params);
 };

@@ -5,6 +5,9 @@
 
 views.NetmapView = function NetmapView(parentDiv, params) {
 	this.parentDiv = parentDiv;
+	this.filterOptions = {
+		filterby: true
+	};
 };
 
 function getAlignmentBounds(vs, c) {
@@ -316,15 +319,7 @@ function addHostToNetGraph(host) {
 
 views.NetmapView.prototype.update = function(params) {
 	clean();
-	$('#results').append('<div><div id="netMapNav"/></div>');
-	addFilterSettings('#netMapNav', params, function() {
-		setLocationHash({
-			view: 'netmap',
-			h: $('#selectedHost').val()
-		});
-	});
-
-	$('#netMapNav').parent().append('<div id="netmap" style="height:'+$(window).height()*2/3+'px;margin-bottom:12px;border:1px solid #aaa;background:white;"/><div id="selectedGroup"/><table id="netMapTable" class="resultTable tablesorter"><thead><tr><th>Program</th><th>Local IP</th><th>Local Port</th><th>Remote Host/IP</th><th>Remote Port</th><th>In/Out</th><th>Count</th></tr></thead><tbody/></table></div>');
+	$('#results').append('<div id="netmap" style="height:'+$(window).height()*2/3+'px;margin-bottom:12px;border:1px solid #aaa;background:white;"/><div id="selectedGroup"/><table id="netMapTable" class="resultTable tablesorter"><thead><tr><th>Program</th><th>Local IP</th><th>Local Port</th><th>Remote Host/IP</th><th>Remote Port</th><th>In/Out</th><th>Count</th></tr></thead><tbody/></table></div>');
 	if(params.h)
 		addHostToNetGraph(params.h);
 };

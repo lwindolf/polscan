@@ -263,20 +263,22 @@
 			#tableRow {
 				float: left;
 			}
-			#filterSettings {
+			#filter {
 				background: #ddd;
-				border: 1px solid #aaa;
 				padding:6px 12px;
-				margin:6px 0;
 			}
-			#filterSettings hr {
+			#filter hr {
 				display:none;
 			}
 		@media (max-width: 1023px) {
-			#filterSettings select {
+			#filter {
+				border-bottom: 1px solid #aaa;
+				margin-bottom: 6px;
+			}
+			#filter select {
 				max-width:20%;
 			}
-			#filterSettings.sidebar #calendar {
+			#filter.sidebar #calendar {
 				display:none;
 			}
 		}
@@ -284,7 +286,8 @@
 			#results.sidebar {
 				margin-left:340px;
 			}
-			#filterSettings.sidebar {
+			#filter.sidebar {
+				border-right: 1px solid #aaa;
 				margin:0;
 				position:absolute;
 				top:0;
@@ -292,27 +295,27 @@
 				margin-top:46px;
 				height:100%;
 			}
-			#filterSettings.sidebar #datepicker, #filterSettings.sidebar .datepicker {
+			#filter.sidebar #datepicker, #filter.sidebar .datepicker {
 				display:none;
 			}
-			#filterSettings.sidebar .label {
+			#filter.sidebar .label {
 				font-weight:bold;
 				margin-top:12px;
 			}
-			#filterSettings.sidebar hr {
+			#filter.sidebar hr {
 				display:block;
 			}
-			#filterSettings.sidebar select {
+			#filter.sidebar select {
 				display:block;
 				width:300px;
 				margin-bottom:6px;
 			}
-			#filterSettings.sidebar input[type='text'] {
+			#filter.sidebar input[type='text'] {
 				display:block;
 				width:292px;
 				margin-bottom:6px;
 			}
-			#filterSettings.sidebar textarea#copyHostList {
+			#filter.sidebar textarea#copyHostList {
 				height:250px;
 			}
 		}
@@ -605,8 +608,8 @@ path.arc {
 			</div>
 		</div>
 
-		<div id='results'>
-		</div>
+		<div id='filter' class='sidebar'></div>
+		<div id='results'></div>
 
 		<script>
 			var views = {};
@@ -614,6 +617,8 @@ path.arc {
 			var hostGroupNamespaces = new Array();
 			var hostGroups;
 			var hosts;
+			var currentView = undefined;
+			var currentViewName = undefined;
 			var currentResultSet;
 			var groupBy = new Array();
 			var baseUrl = "results/latest/";
@@ -792,10 +797,11 @@ path.arc {
 					dateFormat: "yy/mm/dd",
 					firstDay: 1,
 					defaultDate: new Date(initialDate),
-					onSelect: function(date) { setLocationHash({ d: date }); }
+					onSelect: function(date) { setLocationHash({ d: date }, false); }
 				});
 				getData('host_groups', function(data) {
 					// Run some histogram based calendar marking magic
+					// FIXME: Use a real JSON calendar data file instead
 					getData('histogram', function(data) {
 						var yearMonth = data.date.substring(0, data.date.length - 2);
 						for(i = 1; i <= 31; i++) {
@@ -812,36 +818,68 @@ path.arc {
 				});
 			}
 
-			function addFilterSettings(id, params, callback) {
-				$(id).append('<div id="filterSettings" class="sidebar">');
-				var fbox = $('#filterSettings');
-				fbox.append("<span class='label datepicker'>Date</span> <input type='text' id='datepicker' size='10'/> "+
+			function applyFilterSettings(oldParams) {
+				var o = currentView.filterOptions;
+				var params = {
+					d: $('#datepicker').val()
+				}
+
+				if(o.inventory)
+					params.iT = $('#inventoryType').val();
+				if(o.findings)
+					params.fG = $('#findingsGroup').val();
+				if(o.groupbyid)
+					params.gI = $('#groupById').val();
+				if(o.groupbyhg)
+					params.gT = $('#hostmapGroupType').val();
+				if(o.filterby) {
+					params.fT = $('#hostmapFilterType').val();
+					params.fV = $('#hostmapFilterValue').val();
+				}
+
+				setLocationHash(params, true);
+			}
+
+			function loadFilterSettings(params) {
+				var o = currentView.filterOptions;
+				var fbox = $('#filter');
+
+				if(o === undefined) {
+					fbox.hide();
+					return;
+				}
+				fbox.show();
+				
+				fbox.html("<span class='label datepicker'>Date</span> <input type='text' id='datepicker' size='10'/> "+
 				"<span id='calendar'></span>");
 
-				if(params.view !== 'netmap') {
-				if(params.view === 'inventory') {
+				if(o.inventory)
 					fbox.append('<span class="label">Type</span> <select id="inventoryType"></select> ');
-				} else if(params.view !== 'network') {
+				if(o.findings)
 					fbox.append('<span class="label">Findings</span> <select id="findingsGroup"></select> ');
-				}
-				if(!params.view || params.view === 'results') {
+				
+				if(o.groupbyid) {
 					fbox.append('<span class="label">Group Hosts By</span> <select id="groupById"><option name="none"></option></select> ');
 					if(params.gI && params.gI != '')
 						$('#groupById').append('<option name="'+params.gI+'" selected>'+params.gI+'</option>');
-				} else if(params.view !== 'network') {
+				}
+				if(o.groupbyhg)
 					fbox.append('<span class="label">Group Hosts by</span> <select id="hostmapGroupType"></select> ');
-				}
 
-				fbox.append('<span class="label">Filter by</span> <select id="hostmapFilterType"></select><select id="hostmapFilterValue"/></select> ');
+				if(o.filterby)
+					fbox.append('<span class="label">Filter by</span> <select id="hostmapFilterType"></select><select id="hostmapFilterValue"/></select> ');
 
-				if(!params.view || params.view === 'results')
+				if(o.search) {
 					fbox.append('<span class="label">Search</span> <input type="text" width="100%" id="search"/> ')
-				fbox.append('<input id="filterSettingsGo" type="button" value="Apply"/> ');
+					$("#search").val(params.sT);
 				}
-				if(params.view === 'netmap') {
-					fbox.append('Host <input type="text" value="'+(params.h !== undefined?params.h:'')+'" list="availableHosts" id="selectedHost"/>' +	
+
+				fbox.append('<input id="filterGo" type="button" value="Apply"/> ');
+
+				if(o.host) {
+					fbox.append('<hr/>Host <input type="text" value="'+(params.h !== undefined?params.h:'')+'" list="availableHosts" id="selectedHost"/>' +	
 					' <datalist id="availableHosts"/>' +
-					'<input id="filterSettingsGo" type="button" value="Show"/> ');
+					'<input id="filterGo" type="button" value="Show"/> ');
 					getData("hosts", function(data) {
 						$.each(data.results, function(host) {
 							$('#availableHosts').append('<option value="'+host+'">');
@@ -851,17 +889,22 @@ path.arc {
 
 				addCalendar("#calendar", params.d);
 
-				$(id + " *").attr('disabled', true);
+				$("#filter *").attr('disabled', true);
 				$("#datepicker").datepicker({
 					dateFormat: "yy/mm/dd"
 				});
 				getData('host_groups', function(data) {
 					try {
-						loadInventoryTypes('inventoryType', params.iT);
-						loadFindingGroups('findingsGroup', params.fG);
-						loadHostGroupTypes(resultCache['host_groups'].results, 'hostmapGroupType', params.gT, true);
-						loadHostGroupTypes(resultCache['host_groups'].results, 'hostmapFilterType', params.fT, true);
-						loadHostGroupValues(resultCache['host_groups'].results, 'hostmapFilterValue', params.fT, params.fV, true);
+						if(o.inventory)
+							loadInventoryTypes('inventoryType', params.iT);
+						if(o.findings)
+							loadFindingGroups('findingsGroup', params.fG);
+						if(o.groupbyhg)
+							loadHostGroupTypes(resultCache['host_groups'].results, 'hostmapGroupType', params.gT, true);
+						if(o.filterby) {
+							loadHostGroupTypes(resultCache['host_groups'].results, 'hostmapFilterType', params.fT, true);
+							loadHostGroupValues(resultCache['host_groups'].results, 'hostmapFilterValue', params.fT, params.fV, true);
+						}
 					} catch(e) {
 						error("Loading some host group definitions failed!");
 					}
@@ -871,19 +914,21 @@ path.arc {
 
 					$("#datepicker").val(data.date);
 					$("#calendar").datepicker("setDate", data.date);
-					$(id + " *").removeAttr('disabled');
+					$("#filter *").removeAttr('disabled');
 				});
 
-				$("#search").val(params.sT);
-				$('#filterSettingsGo').click(callback);
+				$('#filterGo').click(function() {
+					applyFilterSettings(o, params);
+				});
 			}
 
 			function loadView(name, params) {
-				params.view = name;
 				$.getScript("view_"+name+".js")
 				.done(function(s, t) {
-					var v = new views[name[0].toUpperCase()+name.slice(1)+"View"]('#results', params);
-					v.update(params);
+					currentView = new views[name[0].toUpperCase()+name.slice(1)+"View"]('#results', params);
+					currentViewName = name;
+					loadFilterSettings(params);
+					currentView.update(params);
 
 					// Ugly: all view except overview need a sidebar
 					if (name === "overview")
@@ -947,24 +992,10 @@ path.arc {
 				});
 			}
 
-			function setLocationHash(params, replace) {
-				if(!replace) {
-					// FIXME: Build a real filter model!
-					// Merge add filter values...
-					var filterType = $('#hostmapFilterType').val();
-					var filterValue = $('#hostmapFilterValue').val();
-					var findingsGroup = $('#findingsGroup').val();
-	
-					if(!params.fT && filterType) {
-						params.fT = filterType;
-						params.fV = filterValue;
-					}
-					if(!params.fG && findingsGroup)
-						params.fG = findingsGroup;
-				}
+			function setLocationHash(params) {
 				if(!params.d)
 					params.d = $('#datepicker').val();
-
+				params.view = currentViewName;
 				window.location.hash = "#" + $.param(params);
 			}
 
@@ -1042,7 +1073,7 @@ path.arc {
 							setLocationHash({ d: myLineChart.getPointsAtEvent(e)[0].label });
 						});
 					} else {
-						console.log("Could not find value set for "+all);
+						console.log("Could not find value set for group="+group+" policy="+policy);
 					}
 				});
 			}

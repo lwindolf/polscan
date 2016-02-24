@@ -4,6 +4,7 @@
 
 views.PoliciesView = function PoliciesView(parentDiv, params) {
 	this.parentDiv = parentDiv;
+	this.filterOptions = {};
 };
 
 views.PoliciesView.prototype.update = function(params) {
