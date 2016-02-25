@@ -709,6 +709,9 @@ path.arc {
 					hg = params.fT + "::" + params.fV;
 
 				for(host in hosts) {
+					if(params.sT && host.indexOf(params.sT) == -1)
+						continue;
+
 					if(!hg || params.fV == getGroupByHost(params.fT, host))
 						results.push(host);
 				}
@@ -836,6 +839,8 @@ path.arc {
 					params.fT = $('#hostmapFilterType').val();
 					params.fV = $('#hostmapFilterValue').val();
 				}
+				if(o.search)
+					params.sT = $('#search').val();
 				if(o.host)
 					params.h = $('#selectedHost').val();
 

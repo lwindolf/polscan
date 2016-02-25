@@ -9,7 +9,8 @@ views.InventoryView = function InventoryView(parentDiv, params) {
 	this.filterOptions = {
 		inventory: true,
 		groupbyhg: true,
-		filterby: true
+		filterby: true,
+		search: true
 	};
 };
 

@@ -8,7 +8,8 @@ views.HostmapView = function HostmapView(parentDiv, params) {
 	this.filterOptions = {
 		findings: true,
 		groupbyhg: true,
-		filterby: true
+		filterby: true,
+		search: true
 	};
 };
 
