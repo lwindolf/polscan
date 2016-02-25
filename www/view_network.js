@@ -5,7 +5,8 @@
 views.NetworkView = function NetworkView(parentDiv, params) {
 	this.parentDiv = parentDiv;
 	this.filterOptions = {
-		host: true
+		host: true,
+		filterby: true
 	};
 };
 
