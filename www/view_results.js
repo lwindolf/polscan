@@ -7,7 +7,8 @@ views.ResultsView = function ResultsView(parentDiv, params) {
 		findings: true,
 		groupbyid: true,
 		filterby: true,
-		search: true
+		search: true,
+		copyHosts: true
 	};
 };
 
@@ -17,7 +18,10 @@ function sortTable(id, sortOrder) {
 	$('#loadmessage i').html('Sorting results...');
 	console.log("Table setup done.");
 	resultTableLoadTimeout = setTimeout(function() {
-		$(id).tablesorter(sortOrder);
+		try {
+			$(id).tablesorter(sortOrder);
+		} catch(e) {
+		}
 		console.log("Table sorting done.");
 		$('#loadmessage').hide();
 	}, 100);
@@ -41,7 +45,6 @@ function addResultRows(name, rows, offset, count, sortOrder) {
 			sortTable("#resultTable"+name, sortOrder);
 
 		// Enable clicking
-console.log("add click");
 		$("#resultTable"+name+" .group").click(function() {
 			setLocationHash({ fG: $(this).html()}, true);
 		});

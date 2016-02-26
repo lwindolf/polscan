@@ -634,14 +634,29 @@ path.arc {
 
 			function onCopyHosts() {
 				$('#hostlist').html('<textarea id="copyHostList">');
-				var hosts = $('td.host:visible').get();
+				var hosts;
+				if(currentViewName === 'results')
+					hosts = $('td.host:visible').map(function() {
+						return $(this).html();
+					}).get();
+				if(currentViewName === 'hostmap')
+					hosts = $('div.hostMapBox').map(function() {
+						if($(this).hasClass('UNKNOWN'))
+							return;
+						if($(this).hasClass('OK'))
+							return;
+						return $(this).attr('host')
+					}).get();
+
 				var tmp = new Array();
+				var result = "";
 				for(var i = 0; i < hosts.length; i++) {
-					if(!tmp[hosts[i].innerHTML])
-						$('#hostlist textarea').append(hosts[i].innerHTML + " ");
-						tmp[hosts[i].innerHTML] = 1;
-					}
-					$('#hostlist').show();
+					if(!tmp[hosts[i]])
+						result += hosts[i] + " ";
+					tmp[hosts[i]] = 1;
+				}	
+				$('#hostlist textarea').html(result);
+				$('#hostlist').show();
 			}
 
 			/* Generic JSON fetcher. Returns already loaded stuff from
@@ -882,6 +897,9 @@ path.arc {
 				}
 
 				fbox.append('<input class="filterGo" type="button" value="Apply"/> ');
+
+				if(o.copyHosts)
+					fbox.append('<input type="button" value="Host List" title="Get list of problem hosts" onclick="onCopyHosts()"/><div id="hostlist"/>');
 
 				if(o.host) {
 					fbox.append('<hr/>Host <input type="text" value="'+(params.h !== undefined?params.h:'')+'" list="availableHosts" id="selectedHost"/>' +	

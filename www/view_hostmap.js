@@ -9,7 +9,8 @@ views.HostmapView = function HostmapView(parentDiv, params) {
 		findings: true,
 		groupbyhg: true,
 		filterby: true,
-		search: true
+		search: true,
+		copyHosts: true
 	};
 };
 
