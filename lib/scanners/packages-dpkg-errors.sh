@@ -3,7 +3,7 @@
 # description: Checks no installed package has F flag (for half-configured) and wether dpkg reports audit issues.
 # solution: Half-configured packages usually need reinstallation. For audit problems the reported packages themselves often need fixing.
 
-audit_output=$(/usr/bin/dpkg -C 2>/dev/null)
+audit_output=$(/usr/bin/dpkg -C 2>/dev/null | awk '/^ / {print $1}')
 halfconf_output=$(/usr/bin/dpkg -l 2>/dev/null | awk '/^iF/ {print $2}')
 error=0
 
