@@ -716,7 +716,7 @@ path.arc {
 				return 'Ungrouped';
 			}
 
-			function get_hosts_filtered(params) {
+			function get_hosts_filtered(params, searchNames = true) {
 				var hg = undefined;
 				var results = new Array();
 
@@ -724,7 +724,7 @@ path.arc {
 					hg = params.fT + "::" + params.fV;
 
 				for(host in hosts) {
-					if(params.sT && host.indexOf(params.sT) == -1)
+					if(searchNames && params.sT && host.indexOf(params.sT) == -1)
 						continue;
 
 					if(!hg || params.fV == getGroupByHost(params.fT, host))

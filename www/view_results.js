@@ -58,7 +58,7 @@ function addResultRows(name, rows, offset, count, sortOrder) {
 }
 
 function createGroupTable(params, id, results) {
-	var filteredHosts = get_hosts_filtered(params)
+	var filteredHosts = get_hosts_filtered(params, false)
 
 	clearTimeout(resultTableLoadTimeout);
 	$('#loadmessage').show();
@@ -132,7 +132,7 @@ function createGroupTable(params, id, results) {
 }
 
 function createResultTable(params, id, data) {
-	var filteredHosts = get_hosts_filtered(params)
+	var filteredHosts = get_hosts_filtered(params, false)
 	var group = '';
 	var name = params.fG;
 
@@ -220,7 +220,7 @@ function createResultTable(params, id, data) {
 views.ResultsView.prototype.update = function(params) {
 	var id = this.parentDiv;
 
-	console.log("Loading results start (search="+params.sT+")");
+	console.log("Loading results start (group="+params.fG+" search="+params.sT+")");
 	clean();
 
 	getData(params.fG, function(data) {
