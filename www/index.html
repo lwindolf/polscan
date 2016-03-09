@@ -1080,20 +1080,23 @@ path.arc {
 							data: data.histogram[valueIndex].FAILED,
 							label: name,
 							strokeColor: "rgba(220,50,50,1)",
-							fillColor: "rgba(250,250,250,0.2)"
+							fillColor: "rgba(250,250,250,0.2)",
+							pointHighlightFill: "rgba(250,50,50,1)"
 						}
 						chartData.datasets[1] = {
 							data: data.histogram[valueIndex].WARNING,
 							label: name,
 							strokeColor: "#cc0",
-							fillColor: "rgba(250,250,250,0.2)"
+							fillColor: "rgba(250,250,250,0.2)",
+							pointHighlightFill: "#cc0"
 						}
 
 						$(id).append('<div class="chart"><div class="chartTitle">Issue Trends: '+(policy?policy:group)+'</div><canvas id="histogramChart" width="600" height="200"></canvas></div>');
 						var ctx = $("#histogramChart").get(0).getContext("2d");
 						var myLineChart = new Chart(ctx).Line(chartData, {
 							animation: false,
-							showTooltips: false	// FIXME: disabled as long there is the bug of multiple dates being shown at the same time
+							datasetFill: true,
+							showTooltips: true
 						});
 						$('#histogramChart').click(function(e) {
 							setLocationHash({ d: myLineChart.getPointsAtEvent(e)[0].label });
