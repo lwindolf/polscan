@@ -13,7 +13,7 @@ for i in no_root_squash insecure insecure_locks; do
 done
 
 if [ "$results" != "" ]; then
-	result_critical "Unsafe NFS export options: $results"
+	result_failed "Unsafe NFS export options: $results"
 else
 	result_ok
 fi

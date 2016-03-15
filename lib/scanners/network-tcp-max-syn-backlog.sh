@@ -1,4 +1,4 @@
-# group: System
+# group: Network
 # name: SYN flooding
 # description: Ensures that SYN cookies are enabled and SYN backlog is configured on hosts with dmesg reporting SYN flood
 # source: https://www.frozentux.net/ipsysctl-tutorial/ipsysctl-tutorial.html#AEN398
@@ -10,7 +10,7 @@ if [ "$logged" != "" ]; then
 	else
 		result_warning "$logged"
 	fi
-	if [[ $(/sbin/sysctl -n net.ipv4.tcp_max_syn_backlog 2>/dev/null) > 1024 ]]; then
-		result_critical "SYN flood warning in dmesg and net.ipv4.tcp_max_syn_backlog <= 1024."
+	if [[ $(/sbin/sysctl -n net.ipv4.tcp_max_syn_backlog 2>/dev/null) -gt 1024 ]]; then
+		result_failed "SYN flood warning in dmesg and net.ipv4.tcp_max_syn_backlog <= 1024."
 	fi
 fi
