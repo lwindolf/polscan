@@ -20,7 +20,7 @@ Detecting automation issues...
 
 Product   | Host Discovery | Resource Coverage
 --------- | -------------- | -----------------
-Puppet    | y              | Mounts, Users, SSH Keys, ulimit, sysctl
+Puppet    | y              | Mounts, Users, SSH Keys, ulimit, sysctl, sudoers, 3rd party APT repos
 Chef      | y              | %
 Ansible   | y              | %
 SaltStack | y              | %
