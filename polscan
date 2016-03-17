@@ -39,9 +39,9 @@ source "$LIB_DIR/polscan-common.inc"
 # $1 	current host
 ###############################################################################
 declare -A progress
-OK_COLOR=$(/usr/bin/tput setab 2)
-FAILED_COLOR=$(/usr/bin/tput setab 1)
-WARNING_COLOR=$(/usr/bin/tput setab 3)
+OK_COLOR=$(/usr/bin/tput setab 2; /usr/bin/tput setaf 0)
+FAILED_COLOR=$(/usr/bin/tput setab 1; /usr/bin/tput setaf 0)
+WARNING_COLOR=$(/usr/bin/tput setab 3; /usr/bin/tput setaf 0)
 RESET_COLOR=$(/usr/bin/tput sgr0)
 
 print_progress() {
@@ -65,15 +65,12 @@ print_progress() {
 		fi
 
 		# FIXME: Colors only on color capable terminals
-		/usr/bin/tput -S <<EOT
-			sc
-			cuu 4
-			el
-EOT
+		printf "sc\ncuu 4\nel1\nel\n" | /usr/bin/tput -S
 		echo "---------------------------------------------------------"
+		/usr/bin/tput el
 		printf "Scanning %s (%d/%d)\n" "$remote" "${progress[host_count]}" "${progress[hosts_total]}"
 		/usr/bin/tput el
-		printf "Results: Overall %d (%s%d%s / %s%d%s / %s%d%s)\n" "${progress[result_count]}" "$FAILED_COLOR" "${progress[failed_count]}" "$RESET_COLOR" "$WARNING_COLOR" "${progress[warning_count]}" "$RESET_COLOR" "$OK_COLOR" "${progress[ok_count]}" "$RESET_COLOR"
+		printf "Results: Overall %d (%s %d %s / %s %d %s / %s %d %s)\n" "${progress[result_count]}" "$FAILED_COLOR" "${progress[failed_count]}" "$RESET_COLOR" "$WARNING_COLOR" "${progress[warning_count]}" "$RESET_COLOR" "$OK_COLOR" "${progress[ok_count]}" "$RESET_COLOR"
 		echo "---------------------------------------------------------"
 		/usr/bin/tput rc
 	fi
