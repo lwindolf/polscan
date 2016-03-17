@@ -13,6 +13,31 @@
 
 Policies are implemented by [small shell snippets](http://lzone.de/polscan/) and thus polscan is easily extensible by your own specific policies. To make it easy to use it comes with host discovery solutions for typical automation setups (Chef, Puppet, MCollective).
 
+Features
+--------------
+
+Detecting automation issues...
+
+Product   | Host Discovery | Resource Coverage
+--------- | -------------- | -----------------
+Puppet    | y              | Mounts, Users, SSH Keys, ulimit, sysctl
+Chef      | y              | %
+Ansible   | y              | %
+SaltStack | y              | %
+Mcollective | y | %
+
+Detecting package issues...
+
+Providers | Detection | Upgrade Check | Error Check | CVE Check
+--------- | --------- | ------------- | ----------- | ---------
+apt       | %         | yes           | yes
+dpkg      | %         | %             | yes         | yes (debsecan)
+Gem       | yes       | yes           | 
+PECL      | yes       | yes           | 
+PIP       | yes       | yes           | 
+CPAN      | no         | 
+NPM       | no         | 
+
 Screenshots
 -----------
 
