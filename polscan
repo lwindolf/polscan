@@ -2,7 +2,7 @@
 
 # Polscan: a Debian policy scanner
 
-# Copyright (C) 2015  Lars Windolf <lars.windolf@gmx.de>
+# Copyright (C) 2015-2016  Lars Windolf <lars.windolf@gmx.de>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,8 +27,57 @@ else
 	LIB_DIR="${BASE}/lib"
 fi
 
+NON_INTERACTIVE=$(/usr/bin/tty -s; echo $?)
+
 # Command line parsing, setup environment
 source "$LIB_DIR/polscan-common.inc"
+
+###############################################################################
+# Prints progress bar when in interactive shell, otherwise just a single
+# line with currently processed host
+#
+# $1 	current host
+###############################################################################
+declare -A progress
+OK_COLOR=$(/usr/bin/tput setab 2)
+FAILED_COLOR=$(/usr/bin/tput setab 1)
+WARNING_COLOR=$(/usr/bin/tput setab 3)
+RESET_COLOR=$(/usr/bin/tput sgr0)
+
+print_progress() {
+	host=$1
+	progress[host_count]=$(( ${progress[host_count]-0} + 1 ))
+
+	if [[ ${progress[hosts_total]} = "" ]]; then
+		progress[hosts_total]=$(echo $HOST_LIST | wc -w)
+		printf "\n\n\n\n"
+	fi
+
+	if [[ $NON_INTERACTIVE -eq 1 ]]; then
+		printf " -> %s [%d/%d]\n" "$remote" "${progress[host_count]}" "${progress[hosts_total]}"
+	else
+		# Get result statistics
+		if [ -f "$RESULT_DIR/$host" ]; then
+			progress[result_count]=$((${progress[result_count]-0} + $(grep -c ' |||' "$RESULT_DIR/$host" 2>/dev/null)))
+			progress[failed_count]=$((${progress[failed_count]-0} + $(grep -c ' FAILED ' "$RESULT_DIR/$host" 2>/dev/null)))
+			progress[warning_count]=$((${progress[warning_count]-0} + $(grep -c ' WARNING ' "$RESULT_DIR/$host" 2>/dev/null)))
+			progress[ok_count]=$((${progress[ok_count]-0} + $(grep -c ' OK ' "$RESULT_DIR/$host" 2>/dev/null)))
+		fi
+
+		# FIXME: Colors only on color capable terminals
+		/usr/bin/tput -S <<EOT
+			sc
+			cuu 4
+			el
+EOT
+		echo "---------------------------------------------------------"
+		printf "Scanning %s (%d/%d)\n" "$remote" "${progress[host_count]}" "${progress[hosts_total]}"
+		/usr/bin/tput el
+		printf "Results: Overall %d (%s%d%s / %s%d%s / %s%d%s)\n" "${progress[result_count]}" "$FAILED_COLOR" "${progress[failed_count]}" "$RESET_COLOR" "$WARNING_COLOR" "${progress[warning_count]}" "$RESET_COLOR" "$OK_COLOR" "${progress[ok_count]}" "$RESET_COLOR"
+		echo "---------------------------------------------------------"
+		/usr/bin/tput rc
+	fi
+}
 
 # 0. Prepare output dir
 if [ ! -d "$RESULT_DIR" ]; then
@@ -79,8 +128,6 @@ if [ "$REMOTE_SCANNER_LIST" != "" ]; then
 	done
 
 	echo "Running remote scans..."
-	i=1
-	host_count=$(echo $HOST_LIST | wc -w)
 	for remote in $HOST_LIST; do
 		current_host=${remote/*@/}
 
@@ -94,8 +141,6 @@ if [ "$REMOTE_SCANNER_LIST" != "" ]; then
 		if ! echo "$remote" | grep -q "root@"; then
 			sudo=$SUDO_CMD
 		fi
-
-		echo " -> $remote [$i/$host_count]"
 
 		$SSH_CMD "$remote" "$sudo" "/bin/bash < <(/bin/cat -)" \
 			<"$RSS" \
@@ -112,8 +157,7 @@ if [ "$REMOTE_SCANNER_LIST" != "" ]; then
 			) >>"${RESULT_DIR}/$current_host"
 		fi
 		rm "${RESULT_DIR}/${current_host}.err"
-
-		i=$(( i + 1 ))
+		print_progress "$current_host"
 	done
 fi
 rm $RSS
