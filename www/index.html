@@ -904,7 +904,7 @@ path.arc {
 				if(o.host) {
 					fbox.append('<hr/>Host <input type="text" value="'+(params.h !== undefined?params.h:'')+'" list="availableHosts" id="selectedHost"/>' +	
 					' <datalist id="availableHosts"/>' +
-					'<input class="filterGo" type="button" value="Show"/> ');
+					'<input class="netmapGo" type="button" value="Show"/> ');
 					getData("hosts", function(data) {
 						$.each(data.results, function(host) {
 							$('#availableHosts').append('<option value="'+host+'">');
@@ -943,7 +943,11 @@ path.arc {
 				});
 
 				$('.filterGo').click(function() {
-					applyFilterSettings(o, params);
+					applyFilterSettings(params);
+				});
+				$('.netmapGo').click(function() {
+					params.h = $('#selectedHost').val();
+					loadView('netmap', params);
 				});
 			}
 
