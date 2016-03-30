@@ -111,6 +111,7 @@ function createGroupTable(params, id, results) {
 				hosts[list[key]].push(item.host);
 			}
 	});
+	view.hostCount = Object.keys(hosts).length;
 	console.log("Parsing done.");
 
 	var rows = new Array(250);
