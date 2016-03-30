@@ -5,16 +5,15 @@
 if [ -d /var/lib/puppet/state ]; then
 	if ! grep -q "^  status: failed" /var/lib/puppet/state/last_run_report.yaml 2>/dev/null; then 
 		dfs_mounts=$(mount | grep ':/' | sed 's/^.* on \([^ ]*\) type.*/\1/')
-		unmanaged=$(
-			for f in $dfs_mounts; do
-				if ! grep -q "resource: File\[$f\]" /var/lib/puppet/state/last_run_report.yaml 2>/dev/null; then
-				/bin/echo $f
+		unmanaged=
+		for f in $dfs_mounts; do
+			if ! grep -q "resource: File\[$f\]" /var/lib/puppet/state/last_run_report.yaml 2>/dev/null; then
+				unmanaged="${unmanaged}#$f"
 			fi
 		done
-		)
 
 		if [ "$unmanaged" != "" ]; then
-			result_failed "Unmanaged mounts found:" $unmanaged
+			result_failed "Unmanaged mounts found:$unmanaged"
 		else
 			result_ok
 		fi
