@@ -89,12 +89,26 @@ function createGroupTable(params, id, results) {
 				view.failed++;
 			else if(item.severity == 'WARNING')
 				view.warning++;
-			// Split message after colon by commata (if there is at
-			// least one or by spaces...
+
+			// 3 supported split types and priority:
+			//
+			// 1.) Explicit field separator
+			//     (if first character after : is not a space)
+			//     in this case we split on this character.
+			//
+			// 2.) Fuzzy split on commatas
+			//     (if first character after : is a space and string has commatas)
+			//
+			// 3.) Fuzyy split on white spaces
+			//     (default)
 			var listStr = item.message.substring(params.gI.length + 2);
+			var splitMarker = item.message.substring(params.gI.length + 2)[0];
 			var list;
 
-			if(listStr.indexOf(',') != -1)
+			console.log(">>>"+splitMarker+"<<<");
+			if(splitMarker !== ' ')
+				list = listStr.split(splitMarker);
+			else if(listStr.indexOf(',') != -1)
 				list = listStr.split(/\s*,\s*/);
 			else
 				list = listStr.split(/\s+/);
@@ -102,7 +116,6 @@ function createGroupTable(params, id, results) {
 			for(var key in list) {
 				if(list[key] == "")
 					continue;
-
 				if(values[list[key]] === undefined)
 					values[list[key]] = 1;
 
