@@ -6,7 +6,8 @@ vtype=
 while [ 1 ]; do
 	# Check KVM/libvirt
 	if virsh -version >/dev/null 2>&1; then
-		instances=$(virsh list --name | grep -c -v "^$")
+		# Do not use virsh list --name to support older versions
+		instances=$(virsh list | egrep -c -v "^$|^---|State")
 		vtype=KVM
 		break
 	fi
