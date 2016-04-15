@@ -302,13 +302,16 @@ function addHostToNetGraph(host) {
 
 					for(var i=3; i >= 1; i--) {
 						// Cleanup empty groups as d3 just does not like those
-						if(netMapData.groups[i].leaves.length > 0)
-							netMapData.groups[0].groups.push(i);
-						else
+						if(netMapData.groups[i].leaves.length == 0)
 							netMapData.groups.splice(i,i);
 
 						if(netMapData.constraints[i-1].offsets.length == 0)
 							delete netMapData.constraints.splice(i-1,i-1);
+					}
+
+					for(var i=netMapData.groups.len; i >= 1; i--) {
+						if(netMapData.groups[i].leaves.length > 0)
+							netMapData.groups[0].groups.push(i);
 					}
 
 					updateNetMapGraph();
