@@ -80,6 +80,11 @@ write_json() {
 		echo -n "}"
 	) | sed -e 's/,\]/]/g' >"${JSON_DIR}/${name}.json.tmp"
 	mv "${JSON_DIR}/${name}.json.tmp" "${JSON_DIR}/${name}.json"
+
+        if [ "$RESULT_JSON_GZIP" == "1" ]; then
+		gzip -9 "${JSON_DIR}/${name}.json"
+		mv "${JSON_DIR}/${name}.json.gz" "${JSON_DIR}/${name}.jsongz"
+	fi
 }
 
 # Do regroup results by group and policy
