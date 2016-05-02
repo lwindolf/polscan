@@ -10,6 +10,7 @@
   * referencing to security standards
   * by having reasonable descriptions
 * Has zero setup, no dependencies: Bash 4.2, SSH
+* Scales up to at least 2000 hosts * 50 scanners ~ 100k findings
 
 Policies are implemented by [small shell snippets](http://lzone.de/polscan/) and thus polscan is easily extensible by your own specific policies. To make it easy to use it comes with host discovery solutions for typical automation setups (Chef, Puppet, MCollective).
 
