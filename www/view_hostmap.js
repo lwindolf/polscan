@@ -77,7 +77,7 @@ views.HostmapView.prototype.addHostsToMap = function(params) {
 	var h = this;
 	getData(params.fG, function(data) {
 		var findingsByHost = new Array();
-		var filteredHosts = get_hosts_filtered(params)
+		var filteredHosts = get_hosts_filtered(params, true)
 
 		// Instead of complex counting we make strings with the first char
 		// of all findings severities by host e.g. "FFOOOOOOFWOOOO" for

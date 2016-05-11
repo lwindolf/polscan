@@ -17,7 +17,7 @@ views.NetworkView.prototype.update = function(params) {
 	$('#loadmessage i').html("Loading...");
 	$(this.parentDiv).append('<div id="networkSelectedName"><i>Hover over names to view FQDNs and click to see connection details.</i></div><div id="netgraph"/>'); //<div id="legend"><b>Legend</b></div><table id="inventoryMap" class="resultTable tablesorter"><thead><tr><th>Group</th><th>Results</th></tr></thead></table>');
 
-	var filteredHosts = get_hosts_filtered(params);
+	var filteredHosts = get_hosts_filtered(params, true);
 
 // FIXME: link to mbostock example id
 var diameter = $(window).height(),

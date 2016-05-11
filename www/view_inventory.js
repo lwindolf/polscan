@@ -39,7 +39,7 @@ views.InventoryView.prototype.update = function(params) {
 	clean();
 	$(this.parentDiv).append('<div id="legend"><b>Legend</b></div><table id="inventoryMap" class="resultTable tablesorter"><thead><tr><th>Group</th><th>Results</th></tr></thead></table>');
 
-	var filteredHosts = get_hosts_filtered(params)
+	var filteredHosts = get_hosts_filtered(params, true)
 
 	getData("inventory "+params.iT, function(data) {
 			var legendIndex = {};
