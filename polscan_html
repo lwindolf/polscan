@@ -91,7 +91,8 @@ write_json() {
 declare -A policies
 declare -A pgroups
 declare -A pall
-declare -A hosts
+declare -A hosts	# contains host states (FIXME: wrong name 'hosts')
+declare -A host_names
 declare -A inventory_types
 
 # Produce inventory indices
@@ -151,9 +152,10 @@ while read host group severity details; do
 	esac
 
 	# Update summary every 50 hosts
+	host_names[$host]=1
 	if [ $i -eq 50 ]; then
 		i=0
-		echo "   $(date +%H:%M:%S) ${#hosts[*]} Hosts, $findings Findings (${pall[fail]} Failed ${pall[warn]} Warnings)"
+		echo "   $(date +%H:%M:%S) ${#host_names[*]} Hosts, $findings Findings (${pall[fail]} Failed ${pall[warn]} Warnings)"
 	fi
 	i=$(($i + 1))
 	findings=$(($findings + 1))
@@ -283,7 +285,10 @@ if [ -d "$RESULT_BASE_DIR/$ONE_DAY_AGO/" ]; then
 			policy=${details/#|||/}
 			policy=${policy/|||*/}
 			message=${details/*|||/}
-			echo -n '{"host": "'$host'", "group": "'$group'", "severity": "'$severity'", "policy": "'$policy'", "message": "'"${message//\"/\'}"'"},'
+			regex="-${host}:${group} ${severity} \|\|\|"
+			if [[ ! $solved_today =~ $regex ]]; then
+				echo -n '{"host": "'$host'", "group": "'$group'", "severity": "'$severity'", "policy": "'$policy'", "message": "'"${message//\"/\'}"'"},'
+			fi
 		done
 	) | write_json list new results
 
@@ -294,7 +299,10 @@ if [ -d "$RESULT_BASE_DIR/$ONE_DAY_AGO/" ]; then
 			policy=${details/#|||/}
 			policy=${policy/|||*/}
 			message=${details/*|||/}
-			echo -n '{"host": "'$host'", "group": "'$group'", "severity": "'$severity'", "policy": "'$policy'", "message": "'"${message//\"/\'}"'"},'
+			regex="\+${host}:${group} ${severity} \|\|\|"
+			if [[ ! $new_today =~ $regex ]]; then
+				echo -n '{"host": "'$host'", "group": "'$group'", "severity": "'$severity'", "policy": "'$policy'", "message": "'"${message//\"/\'}"'"},'
+			fi
 		done
 	) | write_json list solved results
 fi
