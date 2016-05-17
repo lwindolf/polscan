@@ -193,13 +193,13 @@ done
 		get_scanners standalone | sed "s/^/standalone\//"
 	); do
 		echo "- $s" >&2
-		group=`get_policy_info "$LIB_DIR/$s" group`
-		policy=`get_policy_info "$LIB_DIR/$s" name`
-		description=`get_policy_info "$LIB_DIR/$s" description`
-		tags=`get_policy_info "$LIB_DIR/$s" tags`
-		solution=`get_policy_info "$LIB_DIR/$s" solution`
-		solution_cmd=`get_policy_info "$LIB_DIR/$s" solution-cmd`
-		references=`get_policy_info "$LIB_DIR/$s" 'source' | xargs`
+		group=$(get_policy_info "$LIB_DIR/$s" group)
+		policy=$(get_policy_info "$LIB_DIR/$s" name)
+		description=$(get_policy_info "$LIB_DIR/$s" description)
+		tags=$(get_policy_info "$LIB_DIR/$s" tags)
+		solution=$(get_policy_info "$LIB_DIR/$s" solution)
+		solution_cmd=$(get_policy_info "$LIB_DIR/$s" solution-cmd)
+		references=$(get_policy_info "$LIB_DIR/$s" 'source' | xargs)
 		echo -n '{"policy": "'$policy'", "parent": "'$group'", "description": "'${description//\"/\\\"}'", "solution": "'${solution//\"/\\\"}'", "solution_cmd": "'${solution_cmd//\"/\\\"}'", "tags": [ "'${tags// /\",\"}'" ], "references": [ "'${references// /\",\"}'" ], "WARNING": '${policies[warn_$policy]-0}', "FAILED": '${policies[fail_$policy]-0}'},'
 	done
 ) | write_json list overview 'WARNING": '${pall[warn]-0}', "FAILED": '${pall[fail]-0}', "hostCount": '$(echo $HOST_LIST | wc -w)', "overview'
