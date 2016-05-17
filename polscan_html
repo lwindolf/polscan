@@ -285,7 +285,7 @@ if [ -d "$RESULT_BASE_DIR/$ONE_DAY_AGO/" ]; then
 			policy=${details/#|||/}
 			policy=${policy/|||*/}
 			message=${details/*|||/}
-			regex="-${host}:${group} ${severity} \|\|\|"
+			regex="-${host}:${group} ${severity} \|\|\|${policy}\|\|\|"
 			if [[ ! $solved_today =~ $regex ]]; then
 				echo -n '{"host": "'$host'", "group": "'$group'", "severity": "'$severity'", "policy": "'$policy'", "message": "'"${message//\"/\'}"'"},'
 			fi
@@ -299,7 +299,7 @@ if [ -d "$RESULT_BASE_DIR/$ONE_DAY_AGO/" ]; then
 			policy=${details/#|||/}
 			policy=${policy/|||*/}
 			message=${details/*|||/}
-			regex="\+${host}:${group} ${severity} \|\|\|"
+			regex="\+${host}:${group} ${severity} \|\|\|${policy}\|\|\|"
 			if [[ ! $new_today =~ $regex ]]; then
 				echo -n '{"host": "'$host'", "group": "'$group'", "severity": "'$severity'", "policy": "'$policy'", "message": "'"${message//\"/\'}"'"},'
 			fi
