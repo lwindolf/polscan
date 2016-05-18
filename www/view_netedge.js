@@ -91,7 +91,7 @@ views.NetedgeView.prototype.addHosts = function(cid, filteredHosts) {
 				var cin = new Array();
 				var cout = new Array();
 				var count = 0;
-				for(var i = 1; i < 255; i++) {
+				for(var i = 1; i < 224; i++) {
 					cin[i]=0;
 					cout[i]=0;
 				}
@@ -118,7 +118,7 @@ views.NetedgeView.prototype.addHosts = function(cid, filteredHosts) {
 				if(count > 0) {
 					offsetX += 6;
 					view.hostNames[view.hostNames.length] = item.host;
-					for(var i = 1; i < 255; i++) {
+					for(var i = 1; i < 224; i++) {
 						if(cin[i] != 0) {
 							dc.fillStyle = "yellow";
 							dc.fillRect(offsetX, i*6, 4, 4);
@@ -142,7 +142,7 @@ views.NetedgeView.prototype.update = function(params) {
 	var view = this;
 
 	clean();
-	$('#results').append('<div>Network: <span id="selectedNetwork">(hover for values)</span></div><div> Host: <span id="edgeHost"></span></div><canvas id="netedge" style="background:black;" width="'+filteredHosts.length*6+'" height="1536"/>');
+	$('#results').append('<div>Network: <span id="selectedNetwork">(hover for values)</span></div><div> Host: <span id="edgeHost"></span></div><canvas id="netedge" style="background:black;" width="'+filteredHosts.length*6+'" height="1344"/>');
 	this.addHosts('netedge', filteredHosts);
 
 	$('#netedge').on('mousemove', function(event) {
@@ -156,8 +156,8 @@ views.NetedgeView.prototype.update = function(params) {
 
 			// Clear previous selection
 			dc.strokeStyle = 'black';
-			dc.clearRect((view.previousSelection.x + 1) * 6 -2, 6, 2, 255*6);
-			dc.clearRect((view.previousSelection.x + 1) * 6 +4, 6, 2, 255*6);
+			dc.clearRect((view.previousSelection.x + 1) * 6 -2, 6, 2, 224*6);
+			dc.clearRect((view.previousSelection.x + 1) * 6 +4, 6, 2, 224*6);
 			dc.clearRect(1, (view.previousSelection.y + 1) * 6 - 2, (view.hostNames.length + 1)*6, 2);
 			dc.clearRect(1, (view.previousSelection.y + 1) * 6 + 4, (view.hostNames.length + 1)*6, 2);
 
@@ -174,12 +174,12 @@ views.NetedgeView.prototype.update = function(params) {
 
 					dc.beginPath();
 					dc.moveTo((view.previousSelection.x + 1) * 6 - 1, 6);
-					dc.lineTo((view.previousSelection.x + 1) * 6 - 1, 255*6);
+					dc.lineTo((view.previousSelection.x + 1) * 6 - 1, 224*6);
 					dc.stroke();
 
 					dc.beginPath();
 					dc.moveTo((view.previousSelection.x + 1) * 6 + 5, 6);
-					dc.lineTo((view.previousSelection.x + 1) * 6 + 5, 255*6);
+					dc.lineTo((view.previousSelection.x + 1) * 6 + 5, 224*6);
 					dc.stroke();
 
 					dc.beginPath();
@@ -197,6 +197,6 @@ views.NetedgeView.prototype.update = function(params) {
 			}
 		}
 
-		$('#selectedNetwork').html(netSlot + ".0.0.0/8");
+		$('#selectedNetwork').html((netSlot+1) + ".0.0.0/8");
 	});
 };
