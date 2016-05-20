@@ -16,7 +16,7 @@ result_inventory "OS Release" "$(/usr/bin/lsb_release -si)_$(/usr/bin/lsb_releas
 
 # For RAID Vendor we rely on the superb Nagios check from Debian package 
 # nagios-plugins-contrib which prints in format "<status>: <vendor>:[<results]"
-result_inventory "RAID Vendor" "$(/usr/lib/nagios/plugins/check_raid | grep OK: | cut -d : -f 2)"
+result_inventory "RAID Vendor" "$(/usr/lib/nagios/plugins/check_raid 2>/dev/null | grep OK: | cut -d : -f 2)"
 
 # FIXME; switch to comma separated lists instead of space separated,
 # so we do not need to replace whitespaces here!
