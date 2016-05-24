@@ -3,7 +3,8 @@
 <html>
 	<head>
 		<script type="text/javascript" src="d3.min.js"></script>
-		<script type="text/javascript" src="cola.v3.min.js"></script>
+		<script type="text/javascript" src="dagre.min.js"></script>
+		<script type="text/javascript" src="dagre-d3.min.js"></script>
 		<script type="text/javascript" src="jquery-2.1.4.min.js"></script>
 		<script type="text/javascript" src="jquery.tablesorter.min.js"></script>
 		<script type="text/javascript" src="Chart.min.js"></script>
@@ -428,43 +429,32 @@
 				float:left;
 			}
 
-.link {
-  stroke: #aaa;
+
+// dagre
+
+text {
+  font-weight: 300;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serf;
+  font-size: 14px;
 }
 
-.node text {
-stroke:#333;
-cursos:pointer;
+.node rect {
+  stroke: #999;
+  fill: #fff;
+  stroke-width: 1.5px;
 }
 
-.node circle{
-stroke:#fff;
-stroke-width:3px;
-fill:#555;
+.edgePath path {
+  stroke: #333;
+  stroke-width: 1.5px;
 }
 
-.guideline {
- //   stroke: orangered;
-  //  stroke-width: 4px;
+g.label div {
+//	max-width:250px;
+//	word-break:break-all;
 }
 
-
-svg .link-line {
-	fill: none;
-	stroke: #000;
-	stroke-width: 2.0px;
-	marker-end: url(#end-arrow);
-}
-svg .nodes body {
-	background:#eee;
-	border:1px solid #777;
-	padding-left:6px;
-	padding-right:6px;
-	overflow:hidden;
-	text-overflow:ellipsis;
-	word-break:break-all;
-	height:100%;
-}
+// legend
 
 #legend {
 	float:right;
@@ -488,88 +478,88 @@ svg .nodes body {
 	text-shadow: -1px 0 white, 0 1px white, 1px 0 white, 0 -1px white;
 }
 
-path.arc {
+#netgraph path.arc {
   cursor: move;
   fill: #fff;
 }
 
-.node {
+#netgraph .node {
   font-size: 10px;
 }
 
-.node:hover {
+#netgraph .node:hover {
   fill: #1f77b4;
 }
 
-.link {
+#netgraph .link {
   fill: none;
   stroke: #1f77b4;
   stroke-opacity: .4;
   pointer-events: none;
 }
 
-.link.source, .link.target {
+#netgraph .link.source, #netgraph .link.target {
   stroke-opacity: 1;
   stroke-width: 2px;
 }
 
-.node.target {
+#netgraph .node.target {
   fill: #d62728 !important;
 }
 
-.link.source {
+#netgraph .link.source {
   stroke: #d62728;
 }
 
-.node.source {
+#netgraph .node.source {
   fill: #2ca02c;
 }
 
-.link.target {
+#netgraph .link.target {
   stroke: #2ca02c;
 }
 
-.node {
+#netgraph .node {
   font: 300 11px "Helvetica Neue", Helvetica, Arial, sans-serif;
   fill: #666;
 }
 
-.node:hover {
+#netgraph .node:hover {
   fill: #000;
 }
 
-.link {
+#netgraph .link {
   stroke: steelblue;
   stroke-opacity: .4;
   fill: none;
   pointer-events: none;
 }
 
-.node:hover,
-.node--source,
-.node--target {
+#netgraph .node:hover,
+#netgraph .node--source,
+#netgraph .node--target {
   font-weight: 700;
 }
 
-.node--source {
+#netgraph .node--source {
   fill: #2ca02c;
 }
 
-.node--target {
+#netgraph .node--target {
   fill: #d62728;
 }
 
-.link--source,
-.link--target {
+#netgraph .link--source,
+#netgraph .link--target {
   stroke-opacity: 1;
   stroke-width: 2px;
 }
 
-.link--source {
+#netgraph .link--source {
   stroke: #d62728;
 }
 
-.link--target {
+#netgraph .link--target {
   stroke: #2ca02c;
 }
 
