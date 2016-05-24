@@ -13,7 +13,6 @@ for h in $homes; do
 	if [ -d "$h/.ssh" ]; then
 		keys="$keys $(find "$h/.ssh" -name "*.pub")"
 		if [ -f "$h/.ssh/authorized_keys" ]; then
-echo "$h"
 			authorized_keys_files="$authorized_keys_files $h/.ssh/authorized_keys"
 		fi
 	fi
