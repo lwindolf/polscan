@@ -44,7 +44,7 @@ views.NetmapView.prototype.updateGraph = function() {
 	var nodeArea = svg.append('g').classed('node-area', true);
 
 	var g = new dagreD3.graphlib.Graph()
-				.setGraph({ "rankdir": "LR", "nodesep": 12 })
+				.setGraph({ "rankdir": "LR", "ranksep": 75, "nodesep": 12, "marginx": 20, "marginy": 20, "align": "DL" })
 				.setDefaultEdgeLabel(function() { return {}; });
 
 	$.each(this.netMapData.nodes, function(i, n) {
@@ -53,9 +53,19 @@ views.NetmapView.prototype.updateGraph = function() {
 			props.width = 100;
 		g.setNode(i, props);
 	});
+
 	$.each(this.netMapData.links, function(i, l) {
-		if(l.source !== undefined && l.target !== undefined)
-			g.setEdge(l.source, l.target, (l.source === 0)?{ "style": "display:none"}:{ });
+		if(l.source === undefined || l.target === undefined)
+			return;
+		var props = {};
+ 		if(l.source === 0)
+			props.style = "display:none";
+ 		if(l.dPort && l.dPort !== "high") {
+			props.label = (l.dPort.match(/^[0-9]/)?":":"")+l.dPort;
+			props.labelpos = 'l';
+			props.labeloffset = 3;
+		}
+		g.setEdge(l.source, l.target, props);
 	});
 
 	var render = new dagreD3.render();
@@ -63,48 +73,44 @@ views.NetmapView.prototype.updateGraph = function() {
 
 	var xCenterOffset = (svg.attr("width") - g.graph().width) / 2;
 	//nodeArea.attr("transform", "translate(" + xCenterOffset + ", 20)");
-	nodeArea.attr("transform", "translate(20, 20)");
 	svg.attr("height", g.graph().height + 40);
 }
 
-views.NetmapView.prototype.addGraphNode = function(data, direction, program, count) {
+views.NetmapView.prototype.addGraphNode = function(service, direction) {
 	var view = this;
 	var d = this.netMapData;
 
-	if(data[direction].length > 0) {
-		var remote = data[direction].join(",") + direction;
-		if(!d.nodeToId[remote]) {
-			var nId = d.nodes.length;
-			var tmp = "";
-			$.each(data[direction], function(i, name) {
-				if (i < 6) {
-					if (name.match(/^[0-9]/))
-						tmp += name+"<br/> ";
-					else {
-						tmp += "<a ";
-						if(name == view.previousNode)
-							console.log("prev="+name);
-						if(name == view.previousNode)
-							tmp += "class='previousNode' ";
-						tmp += "href='#view=netmap&pN="+view.currentNode+"&h="+name+"'>"+name+"</a><br/> ";
-					}
+	if(service[direction].length > 0) {
+		var remote = service[direction].join(",") + direction;
+		var nId = d.nodes.length;
+		var tmp = "";
+		$.each(service[direction], function(i, name) {
+			if (i < 6) {
+				if (name.match(/^[0-9]/))
+					tmp += name+"<br/> ";
+				else {
+					tmp += "<a ";
+					if(name == view.previousNode)
+						console.log("prev="+name);
+					if(name == view.previousNode)
+						tmp += "class='previousNode' ";
+					tmp += "href='#view=netmap&pN="+view.currentNode+"&h="+name+"'>"+name+"</a><br/> ";
 				}
-				if (i == 6)
-					tmp += "<span style='color:#444; font-size:small'>("+(data[direction].length - 6)+" more ...)</span>";
-			});
+			}
+			if (i == 6)
+				tmp += "<span style='color:#444; font-size:small'>("+(service[direction].length - 6)+" more ...)</span>";
+		});
 
-			d.nodeToId[remote] = nId;
-			d.nodes.push({
-				"label": tmp
-			});
-		}
+		d.nodes.push({
+			"label": tmp
+		});
 		if(direction === 'in')
-			d.links.push({source: d.nodeToId[program], target: nId, "count": count});
+			d.links.push({source: d.nodeToId[service.service], target: nId, dPort: service.outPorts[0]});
 		else
-			d.links.push({target: d.nodeToId[program], source: nId, "count": count});
+			d.links.push({target: d.nodeToId[service.service], source: nId, dPort: service.port});
 	} else {
 		if(direction !== 'in')
-			d.links.push({source: 0, target: d.nodeToId[program], "count": 1, class: "null"});
+			d.links.push({source: 0, target: d.nodeToId[service.service], class: "null"});
 	}
 }
 
@@ -154,13 +160,15 @@ views.NetmapView.prototype.addHost = function(host) {
 //							s += ":" + port;
 
 						if(!(id in connByService))
-							connByService[id] = { service: s, in: [], out: [] };
+							connByService[id] = { service: s, "port": port, in: [], out: [], outPorts: [] };
 
 						var resolvedRemote = resolveIp(fields[3]);
-						if(fields[5] === 'in')
+						if(fields[5] === 'in') {
 							connByService[id].out.push(resolvedRemote);
-						else
+						} else {
 							connByService[id].in.push(resolvedRemote);
+							connByService[id].outPorts.push(fields[4]);
+						}
 
 						$('#netMapTable tbody').append('<tr>'+
 							'<td>'+fields[0]+'</td>' +
@@ -191,8 +199,8 @@ views.NetmapView.prototype.addHost = function(host) {
 				d.nodeToId[program] = nId;
 				d.nodes.push({"label": program, class: 'local'});
 			}
-			view.addGraphNode(connByService[id], "in", program);
-			view.addGraphNode(connByService[id], "out", program);
+			view.addGraphNode(connByService[id], "in");
+			view.addGraphNode(connByService[id], "out");
 		}
 
 		view.updateGraph();
