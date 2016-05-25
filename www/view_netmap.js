@@ -47,10 +47,10 @@ views.NetmapView.prototype.updateGraph = function() {
 				.setDefaultEdgeLabel(function() { return {}; });
 
 	$.each(this.netMapData.nodes, function(i, n) {
-		g.setNode(i, { "label": n.label, "class": "abc", "labelType": "html" });
+		g.setNode(i, { "label": n.label, "labelType": "html" });
 	});
 	$.each(this.netMapData.links, function(i, l) {
-		if(l.source && l.target)
+		if(l.source !== undefined && l.target !== undefined)
 			g.setEdge(l.source, l.target);
 	});
 
