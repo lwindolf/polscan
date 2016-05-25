@@ -9,6 +9,7 @@ views.NetmapView = function NetmapView(parentDiv, params) {
 		host: true
 	};
 	this.netMapData = {};
+	this.previousNode;
 };
 
 // FIXME: scope
@@ -43,26 +44,31 @@ views.NetmapView.prototype.updateGraph = function() {
 	var nodeArea = svg.append('g').classed('node-area', true);
 
 	var g = new dagreD3.graphlib.Graph()
-				.setGraph({ "rankdir": "LR", "nodesep": 25 })
+				.setGraph({ "rankdir": "LR", "nodesep": 12 })
 				.setDefaultEdgeLabel(function() { return {}; });
 
 	$.each(this.netMapData.nodes, function(i, n) {
-		g.setNode(i, { "label": n.label, "labelType": "html" });
+		var props = { "label": n.label, "labelType": "html", "class": n.class };
+		if(n.class === 'local')
+			props.width = 100;
+		g.setNode(i, props);
 	});
 	$.each(this.netMapData.links, function(i, l) {
 		if(l.source !== undefined && l.target !== undefined)
-			g.setEdge(l.source, l.target);
+			g.setEdge(l.source, l.target, (l.source === 0)?{ "style": "display:none"}:{ });
 	});
 
 	var render = new dagreD3.render();
 	render(nodeArea, g);
 
 	var xCenterOffset = (svg.attr("width") - g.graph().width) / 2;
-	nodeArea.attr("transform", "translate(" + xCenterOffset + ", 20)");
+	//nodeArea.attr("transform", "translate(" + xCenterOffset + ", 20)");
+	nodeArea.attr("transform", "translate(20, 20)");
 	svg.attr("height", g.graph().height + 40);
 }
 
 views.NetmapView.prototype.addGraphNode = function(data, direction, program, count) {
+	var view = this;
 	var d = this.netMapData;
 
 	if(data[direction].length > 0) {
@@ -71,8 +77,18 @@ views.NetmapView.prototype.addGraphNode = function(data, direction, program, cou
 			var nId = d.nodes.length;
 			var tmp = "";
 			$.each(data[direction], function(i, name) {
-				if (i < 6)
-					tmp += "<a href='#view=netmap&h="+name+"'>"+name+"</a><br/> ";
+				if (i < 6) {
+					if (name.match(/^[0-9]/))
+						tmp += name+"<br/> ";
+					else {
+						tmp += "<a ";
+						if(name == view.previousNode)
+							console.log("prev="+name);
+						if(name == view.previousNode)
+							tmp += "class='previousNode' ";
+						tmp += "href='#view=netmap&pN="+view.currentNode+"&h="+name+"'>"+name+"</a><br/> ";
+					}
+				}
 				if (i == 6)
 					tmp += "<span style='color:#444; font-size:small'>("+(data[direction].length - 6)+" more ...)</span>";
 			});
@@ -86,6 +102,9 @@ views.NetmapView.prototype.addGraphNode = function(data, direction, program, cou
 			d.links.push({source: d.nodeToId[program], target: nId, "count": count});
 		else
 			d.links.push({target: d.nodeToId[program], source: nId, "count": count});
+	} else {
+		if(direction !== 'in')
+			d.links.push({source: 0, target: d.nodeToId[program], "count": 1, class: "null"});
 	}
 }
 
@@ -130,7 +149,7 @@ views.NetmapView.prototype.addHost = function(host) {
 						if(program !== "-")
 							s = program;
 						else
-							s = "???";
+							continue; 	// displaying unknown procs is just useless
 //						if(port !== "high")
 //							s += ":" + port;
 
@@ -157,6 +176,13 @@ views.NetmapView.prototype.addHost = function(host) {
 			}
 		});
 
+		// We need a fake node to connect as input for programs without
+		// incoming connections to force the program nodes to the 2nd rank
+		// we will hide this node and its links using CSS
+		//
+		// Node id is 0
+		d.nodes.push({"label": "", class: 'null'});
+
 		for(var id in connByService) {
 			var program = connByService[id].service;
 
@@ -178,6 +204,10 @@ views.NetmapView.prototype.addHost = function(host) {
 views.NetmapView.prototype.update = function(params) {
 	clean();
 	$('#results').append('<div id="netmap" style="height:'+$(window).height()*2/3+'px;margin-bottom:12px;border:1px solid #aaa;background:white;overflow:auto"/><div id="selectedGroup"/><table id="netMapTable" class="resultTable tablesorter"><thead><tr><th>Program</th><th>Local IP</th><th>Local Port</th><th>Remote Host/IP</th><th>Remote Port</th><th>In/Out</th><th>Count</th></tr></thead><tbody/></table></div>');
-	if(params.h)
+	this.previousNode = params.pN;
+	
+	if(params.h) {
+		this.currentNode = params.h;
 		this.addHost(params.h);
+	}
 };
