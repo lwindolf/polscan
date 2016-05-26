@@ -57,13 +57,16 @@ views.NetmapView.prototype.updateGraph = function() {
 	$.each(this.netMapData.links, function(i, l) {
 		if(l.source === undefined || l.target === undefined)
 			return;
-		var props = {};
+		var props = { lineInterpolate: 'basis' };
+//		if(l.weigth)
+//			props.style = "stroke-width: "+Math.ceil(Math.log10(l.weigth))+"px";
+//			props.style = "stroke: #f66; stroke-width: 3px; stroke-dasharray: 5, 5;";
  		if(l.source === 0)
 			props.style = "display:none";
  		if(l.dPort && l.dPort !== "high") {
 			props.label = (l.dPort.match(/^[0-9]/)?":":"")+l.dPort;
-			props.labelpos = 'l';
-			props.labeloffset = 3;
+			props.labelpos = 'r';
+			props.labeloffset = 5;
 		}
 		g.setEdge(l.source, l.target, props);
 	});
@@ -72,7 +75,6 @@ views.NetmapView.prototype.updateGraph = function() {
 	render(nodeArea, g);
 
 	var xCenterOffset = (svg.attr("width") - g.graph().width) / 2;
-	//nodeArea.attr("transform", "translate(" + xCenterOffset + ", 20)");
 	svg.attr("height", g.graph().height + 40);
 }
 
@@ -105,12 +107,12 @@ views.NetmapView.prototype.addGraphNode = function(service, direction) {
 			"label": tmp
 		});
 		if(direction === 'in')
-			d.links.push({source: d.nodeToId[service.service], target: nId, dPort: service.outPorts[0]});
+			d.links.push({source: d.nodeToId[service.service], target: nId, dPort: service.outPorts[0], weigth: service[direction].length});
 		else
-			d.links.push({target: d.nodeToId[service.service], source: nId, dPort: service.port});
+			d.links.push({target: d.nodeToId[service.service], source: nId, dPort: service.port, weigth: service[direction].length});
 	} else {
 		if(direction !== 'in')
-			d.links.push({source: 0, target: d.nodeToId[service.service], class: "null"});
+			d.links.push({source: 0, target: d.nodeToId[service.service], class: "null", weigth: 0});
 	}
 }
 
