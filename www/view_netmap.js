@@ -8,40 +8,16 @@ views.NetmapView = function NetmapView(parentDiv, params) {
 	this.filterOptions = {
 		host: true
 	};
+	this.netMapData = {};
+	this.previousNode;
 };
 
-function getAlignmentBounds(vs, c) {
-    var os = c.offsets;
-    if (c.axis === 'x') {
-        var x = vs[os[0].node].x;
-        c.bounds = new cola.vpsc.Rectangle(x, x, 
-            Math.min.apply(Math, os.map(function (o) { return vs[o.node].bounds.y - 20; })),
-            Math.max.apply(Math, os.map(function (o) { return vs[o.node].bounds.Y + 20; })));
-    } else {
-        var y = vs[os[0].node].y;
-        c.bounds = new cola.vpsc.Rectangle(
-            Math.min.apply(Math, os.map(function (o) { return vs[o.node].bounds.x - 20; })),
-            Math.max.apply(Math, os.map(function (o) { return vs[o.node].bounds.X + 20; })),
-            y, y);
-    }
-    return c.bounds;
-}
-
-var netMapData;
+// FIXME: scope
 var viewBoxX, viewBoxY;
 
-function updateNetMapGraph() {
+views.NetmapView.prototype.updateGraph = function() {
 	var width = $('#netmap').width();
 	var	height = $('#netmap').height();
-
-    var d3cola = cola.d3adaptor()
-        .flowLayout("x", Math.min(300,$(window).width()/3))
-        .linkDistance(200)
-		.convergenceThreshold(0.1)
-        .avoidOverlaps(true)
-        .handleDisconnected(false)
-        .size([width, height]);
-
     var svg = d3.select("#netmap").append("svg")
         .attr("width", width)
         .attr("height", height);
@@ -49,7 +25,7 @@ function updateNetMapGraph() {
 
 	// Allow panning as suggested in by dersinces (CC BY-SA 3.0) in
 	// http://stackoverflow.com/questions/20099299/implement-panning-while-keeping-nodes-draggable-in-d3-force-layout
-	var drag = d3.behavior.drag();
+/*	var drag = d3.behavior.drag();
 	drag.on('drag', function() {
 	    viewBoxX -= d3.event.dx;
 	    viewBoxY -= d3.event.dy;
@@ -64,265 +40,182 @@ function updateNetMapGraph() {
 	  .attr('width', width)
 	  .attr('height', height)
 	  .call(drag);
-
+*/
 	var nodeArea = svg.append('g').classed('node-area', true);
 
-	svg.append('svg:defs').append('svg:marker').attr('id', 'end-arrow').attr('viewBox', '0 -5 10 10').attr('refX', 5).attr('markerWidth', 9).attr('markerHeight', 6).attr('orient', 'auto').append('svg:path').attr('d', 'M0,-5L10,0L0,5L2,0').attr('stroke-width', '0px').attr('fill', '#000');
+	var g = new dagreD3.graphlib.Graph()
+				.setGraph({ "rankdir": "LR", "ranksep": 75, "nodesep": 12, "marginx": 20, "marginy": 20, "align": "DL" })
+				.setDefaultEdgeLabel(function() { return {}; });
 
-    graph = netMapData;
+	$.each(this.netMapData.nodes, function(i, n) {
+		var props = { "label": n.label, "labelType": "html", "class": n.class };
+		if(n.class === 'local')
+			props.width = 100;
+		g.setNode(i, props);
+	});
 
-        graph.nodes.forEach(function (v) {
-            v.width = 200;
-			if(v.height === undefined)
-				v.height = 40;
-        })
-        d3cola
-            .nodes(graph.nodes)
-            .links(graph.links)
-			.groups(graph.groups)
-			.constraints(graph.constraints)
-            .start(10,0,0)
+	$.each(this.netMapData.links, function(i, l) {
+		if(l.source === undefined || l.target === undefined)
+			return;
+		var props = {};
+ 		if(l.source === 0)
+			props.style = "display:none";
+ 		if(l.dPort && l.dPort !== "high") {
+			props.label = (l.dPort.match(/^[0-9]/)?":":"")+l.dPort;
+			props.labelpos = 'l';
+			props.labeloffset = 3;
+		}
+		g.setEdge(l.source, l.target, props);
+	});
 
-        var group = nodeArea.selectAll(".group")
-            .data(graph.groups)
-          .enter().append("rect")
-            .attr("rx", 8).attr("ry", 8)
-            .attr("class", "group")
-            .style("fill", function (d, i) { if (i != 0) return color(i); else return '#fff' });
+	var render = new dagreD3.render();
+	render(nodeArea, g);
 
-        var link = nodeArea.selectAll(".link")
-            .data(graph.links)
-          .enter().append("line")
-            .attr("class", "link-line");
-
-        var guideline = nodeArea.selectAll(".guideline")
-            .data(graph.constraints.filter(function (c) { return c.type === 'alignment' }))
-          .enter().append("line")
-            .attr("class", "guideline")
-            .attr("stroke-dasharray", "5,5");
-
-        var pad = 5;
-        var node = nodeArea.selectAll(".node")
-            .data(graph.nodes)
-			.attr("class", "node")
-			.enter().append("g")
-			.each(function(d) {
-				// Prepare host name links for all non-IPs
-				var html;
-				$.each(d.name.split(","), function(i, h) {
-					if(html)
-						html += "<br/>";
-					else
-						html = "";
-					if(-1 === h.search(/^[0-9]/) && d.type != "local")
-						html += "<a href='#view=netmap&h="+h+"'>"+h+"</a>";
-					else
-						html += h;
-				});
-				d3.select(this)
-				.append("foreignObject")
-	            .attr("x", function (d) { return -d.width/2 + pad; })
-   		        .attr("y", function (d) { return -d.height/2 + pad; })
-   		        .attr("width", function (d) { return d.width - 2 * pad; })
-   		        .attr("height", function (d) { return d.height - 2 * pad; })
-				.attr("class", "nodes")
-				.append("xhtml:body")
-				.html(html);
-			})
-            .call(d3cola.drag);
-
-/*
-        var label = nodeArea.selectAll(".label")
-            .data(graph.nodes)
-           .enter().append("text")
-            .attr("class", "label")
-            .text(function (d) { return d.name; })
-            .call(d3cola.drag);
-
-*/
-
-        node.append("title")
-            .text(function (d) { return d.name; });
-
-        d3cola.on("tick", function () {
-		    node.each(function (d) {
-                    d.bounds.setXCentre(d.x);
-                    d.bounds.setYCentre(d.y);
-                    d.innerBounds = d.bounds.inflate(-0);
-                });
-
-			node.attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; });
-			//	nodeArea.selectAll(".link-label").attr("transform", function (d) { return "translate(" + d.source.x + "," + (d.source.y+d.target.y)/2 + ")"; });
-
-			link.each(function (d) {
-				cola.vpsc.makeEdgeBetween(d, d.source.innerBounds, d.target.innerBounds, 5);
-			});
-	    	link.attr("x1", function (d) {
-				return d.sourceIntersection.x;
-			}).attr("y1", function (d) {
-				return d.sourceIntersection.y;
-			}).attr("x2", function (d) {
-				return d.arrowStart.x;
-			}).attr("y2", function (d) {
-				return d.arrowStart.y;
-			});
-            
-            group.attr("x", function (d) { return d.bounds.x; })
-                .attr("y", function (d) { return d.bounds.y; })
-                .attr("width", function (d) { return d.bounds.width(); })
-                .attr("height", function (d) { return d.bounds.height(); });
-
-            guideline
-                .attr("x1", function (d) { return getAlignmentBounds(graph.nodes, d).x; })
-                .attr("y1", function (d) {
-                    return d.bounds.y;
-                })
-                .attr("x2", function (d) { return d.bounds.X; })
-                .attr("y2", function (d) {
-                    return d.bounds.Y;
-                });
-
-/*            label.attr("x", function (d) { return d.x -d.width/2 + pad; })
-                 .attr("y", function (d) {
-                     var h = this.getBBox().height;
-                     return d.y + h/4;
-                 });*/
-        });
+	var xCenterOffset = (svg.attr("width") - g.graph().width) / 2;
+	//nodeArea.attr("transform", "translate(" + xCenterOffset + ", 20)");
+	svg.attr("height", g.graph().height + 40);
 }
 
-function addNetGraphNode(data, direction, program) {
-	if(data[direction].length > 0) {
-		var remote = data[direction].join(",") + direction;
-		if(!nodeToId[remote]) {
-			nodeToId[remote] = netMapData.nodes.length;
-			netMapData.groups[direction == 'in'?3:2].leaves.push(nodeToId[remote]);
-			netMapData.constraints[direction == 'out'?2:1].offsets.push({node: nodeToId[remote], offset:0});
-			netMapData.nodes.push({
-				name: data[direction].join(","),
-				height: 40*Math.min(5, data[direction].length)
-			});
-		}
+views.NetmapView.prototype.addGraphNode = function(service, direction) {
+	var view = this;
+	var d = this.netMapData;
+
+	if(service[direction].length > 0) {
+		var remote = service[direction].join(",") + direction;
+		var nId = d.nodes.length;
+		var tmp = "";
+		$.each(service[direction], function(i, name) {
+			if (i < 6) {
+				if (name.match(/^[0-9]/))
+					tmp += name+"<br/> ";
+				else {
+					tmp += "<a ";
+					if(name == view.previousNode)
+						console.log("prev="+name);
+					if(name == view.previousNode)
+						tmp += "class='previousNode' ";
+					tmp += "href='#view=netmap&pN="+view.currentNode+"&h="+name+"'>"+name+"</a><br/> ";
+				}
+			}
+			if (i == 6)
+				tmp += "<span style='color:#444; font-size:small'>("+(service[direction].length - 6)+" more ...)</span>";
+		});
+
+		d.nodes.push({
+			"label": tmp
+		});
 		if(direction === 'in')
-			netMapData.links.push({source: nodeToId[program], target: nodeToId[remote]});
+			d.links.push({source: d.nodeToId[service.service], target: nId, dPort: service.outPorts[0]});
 		else
-			netMapData.links.push({target: nodeToId[program], source: nodeToId[remote]});
+			d.links.push({target: d.nodeToId[service.service], source: nId, dPort: service.port});
+	} else {
+		if(direction !== 'in')
+			d.links.push({source: 0, target: d.nodeToId[service.service], class: "null"});
 	}
 }
 
-var nodeToId;
-function addHostToNetGraph(host) {
+views.NetmapView.prototype.addHost = function(host) {
+	var view = this;
+	var d = this.netMapData = {
+		nodeToId: [],
+		nodes: [],
+		links: []
+	};
+
 	console.log("addHostToNetGraph "+host);
-				var portToProgram = new Array();
-				var connByService = new Array();
-				nodeToId = new Array();
-				netMapData = {
-					nodes: [],
-					links: [],
-				    constraints: [
-						{ type: "alignment", axis: "x", offsets: [] },
-						{ type: "alignment", axis: "x", offsets: [] },
-						{ type: "alignment", axis: "x", offsets: [] }
-					],
-					groups: [
-						{ leaves: [0], groups: [] },	// root (child groups are added on demand)
-						{ leaves: [] }, // local node group
-						{ leaves: [] }, // group for remote nodes connecting from
-						{ leaves: [] }	// group for remote nodes connecting to
-					]
-				};
-				// get connections for this host
-				getData("Network", function(data) {
-					$.each(data.results, function(i, item) {
-						if(item.host == host && item.policy == "Connections") {
-							var connections = item.message.split(/ /);
-							for(var c in connections) {
-								var fields = connections[c].split(/:/);
-								if(fields[5]) {
-	 								var id, port = fields[2], program = fields[0];
 
-									// For now we do not visualize local connections
-									if(fields[1] == fields[3])
-										continue;
+	// get connections for this host
+	getData("Network", function(data) {
+		var portToProgram = new Array();
+		var connByService = new Array();
+		$.each(data.results, function(i, item) {
+			if(item.host == host && item.policy == "Connections") {
+				var connections = item.message.split(/ /);
+				for(var c in connections) {
+					var fields = connections[c].split(/:/);
+					if(fields[5]) {
+						var id, port = fields[2], program = fields[0];
 
-									// Resolve program for close-wait, time-wait listings
-									if(program !== "-" && !(port in portToProgram))
-										portToProgram[port] = program;
-									if(program === "-" && (port in portToProgram))
-										program = portToProgram[port];
+						// For now we do not visualize local connections
+						if(fields[1] == fields[3])
+							continue;
 
-									// Reduce connections to per service connections with ids like
-									//   high:::java:::high
-									//   high:::apache2:::80
-									//   ...
-									id = port+":::"+program+":::"+fields[4];
-									var s;
-									if(program !== "-")
-											s = program;
-									else
-											s = "???";
-									if(port !== "high")
-											s += ":" + port;
+						// Resolve program for close-wait, time-wait listings
+						if(program !== "-" && !(port in portToProgram))
+							portToProgram[port] = program;
+						if(program === "-" && (port in portToProgram))
+							program = portToProgram[port];
 
-									if(!(id in connByService))
-										connByService[id] = { service: s, in: [], out: [] };
+						// Reduce connections to per service connections with ids like
+						//   high:::java:::high
+						//   high:::apache2:::80
+						//   ...
+						id = port+":::"+program+":::"+fields[4];
+						var s;
+						if(program !== "-")
+							s = program;
+						else
+							continue; 	// displaying unknown procs is just useless
+//						if(port !== "high")
+//							s += ":" + port;
 
-									var resolvedRemote = resolveIp(fields[3]);
-									if(fields[5] === 'in')
-										connByService[id].out.push(resolvedRemote);
-									else
-										connByService[id].in.push(resolvedRemote);
+						if(!(id in connByService))
+							connByService[id] = { service: s, "port": port, in: [], out: [], outPorts: [] };
 
-									$('#netMapTable tbody').append('<tr>'+
-										'<td>'+fields[0]+'</td>' +
-										'<td>'+fields[1]+'</td>' +
-										'<td>'+fields[2]+'</td>' +
-										'<td>'+(resolvedRemote.match(/^[0-9]/)?resolvedRemote:'<a href="#view=netmap&h='+resolvedRemote+'">'+resolvedRemote+'</a>')+'</td>' +
-										'<td>'+fields[4]+'</td>' +
-										'<td>'+fields[5]+'</td>' +
-										'<td>'+fields[6]+'</td>' +
-										'</tr>');
-								}
-							}
+						var resolvedRemote = resolveIp(fields[3]);
+						if(fields[5] === 'in') {
+							connByService[id].out.push(resolvedRemote);
+						} else {
+							connByService[id].in.push(resolvedRemote);
+							connByService[id].outPorts.push(fields[4]);
 						}
-					});
 
-					for(var id in connByService) {
-						var tmp = id.split(/:::/);
-						var program = connByService[id].service;
-
-						if(!(program in nodeToId)) {
-							nodeToId[program] = netMapData.nodes.length;
-							netMapData.groups[1].leaves.push(nodeToId[program]);
-							netMapData.constraints[0].offsets.push({node: nodeToId[program], offset:0});
-							netMapData.nodes.push({name: program, type: 'local'});
-						}
-						addNetGraphNode(connByService[id], "in", program);
-						addNetGraphNode(connByService[id], "out", program);
+						$('#netMapTable tbody').append('<tr>'+
+							'<td>'+fields[0]+'</td>' +
+							'<td>'+fields[1]+'</td>' +
+							'<td>'+fields[2]+'</td>' +
+							'<td>'+(resolvedRemote.match(/^[0-9]/)?resolvedRemote:'<a href="#view=netmap&h='+resolvedRemote+'">'+resolvedRemote+'</a>')+'</td>' +
+							'<td>'+fields[4]+'</td>' +
+							'<td>'+fields[5]+'</td>' +
+							'<td>'+fields[6]+'</td>' +
+							'</tr>');
 					}
+				}
+			}
+		});
 
-					for(var i=3; i >= 1; i--) {
-						// Cleanup empty groups as d3 just does not like those
-						if(netMapData.groups[i].leaves.length == 0)
-							netMapData.groups.splice(i,i);
+		// We need a fake node to connect as input for programs without
+		// incoming connections to force the program nodes to the 2nd rank
+		// we will hide this node and its links using CSS
+		//
+		// Node id is 0
+		d.nodes.push({"label": "", class: 'null'});
 
-						if(netMapData.constraints[i-1].offsets.length == 0)
-							delete netMapData.constraints.splice(i-1,i-1);
-					}
+		for(var id in connByService) {
+			var program = connByService[id].service;
 
-					for(var i=netMapData.groups.len; i >= 1; i--) {
-						if(netMapData.groups[i].leaves.length > 0)
-							netMapData.groups[0].groups.push(i);
-					}
+			if(!(program in d.nodeToId)) {
+				var nId = d.nodes.length;
+				d.nodeToId[program] = nId;
+				d.nodes.push({"label": program, class: 'local'});
+			}
+			view.addGraphNode(connByService[id], "in");
+			view.addGraphNode(connByService[id], "out");
+		}
 
-					updateNetMapGraph();
+		view.updateGraph();
 
-					$("#netMapTable").tablesorter({sortList: [[1,1],[2,1],[3,1]]});
-				});
+		$("#netMapTable").tablesorter({sortList: [[1,1],[2,1],[3,1]]});
+	});
 }
 
 views.NetmapView.prototype.update = function(params) {
 	clean();
-	$('#results').append('<div id="netmap" style="height:'+$(window).height()*2/3+'px;margin-bottom:12px;border:1px solid #aaa;background:white;"/><div id="selectedGroup"/><table id="netMapTable" class="resultTable tablesorter"><thead><tr><th>Program</th><th>Local IP</th><th>Local Port</th><th>Remote Host/IP</th><th>Remote Port</th><th>In/Out</th><th>Count</th></tr></thead><tbody/></table></div>');
-	if(params.h)
-		addHostToNetGraph(params.h);
+	$('#results').append('<div id="netmap" style="height:'+$(window).height()*2/3+'px;margin-bottom:12px;border:1px solid #aaa;background:white;overflow:auto"/><div id="selectedGroup"/><table id="netMapTable" class="resultTable tablesorter"><thead><tr><th>Program</th><th>Local IP</th><th>Local Port</th><th>Remote Host/IP</th><th>Remote Port</th><th>In/Out</th><th>Count</th></tr></thead><tbody/></table></div>');
+	this.previousNode = params.pN;
+	
+	if(params.h) {
+		this.currentNode = params.h;
+		this.addHost(params.h);
+	}
 };
