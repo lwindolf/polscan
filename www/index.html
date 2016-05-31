@@ -1002,7 +1002,7 @@ text {
 
 					$("#menu a.current").removeClass("current");
 
-					if(params.view && params.view.match(/(policies|hostmap|netmap|netedge|inventory|network)/)) {
+					if(params.view) {
 						loadView(params.view, params);
 						$("#menu a[href='#view="+params.view+"']").addClass("current");
 					} else if(!params.fG) {
