@@ -213,14 +213,12 @@ views.NetmapView.prototype.addHost = function() {
 }
 
 views.NetmapView.prototype.update = function(params) {
+	if(!params.h)
+		setLocationHash({ h: Object.keys(hosts)[0] });
+
 	clean();
 	$('#results').append('<div id="netmap" style="height:'+$(window).height()*2/3+'px;margin-bottom:12px;border:1px solid #aaa;background:white;overflow:auto"/><div id="selectedGroup"/><table id="netMapTable" class="resultTable tablesorter"><thead><tr><th>Program</th><th>Local IP</th><th>Local Port</th><th>Remote Host/IP</th><th>Remote Port</th><th>In/Out</th><th>Count</th></tr></thead><tbody/></table></div>');
 	this.previousNode = params.pN;
-	
-	if(params.h)
-		this.currentNode = params.h;
-	else
-		this.currentNode = Object.keys(hosts)[0];
-	
+	this.currentNode = params.h;
 	this.addHost();
 };
