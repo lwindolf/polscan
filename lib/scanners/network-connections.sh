@@ -7,7 +7,7 @@
 # feature: netmap
 
 OUR_NETWORKS=${OUR_NETWORKS-127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16}
-LISTEN_FILTER=${LISTEN_FILTER-ssh|nrpe|22|5666|4949}
+LISTEN_FILTER="^(${LISTEN_FILTER-ssh|nrpe|22|5666|4949})\$"
 
 declare -a netmasks
 
