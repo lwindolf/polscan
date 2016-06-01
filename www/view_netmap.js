@@ -116,8 +116,9 @@ views.NetmapView.prototype.addGraphNode = function(service, direction) {
 	}
 }
 
-views.NetmapView.prototype.addHost = function(host) {
+views.NetmapView.prototype.addHost = function() {
 	var view = this;
+	var host = this.currentNode;
 	var d = this.netMapData = {
 		nodeToId: [],
 		nodes: [],
@@ -216,8 +217,10 @@ views.NetmapView.prototype.update = function(params) {
 	$('#results').append('<div id="netmap" style="height:'+$(window).height()*2/3+'px;margin-bottom:12px;border:1px solid #aaa;background:white;overflow:auto"/><div id="selectedGroup"/><table id="netMapTable" class="resultTable tablesorter"><thead><tr><th>Program</th><th>Local IP</th><th>Local Port</th><th>Remote Host/IP</th><th>Remote Port</th><th>In/Out</th><th>Count</th></tr></thead><tbody/></table></div>');
 	this.previousNode = params.pN;
 	
-	if(params.h) {
+	if(params.h)
 		this.currentNode = params.h;
-		this.addHost(params.h);
-	}
+	else
+		this.currentNode = Object.keys(hosts)[0];
+	
+	this.addHost();
 };

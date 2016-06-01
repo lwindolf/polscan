@@ -6,7 +6,6 @@
 views.NetedgeView = function NetedgeView(parentDiv, params) {
 	this.parentDiv = parentDiv;
 	this.filterOptions = {
-		host: true,
 		filterby: true,
 		search: true
 	};
@@ -144,6 +143,16 @@ views.NetedgeView.prototype.update = function(params) {
 	clean();
 	$('#results').append('<div>Network: <span id="selectedNetwork">(hover for values)</span></div><div> Host: <span id="edgeHost"></span></div><canvas id="netedge" style="background:black;" width="'+filteredHosts.length*6+'" height="1344"/>');
 	this.addHosts('netedge', filteredHosts);
+
+	$('#netedge').on('click', function(event) {
+		var hostSlot = Math.floor(event.offsetX / 6) - 1;
+		var netSlot = Math.floor(event.offsetY / 6) - 1;
+		if(view.hostNames) {
+			if(hostSlot < view.hostNames.length) {
+				setLocationHash({ h: view.hostNames[hostSlot], view: 'netmap' });
+			}
+		}
+	});
 
 	$('#netedge').on('mousemove', function(event) {
 		var hostSlot = Math.floor(event.offsetX / 6) - 1;

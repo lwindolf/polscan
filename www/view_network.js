@@ -5,7 +5,6 @@
 views.NetworkView = function NetworkView(parentDiv, params) {
 	this.parentDiv = parentDiv;
 	this.filterOptions = {
-		host: true,
 		filterby: true,
 		search: true
 	};
@@ -15,7 +14,7 @@ views.NetworkView.prototype.update = function(params) {
 	clean();
 	$('#loadmessage').show();
 	$('#loadmessage i').html("Loading...");
-	$(this.parentDiv).append('<div id="networkSelectedName"><i>Hover over names to view FQDNs and click to see connection details.</i></div><div id="netgraph"/>'); //<div id="legend"><b>Legend</b></div><table id="inventoryMap" class="resultTable tablesorter"><thead><tr><th>Group</th><th>Results</th></tr></thead></table>');
+	$(this.parentDiv).append('<div id="networkSelectedName"><i>Hover over names to view FQDNs and click to see connection details.</i></div><div id="netgraph"/>');
 
 	var filteredHosts = get_hosts_filtered(params, true);
 
