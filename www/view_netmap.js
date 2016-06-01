@@ -15,6 +15,20 @@ views.NetmapView = function NetmapView(parentDiv, params) {
 // FIXME: scope
 var viewBoxX, viewBoxY;
 
+function lookupIp(ip) {
+	console.log("Resolving "+ip);
+	$.getJSON('http://ipinfo.io/'+ip, function(data){
+		alert("IP: "+data.ip+
+		      "\nName: "+data.hostname+
+		      "\nCity: "+data.city+
+		      "\nRegion: "+data.region+
+		      "\nCountry: "+data.country+
+		      "\nOrg: "+data.org+
+		      "\nPostal: "+data.postal
+		);
+	})
+}
+
 views.NetmapView.prototype.updateGraph = function() {
 	var width = $('#netmap').width();
 	var	height = $('#netmap').height();
@@ -88,8 +102,10 @@ views.NetmapView.prototype.addGraphNode = function(service, direction) {
 		var tmp = "";
 		$.each(service[direction], function(i, name) {
 			if (i < 6) {
-				if (name.match(/^[0-9]/))
+				if (name.match(/^(10\.|172\.|192\.)/))
 					tmp += name+"<br/> ";
+				else if (name.match(/^[0-9]/))
+					tmp += '<a class="resolve" href="javascript:lookupIp(\''+name+'\')" title="Click to resolve IP">'+name+"</a><br/> ";
 				else {
 					tmp += "<a ";
 					if(name == view.previousNode)
@@ -173,11 +189,19 @@ views.NetmapView.prototype.addHost = function() {
 							connByService[id].outPorts.push(fields[4]);
 						}
 
+						var remoteName;
+						if(resolvedRemote.match(/^(10\.|172\.|192\.)/))
+							remoteName = resolvedRemote;
+						else if(resolvedRemote.match(/^[0-9]/))
+							remoteName = '<a class="resolve" href="javascript:lookupIp(\''+resolvedRemote+'\')" title="Click to resolve IP">'+resolvedRemote+'</a>';
+						else
+							remoteName = '<a href="#view=netmap&h='+resolvedRemote+'">'+resolvedRemote+'</a>';
+
 						$('#netMapTable tbody').append('<tr>'+
 							'<td>'+fields[0]+'</td>' +
 							'<td>'+fields[1]+'</td>' +
 							'<td>'+fields[2]+'</td>' +
-							'<td>'+(resolvedRemote.match(/^[0-9]/)?resolvedRemote:'<a href="#view=netmap&h='+resolvedRemote+'">'+resolvedRemote+'</a>')+'</td>' +
+							'<td>'+remoteName+'</td>' +
 							'<td>'+fields[4]+'</td>' +
 							'<td>'+fields[5]+'</td>' +
 							'<td>'+fields[6]+'</td>' +
