@@ -13,6 +13,7 @@ memory=$(grep MemTotal: /proc/meminfo | awk '{printf("%d\n", $2/1024/1024 + 0.5)
 result_inventory "CPU RAM" "${cpucount}x${memory}"
 
 result_inventory "OS Release" "$(/usr/bin/lsb_release -si)_$(/usr/bin/lsb_release -sr)"
+result_inventory "OS Major Release" "$(/usr/bin/lsb_release -si)_$(/usr/bin/lsb_release -sr | sed 's/\..*//')"
 
 # For RAID Vendor we rely on the superb Nagios check from Debian package 
 # nagios-plugins-contrib which prints in format "<status>: <vendor>:[<results]"
