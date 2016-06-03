@@ -12,12 +12,13 @@ views.InventoryView = function InventoryView(parentDiv, params) {
 		filterby: true,
 		search: true
 	};
+	this.legendColorIndex = {};
 };
 
 /* Smart legend sorting by trying to extract leading float
    numbers (e.g. versions) from legend string. Falls back
    to string sort if extraction fails. */
-function legendSort(a, b) {
+views.InventoryView.prototype.legendSort = function(a, b) {
 	var aNr = a.match(/^(\d+(\.\d+)?)/);
 	var bNr = b.match(/^(\d+(\.\d+)?)/);
 
@@ -25,6 +26,28 @@ function legendSort(a, b) {
 		return a>b;
 
 	return aNr[1] - bNr[1];
+}
+
+views.InventoryView.prototype.selectLegendItem = function(e) {
+	$('#inventoryMap div.hostMapBox').hide();
+	$('#legend .legendItem').css('background', '#ccc');
+    var li;
+	$.each(e.target.className.split(/\s+/), function(i, item) {
+			if(item.indexOf("legendIndex") == 0)
+				li = item.substring(11);
+	});
+	if(li) {
+		$('#legend .legendIndex'+li).css("background", color(li));
+		$('#inventoryMap div.hostMapBox td.legendIndex'+li).show();
+		$('#inventoryMap div.hostMapBox td.legendIndex'+li).parents().show();
+		$('#inventoryMap tr.hostMapGroup').each(function() {
+			console.log("row visible count=");
+			if($(this).find('table:visible').length == 0)
+				$(this).hide();
+			else
+				$(this).children().show();
+		});
+	}
 }
 
 views.InventoryView.prototype.update = function(params) {
@@ -40,9 +63,9 @@ views.InventoryView.prototype.update = function(params) {
 	$(this.parentDiv).append('<div id="legend"><b>Legend</b></div><table id="inventoryMap" class="resultTable tablesorter"><thead><tr><th>Group</th><th>Results</th></tr></thead></table>');
 
 	var filteredHosts = get_hosts_filtered(params, true)
+	var view = this;
 
 	getData("inventory "+params.iT, function(data) {
-			var legendIndex = {};
 			var legend = [];
 			var pcolor = [];
 
@@ -58,7 +81,7 @@ views.InventoryView.prototype.update = function(params) {
 					$.each(values, function(i, c) {
 						if(-1 !== legend.indexOf(c))
 							return;
-						legendIndex[c] = legend.length;
+						view.legendColorIndex[c] = legend.length;
 						legend.push(c);
 					});
 
@@ -72,7 +95,7 @@ views.InventoryView.prototype.update = function(params) {
 					if(values.length > 0) {
 						content += "<table style='border:0' cellspacing='0' cellpadding='1px' width='100%'><tr>";
 						for(var p in values)
-							content += "<td style='border:0;padding:1px;height:10px' class='legendIndex"+legendIndex[values[p]]+"'></td>";
+							content += "<td style='border:0;padding:1px;height:10px' class='legendIndex"+view.legendColorIndex[values[p]]+"'></td>";
 						content += "</tr></table>";
 					}
 					content = "<div class='hostMapBox KNOWN' title='"+f.host+" "+(values.length > 0?values.join(","):"")+"' onclick='setLocationHash({view:\"netmap\",h:\""+f.host+"\"});'>" + content + "</div>";
@@ -89,20 +112,22 @@ views.InventoryView.prototype.update = function(params) {
 
 			// Create colors for numeric legend by title
 			// and for non-numeric legends by index
-			var lastElem = legend.sort(legendSort)[legend.length-1];
-			for(var l in legend.sort(legendSort)) {
+			var sortedLegend = legend.sort(view.legendSort);
+			var lastElem = sortedLegend[sortedLegend.length-1];
+			for(var l in sortedLegend) {
 				var name = legend[l];
-				$('#legend').append("<span class='legendItem legendIndex"+legendIndex[name]+"' title='"+name+"'>"+name+"</span>");
+				$('#legend').append("<span class='legendItem legendIndex"+view.legendColorIndex[name]+"' title='"+name+"'>"+name+"</span>");
 				if(numeric) {
 						if(0 != name)
-							$('.legendIndex'+legendIndex[name]).css("background", "rgb("+Math.ceil(153-(153*name/lastElem))+", "+Math.ceil(255-(255*name/lastElem))+", 102)");
+							$('.legendIndex'+view.legendColorIndex[name]).css("background", "rgb("+Math.ceil(153-(153*name/lastElem))+", "+Math.ceil(255-(255*name/lastElem))+", 102)");
 						else
-							$('.legendIndex'+legendIndex[name]).css("background", "white");
+							$('.legendIndex'+view.legendColorIndex[name]).css("background", "white");
 				} else {
-					$('.legendIndex'+legendIndex[name]).css("background", color(legendIndex[name]));
+					$('.legendIndex'+view.legendColorIndex[name]).css("background", color(view.legendColorIndex[name]));
 				}
 			}
 
 			$("#inventoryMap").tablesorter({sortList: [[0,0]]});
+			$("#legend .legendItem").on("click", view.selectLegendItem);
 	});
 };
