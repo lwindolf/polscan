@@ -56,6 +56,7 @@ match_nets() {
 load_nets
 
 # Analyze listening services
+listen_inventory=
 unset listen_ports
 declare -A listen_ports
 while read proto recvq sendq localaddr remoteaddr state program rest; do
@@ -66,6 +67,7 @@ while read proto recvq sendq localaddr remoteaddr state program rest; do
 
 	if [[ ! $localport =~ $LISTEN_FILTER ]]; then
 		listen_ports[$localport]=$program
+		listen_inventory="$listen_inventory $program"
 	fi
 done < <(/bin/netstat -tlp --numeric-hosts | grep -v " 127" | grep "^tcp.*LISTEN")
 
@@ -110,3 +112,4 @@ done < <(/bin/netstat -tap --numeric-hosts | egrep -v "( 127| ::1|LISTEN)" | gre
 result_ok $(/bin/echo $results | xargs -n 1 | sort | uniq -c | awk '{print $2 ":" $1}')
 
 result_inventory "active TCP services" $(/bin/echo $inventory | xargs -n 1 | sort -u)
+result_inventory "running TCP services" $(/bin/echo $listen_inventory | xargs -n 1 | sort -u)
