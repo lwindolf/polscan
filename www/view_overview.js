@@ -163,14 +163,16 @@ views.OverviewView.prototype.update = function(params) {
 					var fields = $(this).attr('filter').split(/---/);
 					setLocationHash({
 						fG: fields[0],
-						sT: fields[1]
+						sT: fields[1],
+						view: 'results'
 					});
 				});
 				$("#findingsPerPolicy .change").click(function() {
 					var fields = $(this).find('.changes').attr('filter').split(/---/);
 					setLocationHash({
 						fG: fields[0],
-						sT: fields[1]
+						sT: fields[1],
+						view: 'results'
 					});
 				});
 			});
