@@ -49,5 +49,10 @@ views.NetmenuView.prototype.update = function(params) {
 			<div class='title'>Connection Browser</div>
 			<div class='info'>Browse TCP connections per host and navigate along in-/outbound service connections.</div>
 		</div>
+		<div class='box' onclick='setLocationHash({view: "servicemap"})'>
+			<div class='title'>Service Map</div>
+			<div class='info'>A directed graph of all services and their relations.</div>
+		</div>
+
 		</div>`);
 };
