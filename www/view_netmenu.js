@@ -10,22 +10,29 @@ views.NetmenuView.prototype.update = function(params) {
 	$("head").append(`
 		<style type='text/css'>
 			.netmenu {
-				padding: 0 12px;
+				padding:0 12px;
 			}
 			.netmenu .box {
 				background: white;
-				padding: 24px;
+				padding: 0px;
 				margin-right: 24px;
 				margin-bottom: 24px;
 				float: left;
-				max-width: 25%;
-				min-height: 120px;
+				width: 250px;
+				height: 380px;
 				border: 1px solid gray;
 				cursor: pointer;
 			}
+			.netmenu img {
+				border-bottom:1px solid gray;
+			}
 			.netmenu .box .title {
+				padding:12px;
 				font-size: 150%;
-				margin-bottom: 12px;
+			}
+			.netmenu .box .info {
+				padding:12px;
+				color:#444;
 			}
 			.netmenu .box:hover {
 				background: #eee;	
@@ -38,20 +45,24 @@ views.NetmenuView.prototype.update = function(params) {
 		<div class='netmenu'>
 		<h2>Available Network Views</h2>
 		<div class='box' onclick='setLocationHash({view: "network"})'>
+			<img src='img/network.png'/>
 			<div class='title'>Network Map</div>
-			<div class='info'>A radial map of hosts grouped by subdomains and their network connections.</div>
+			<div class='info'>Radial diagram of hosts grouped by subdomains and TCP connections. Most useful with hierarchical FQDNs.</div>
 		</div>
 		<div class='box' onclick='setLocationHash({view: "netedge"})'>
+			<img src='img/netedge.png'/>
 			<div class='title'>Network Edge</div>
-			<div class='info'>A matrix of all IPv4 connections to external networks.</div>
+			<div class='info'>A matrix of all active TCP connections to external IPv4 networks.</div>
 		</div>
 		<div class='box' onclick='setLocationHash({view: "netmap"})'>
+			<img src='img/netmap.png'/>
 			<div class='title'>Connection Browser</div>
 			<div class='info'>Browse TCP connections per host and navigate along in-/outbound service connections.</div>
 		</div>
 		<div class='box' onclick='setLocationHash({view: "servicemap"})'>
+			<img src='img/servicemap.png'/>
 			<div class='title'>Service Map</div>
-			<div class='info'>A directed graph of all services and their relations.</div>
+			<div class='info'>A directed graph of all active TCP services interconnections and in-/outbound external clients.</div>
 		</div>
 
 		</div>`);
