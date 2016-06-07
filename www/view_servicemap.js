@@ -29,10 +29,10 @@ views.ServicemapView.prototype.updateGraph = function() {
 
 	$.each(this.services, function(i, n) {
 		var props = { "label": n.service, "labelType": "html", "class": n.class };
-		$.each(n.ips, function(i, ip) {
+		$.each($.unique(n.ips), function(i, ip) {
 			if(i < 8) {
 				if (ip.match(/^(10\.|172\.|192\.)/))
-					props.label += "<br/>"+ip;
+					props.label += "<br/>"+resolveIp(ip);
 				else
 					props.label += '<br/><a class="resolve" href="javascript:lookupIp(\''+ip+'\')" title="Click to resolve IP">'+ip+"</a> ";
 			}
@@ -45,9 +45,6 @@ views.ServicemapView.prototype.updateGraph = function() {
 
 	$.each(this.edges, function(i, l) {
 		if(l.source === undefined || l.target === undefined)
-			return;
-		// FIXME: maybe enable this
-		if(l.source === l.target)
 			return;
 		var props = { lineInterpolate: 'basis' };
 		if("high" !== l.port)
@@ -87,12 +84,9 @@ views.ServicemapView.prototype.addUniqueService = function(program, port, c, ip)
 
 views.ServicemapView.prototype.addHosts = function(filteredHosts) {
 	var view = this;
-	var host = this.currentNode;
-	var d = this.netMapData = {
-		nodeToId: [],
-		nodes: [],
-		links: []
-	};
+	this.edges = [];
+	this.services = {};
+	this.uniqueEdges = {};
 
 	// get connections for this host
 	getData("Network", function(data) {
@@ -149,8 +143,8 @@ views.ServicemapView.prototype.addHosts = function(filteredHosts) {
 								view.addUniqueEdge(fields, program, resolvedService);
 						} else {
 							if(fields[3].match(/^(10\.|172\.|192\.)/)) {
-								view.addUniqueService('Unresolved Internal '+fields[5], undefined, 'other', fields[3]);
-								view.addUniqueEdge(fields, program, 'Unresolved Internal '+fields[5]);
+								view.addUniqueService('Internal '+fields[5], undefined, 'other', fields[3]);
+								view.addUniqueEdge(fields, program, 'Internal '+fields[5]);
 							} else {
 								view.addUniqueService('External '+fields[5], undefined, 'other', fields[3]);
 								view.addUniqueEdge(fields, program, 'External '+fields[5]);
