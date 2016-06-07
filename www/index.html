@@ -709,18 +709,23 @@ a.resolve {
 			function loadView(name, params) {
 				$.getScript("view_"+name+".js")
 				.done(function(s, t) {
-					currentView = new views[name[0].toUpperCase()+name.slice(1)+"View"]('#results', params);
-					currentViewName = name;
-					loadFilterSettings(params);
-					currentView.update(params);
+					try {
+						currentView = new views[name[0].toUpperCase()+name.slice(1)+"View"]('#results', params);
+						currentViewName = name;
+						loadFilterSettings(params);
+						currentView.update(params);
 
-					// Ugly: all view except overview need a sidebar
-					if (name === "overview")
-						$('#results').removeClass('sidebar');
-					else
-						$('#results').addClass('sidebar');
+						// Ugly: all view except overview need a sidebar
+						if (name === "overview")
+							$('#results').removeClass('sidebar');
+						else
+							$('#results').addClass('sidebar');
+					} catch(e) {
+						console.log("Failed to load script dependency for view '"+name+"'! ("+e+")");
+					}
 				})
 				.fail(function(jxqhr, x, e) {
+					console.log("Failed to load script dependency for view '"+name+"'! ("+e+")");
 					error("Failed to load script dependency for view '"+name+"'! ("+e+")");
 				});
 			}
