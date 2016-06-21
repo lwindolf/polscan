@@ -112,16 +112,13 @@ function addCalendar(id, initialDate) {
 		onSelect: function(date) { setLocationHash({ d: date }, false); }
 	});
 	getData('host_groups', function(data) {
-		// Run some histogram based calendar marking magic
-		// FIXME: Use a real JSON calendar data file instead
-		getData('histogram', function(data) {
-			var yearMonth = data.date.substring(0, data.date.length - 2);
+		var yearMonth = data.date.substring(0, data.date.length - 2);
+		getDataUrl('results/json/'+yearMonth, 'calendar', function(data) {
 			for(i = 1; i <= 31; i++) {
-				var day = ((i<10)?"0":"") + i;
 				var td = $(id + ' td').filter(function() {
 					return $(this).text() == ""+i; 
 				});
-				if(-1 != data.labels.indexOf(yearMonth+day))
+				if(-1 !== data.days.indexOf(i))
 					td.addClass('available');
 				else
 					td.addClass('unavailable');

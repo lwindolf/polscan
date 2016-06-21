@@ -660,10 +660,7 @@ a.resolve {
 				$('#hostlist').show();
 			}
 
-			/* Generic JSON fetcher. Returns already loaded stuff from
-			   result cache array.
-			 */
-			function getData(name, callback) {
+			function getDataUrl(baseUrl, name, callback) {
 				var cacheName = name.replace('-', '_');
 
 				if(resultCache[cacheName]) {
@@ -682,6 +679,13 @@ a.resolve {
 				.fail(function(j, t, e) {
 					error('Fetching results for group "'+name+'" failed! Maybe there is no data for this day?<br/><br/>Exception: ' + e);
 				}).promise();
+			}
+
+			/* Generic JSON fetcher. Returns already loaded stuff from
+			   result cache array.
+			 */
+			function getData(name, callback) {
+				return getDataUrl(baseUrl, name, callback);
 			}
 
 			var hostByIp;
