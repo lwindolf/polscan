@@ -307,6 +307,17 @@ if [ -d "$RESULT_BASE_DIR/$ONE_DAY_AGO/" ]; then
 	) | write_json list solved results
 fi
 
+# Update month calendar
+(
+	i=1
+	while [ $i -le 31 ]; do
+		if [ -d "$(dirname $RESULT_DIR)/$(printf "%02d" $i)" ]; then
+			echo "$i,"
+		fi
+		i=$((i + 1))
+	done
+) | write_json list "../calendar" days
+
 if [ $LATEST == 1 ]; then
 	# Link latest results
 	rm "$RESULT_BASE_DIR/latest"
