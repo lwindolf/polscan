@@ -123,6 +123,8 @@ function addCalendar(id, initialDate) {
 				else
 					td.addClass('unavailable');
 			}
+		}, function(j, t, e) {
+			// nothing to do if calendar is not there
 		});
 	});
 }

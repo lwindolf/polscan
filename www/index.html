@@ -660,7 +660,7 @@ a.resolve {
 				$('#hostlist').show();
 			}
 
-			function getDataUrl(baseUrl, name, callback) {
+			function getDataUrl(baseUrl, name, callback, errorcb) {
 				var cacheName = name.replace('-', '_');
 
 				if(resultCache[cacheName]) {
@@ -677,7 +677,10 @@ a.resolve {
 					callback(resultCache[cacheName]);
 				})
 				.fail(function(j, t, e) {
-					error('Fetching results for group "'+name+'" failed! Maybe there is no data for this day?<br/><br/>Exception: ' + e);
+					if(errorcb)
+						errorcb(j, t, e);
+					else
+						error('Fetching results for group "'+name+'" failed! Maybe there is no data for this day?<br/><br/>Exception: ' + e);
 				}).promise();
 			}
 
