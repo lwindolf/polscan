@@ -135,6 +135,7 @@ views.NetmapView.prototype.addGraphNode = function(service, direction) {
 views.NetmapView.prototype.addHost = function() {
 	var view = this;
 	var host = this.currentNode;
+	var found = false;
 	var d = this.netMapData = {
 		nodeToId: [],
 		nodes: [],
@@ -149,15 +150,12 @@ views.NetmapView.prototype.addHost = function() {
 		var connByService = new Array();
 		$.each(data.results, function(i, item) {
 			if(item.host == host && item.policy == "Connections") {
+				found = true;
 				var connections = item.message.split(/ /);
 				for(var c in connections) {
 					var fields = connections[c].split(/:/);
 					if(fields[5]) {
 						var id, port = fields[2], program = fields[0];
-
-						// For now we do not visualize local connections
-						if(fields[1] == fields[3])
-							continue;
 
 						// Resolve program for close-wait, time-wait listings
 						if(program !== "-" && !(port in portToProgram))
@@ -175,8 +173,6 @@ views.NetmapView.prototype.addHost = function() {
 							s = program;
 						else
 							continue; 	// displaying unknown procs is just useless
-//						if(port !== "high")
-//							s += ":" + port;
 
 						if(!(id in connByService))
 							connByService[id] = { service: s, "port": port, in: [], out: [], outPorts: [] };
@@ -211,28 +207,32 @@ views.NetmapView.prototype.addHost = function() {
 			}
 		});
 
-		// We need a fake node to connect as input for programs without
-		// incoming connections to force the program nodes to the 2nd rank
-		// we will hide this node and its links using CSS
-		//
-		// Node id is 0
-		d.nodes.push({"label": "", class: 'null'});
+		if(found) {
+			// We need a fake node to connect as input for programs without
+			// incoming connections to force the program nodes to the 2nd rank
+			// we will hide this node and its links using CSS
+			//
+			// Node id is 0
+			d.nodes.push({"label": "", class: 'null'});
 
-		for(var id in connByService) {
-			var program = connByService[id].service;
+			for(var id in connByService) {
+				var program = connByService[id].service;
 
-			if(!(program in d.nodeToId)) {
-				var nId = d.nodes.length;
-				d.nodeToId[program] = nId;
-				d.nodes.push({"label": program, class: 'local'});
+				if(!(program in d.nodeToId)) {
+					var nId = d.nodes.length;
+					d.nodeToId[program] = nId;
+					d.nodes.push({"label": program, class: 'local'});
+				}
+				view.addGraphNode(connByService[id], "in");
+				view.addGraphNode(connByService[id], "out");
 			}
-			view.addGraphNode(connByService[id], "in");
-			view.addGraphNode(connByService[id], "out");
+
+			view.updateGraph();
+
+			$("#netMapTable").tablesorter({sortList: [[1,1],[2,1],[3,1]]});
+		} else {
+			error("Sorry! No data found for "+host+" on this day.");
 		}
-
-		view.updateGraph();
-
-		$("#netMapTable").tablesorter({sortList: [[1,1],[2,1],[3,1]]});
 	});
 }
 
