@@ -8,6 +8,7 @@
 
 OUR_NETWORKS=${OUR_NETWORKS-127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16}
 LISTEN_FILTER="^(${LISTEN_FILTER-ssh|nrpe|22|5666|4949})\$"
+fqdn=$(hostname -f)
 
 declare -a netmasks
 
@@ -109,7 +110,12 @@ while read proto recvq sendq localaddr remoteaddr state program rest; do
 	fi
 done < <(/bin/netstat -tap --numeric-hosts | egrep -v "( 127| ::1|LISTEN)" | grep "^tcp")
 
-result_ok $(/bin/echo $results | xargs -n 1 | sort | uniq -c | awk '{print $2 ":" $1}')
+# Reduce and write TCP connection edges
+/bin/echo $results | xargs -n 1 | sort | uniq -c |\
+awk '{print $2 " " $1}' | sed "s/:/ /g" |\
+while read program localip localport remoteip remoteport direction count; do
+	result_network_edge "TCP connection" "$program" "$localip" "$localport" "$remoteip" "$remoteport" "$direction" "$count"
+done
 
 result_inventory "active TCP services" $(/bin/echo $inventory | xargs -n 1 | sort -u)
 result_inventory "running TCP services" $(/bin/echo $listen_inventory | xargs -n 1 | sort -u)

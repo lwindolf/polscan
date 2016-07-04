@@ -94,6 +94,7 @@ declare -A pall
 declare -A hosts	# contains host states (FIXME: wrong name 'hosts')
 declare -A host_names
 declare -A inventory_types
+declare -A netedge_types
 
 # Produce inventory indices
 echo "Compiling inventories..."
@@ -111,6 +112,25 @@ done < <(
 for key in ${!inventory_types[*]}; do
 	name=${inventory_types[$key]}
 	cat "$JSON_DIR/${name}.json.tmp" | write_json list "inventory $name" results
+	rm "$JSON_DIR/${name}.json.tmp"
+done
+
+# Produce netegde indices
+echo "Compiling network edge maps..."
+while read host group severity json; do
+	netedgemap=${json/#|||/}
+	netedgemap=${netedgemap/|||*/}
+	json=${json/*|||/}
+	echo -n "${json}," >> "$JSON_DIR/${netedgemap}.json.tmp"
+	netedge_types["${netedgemap// /_}"]="$netedgemap"
+done < <(
+	ls | xargs -n1 egrep -H "^[a-zA-Z0-9_-][a-zA-Z0-9_-]* NETEDGE " |\
+	sed 's/:/ /'
+)
+
+for key in ${!netedge_types[*]}; do
+	name=${netedge_types[$key]}
+	cat "$JSON_DIR/${name}.json.tmp" | write_json list "netedge $name" results
 	rm "$JSON_DIR/${name}.json.tmp"
 done
 
@@ -185,6 +205,11 @@ done
 		name=${inventory_types[$key]}
 		echo -n '{"inventory": "'"$name"'"},'
 	done
+	for key in ${!netedge_types[*]}; do
+		name=${netedge_types[$key]}
+		echo -n '{"netedge": "'"$name"'"},'
+	done
+
 	for g in $groups; do
 		echo "- $g" >&2
 		count=$(ls | xargs -n1 grep "^$g (OK|WARNING|FAILED) " | wc -l)

@@ -22,3 +22,19 @@ result_inventory() {
 
 	echo "INVENTORY |||$name||| $@"
 }
+
+result_network_edge() {
+	etype=$1;	shift
+        scope=$1;	shift
+	ln=$1;		shift	# local IP/name
+	ltn=$1;		shift   # local transport name
+	rn=$1;		shift	# remote IP/name
+	rtn=$1;		shift	# remote transport name
+	dir=$1;		shift	# 'in'/'out'
+	cnt=$1;		shift	# connection count
+
+	# FIXME: validate parameters
+	cat <<EOT
+Network NETEDGE |||$etype||| {"host": "$(hostname -f)", "scope": "$scope", "ln": "$ln", "ltn": "$ltn", "rn": "$rn", "rtn": "$rtn", "dir": "$dir", "cnt": "$cnt"}
+EOT
+}

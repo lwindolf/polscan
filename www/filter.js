@@ -42,6 +42,20 @@ function loadInventoryTypes(id, selected) {
 	});
 }
 
+// Add all netedge type names to a <select>
+function loadNetedgeTypes(id, selected) {
+	var options = [];
+	getData("overview", function(data) {
+		$.each(data.overview, function(i, item) {
+			if(item.netedge) {
+				options.push('<option value="'+item.netedge+'">'+item.netedge+'</option>');
+			}
+		});
+		$('#'+id).append(options.sort().join(''));
+		$('#'+id+" option[value='"+selected+"']").attr('selected', true);
+	});
+}
+
 // Add all findings group names to a <select>
 function loadFindingGroups(id, selected) {
 	var options = [
@@ -151,6 +165,8 @@ function applyFilterSettings(oldParams) {
 		params.sT = $('#search').val();
 	if(o.host)
 		params.h = $('#selectedHost').val();
+	if(o.nt)
+		params.nt = $('#netedgeType').val();
 
 	setLocationHash(params, true);
 }
@@ -170,6 +186,8 @@ function loadFilterSettings(params) {
 
 	if(o.inventory)
 		fbox.append('<span class="label">Type</span> <select id="inventoryType"></select> ');
+	if(o.nt)
+		fbox.append('<span class="label">Type</span> <select id="netedgeType"></select> ');
 	if(o.findings)
 		fbox.append('<span class="label">Findings</span> <select id="findingsGroup"></select> ');
 
@@ -188,22 +206,20 @@ function loadFilterSettings(params) {
 		fbox.append('<span class="label">Search</span> <input type="text" width="100%" id="search"/> ')
 			$("#search").val(params.sT);
 	}
-
-	fbox.append('<input class="filterGo" type="button" value="Apply"/> ');
-
-	if(o.copyHosts)
-		fbox.append('<input type="button" value="Host List" title="Get list of problem hosts" onclick="onCopyHosts()"/><div id="hostlist"/>');
-
 	if(o.host) {
 		fbox.append('<hr/>Host <input type="text" value="'+(params.h !== undefined?params.h:'')+'" list="availableHosts" id="selectedHost"/>' +	
-				' <datalist id="availableHosts"/>' +
-				'<input class="netmapGo" type="button" value="Show"/> ');
+				' <datalist id="availableHosts"/>');
 		getData("hosts", function(data) {
 			$.each(data.results, function(host) {
 				$('#availableHosts').append('<option value="'+host+'">');
 			});
 		});
 	}
+
+	fbox.append('<input class="filterGo" type="button" value="Apply"/> ');
+
+	if(o.copyHosts)
+		fbox.append('<input type="button" value="Host List" title="Get list of problem hosts" onclick="onCopyHosts()"/><div id="hostlist"/>');
 
 	addCalendar("#calendar", params.d);
 
@@ -215,6 +231,8 @@ function loadFilterSettings(params) {
 		try {
 			if(o.inventory)
 				loadInventoryTypes('inventoryType', params.iT);
+			if(o.nt)
+				loadNetedgeTypes('netedgeType', params.nt);
 			if(o.findings)
 				loadFindingGroups('findingsGroup', params.fG);
 			if(o.groupbyhg)
@@ -237,9 +255,5 @@ function loadFilterSettings(params) {
 
 	$('.filterGo').click(function() {
 		applyFilterSettings(params);
-	});
-	$('.netmapGo').click(function() {
-		params.h = $('#selectedHost').val();
-		loadView('netmap', params);
 	});
 }

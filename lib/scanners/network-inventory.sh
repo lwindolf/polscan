@@ -15,3 +15,8 @@ result_inventory "Routes" "$(/sbin/ip route | awk '{printf "%s_%s_%s ", $1, $2, 
 result_inventory "Name Servers" $(awk '/^nameserver/ {print $2}' /etc/resolv.conf)
 
 result_inventory "IPv6 Address" "$(ip a |grep 'inet6 .*scope global' | wc -l)"
+
+/sbin/ip route | grep "via" |\
+while read net via gateway dev if; do
+	result_network_edge "Route" "$net" "$(hostname -f)" "$if" "$gateway" "" "out" 1
+done

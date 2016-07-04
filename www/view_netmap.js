@@ -6,7 +6,8 @@
 views.NetmapView = function NetmapView(parentDiv, params) {
 	this.parentDiv = parentDiv;
 	this.filterOptions = {
-		host: true
+		host: true,
+		nt: true
 	};
 	this.netMapData = {};
 	this.previousNode;
@@ -145,65 +146,57 @@ views.NetmapView.prototype.addHost = function() {
 	console.log("addHostToNetGraph "+host);
 
 	// get connections for this host
-	getData("Network", function(data) {
+	getData("netedge "+this.neType, function(data) {
 		var portToProgram = new Array();
 		var connByService = new Array();
 		$.each(data.results, function(i, item) {
-			if(item.host == host && item.policy == "Connections") {
+			if(item.host == host) {
 				found = true;
-				var connections = item.message.split(/ /);
-				for(var c in connections) {
-					var fields = connections[c].split(/:/);
-					if(fields[5]) {
-						var id, port = fields[2], program = fields[0];
+				// Resolve program for close-wait, time-wait listings
+				if(item.scope !== "-" && !(item.ltn in portToProgram))
+					portToProgram[item.ltn] = item.scope;
+				if(item.scope === "-" && (item.ltn in portToProgram))
+					item.scope = portToProgram[item.ltn];
 
-						// Resolve program for close-wait, time-wait listings
-						if(program !== "-" && !(port in portToProgram))
-							portToProgram[port] = program;
-						if(program === "-" && (port in portToProgram))
-							program = portToProgram[port];
+				// Reduce connections to per service connections with ids like
+				//   high:::java:::high
+				//   high:::apache2:::80
+				//   ...
+				id = item.ltn+":::"+item.scope+":::"+item.rtn;
+				var s;
+				if(item.scope !== "-")
+					s = item.scope;
+				else
+					return; 	// displaying unknown procs is just useless
 
-						// Reduce connections to per service connections with ids like
-						//   high:::java:::high
-						//   high:::apache2:::80
-						//   ...
-						id = port+":::"+program+":::"+fields[4];
-						var s;
-						if(program !== "-")
-							s = program;
-						else
-							continue; 	// displaying unknown procs is just useless
+				if(!(id in connByService))
+					connByService[id] = { service: s, "port": item.ltn, in: [], out: [], outPorts: [] };
 
-						if(!(id in connByService))
-							connByService[id] = { service: s, "port": port, in: [], out: [], outPorts: [] };
-
-						var resolvedRemote = resolveIp(fields[3]);
-						if(fields[5] === 'in') {
-							connByService[id].out.push(resolvedRemote);
-						} else {
-							connByService[id].in.push(resolvedRemote);
-							connByService[id].outPorts.push(fields[4]);
-						}
-
-						var remoteName;
-						if(resolvedRemote.match(/^(10\.|172\.|192\.)/))
-							remoteName = resolvedRemote;
-						else if(resolvedRemote.match(/^[0-9]/))
-							remoteName = '<a class="resolve" href="javascript:lookupIp(\''+resolvedRemote+'\')" title="Click to resolve IP">'+resolvedRemote+'</a>';
-						else
-							remoteName = '<a href="#view=netmap&h='+resolvedRemote+'">'+resolvedRemote+'</a>';
-
-						$('#netMapTable tbody').append('<tr>'+
-							'<td>'+fields[0]+'</td>' +
-							'<td>'+fields[1]+'</td>' +
-							'<td>'+fields[2]+'</td>' +
-							'<td>'+remoteName+'</td>' +
-							'<td>'+fields[4]+'</td>' +
-							'<td>'+fields[5]+'</td>' +
-							'<td>'+fields[6]+'</td>' +
-							'</tr>');
-					}
+				var resolvedRemote = resolveIp(item.rn);
+				if(item.dir === 'in') {
+					connByService[id].out.push(resolvedRemote);
+				} else {
+					connByService[id].in.push(resolvedRemote);
+					connByService[id].outPorts.push(item.rtn);
 				}
+
+				var remoteName;
+				if(resolvedRemote.match(/^(10\.|172\.|192\.)/))
+					remoteName = resolvedRemote;
+				else if(resolvedRemote.match(/^[0-9]/))
+					remoteName = '<a class="resolve" href="javascript:lookupIp(\''+resolvedRemote+'\')" title="Click to resolve IP">'+resolvedRemote+'</a>';
+				else
+					remoteName = '<a href="#view=netmap&h='+resolvedRemote+'">'+resolvedRemote+'</a>';
+
+				$('#netMapTable tbody').append('<tr>'+
+					'<td>'+item.scope+'</td>' +
+					'<td>'+item.ln+'</td>' +
+					'<td>'+item.ltn+'</td>' +
+					'<td>'+remoteName+'</td>' +
+					'<td>'+item.rtn+'</td>' +
+					'<td>'+item.dir+'</td>' +
+					'<td>'+item.cnt+'</td>' +
+				'</tr>');
 			}
 		});
 
@@ -237,12 +230,16 @@ views.NetmapView.prototype.addHost = function() {
 }
 
 views.NetmapView.prototype.update = function(params) {
-	if(!params.h)
-		setLocationHash({ h: Object.keys(hosts)[0] });
+	if(!params.h || !params.nt)
+		setLocationHash({
+			h: params.h?params.h:Object.keys(hosts)[0],
+			nt: params.nt?params.nt:'TCP connection'
+		});
 
 	clean();
 	$('#results').append('<div id="netmap" style="height:'+$(window).height()*2/3+'px;margin-bottom:12px;border:1px solid #aaa;background:white;overflow:auto"/><div id="selectedGroup"/><table id="netMapTable" class="resultTable tablesorter"><thead><tr><th>Program</th><th>Local IP</th><th>Local Port</th><th>Remote Host/IP</th><th>Remote Port</th><th>In/Out</th><th>Count</th></tr></thead><tbody/></table></div>');
 	this.previousNode = params.pN;
 	this.currentNode = params.h;
+	this.neType = params.nt;
 	this.addHost();
 };
