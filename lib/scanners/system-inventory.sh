@@ -1,6 +1,6 @@
 # group: System
 # name: Inventory
-# description: Inventory only scanner determining kernel version with uname -r, locale, timezone, CPU+RAM GB count, OS release, RAID vendor, Uptime
+# description: Inventory only scanner determining kernel version with uname -r, locale, timezone, CPU+RAM GB count, OS release, RAID vendor, Uptime, NMI Watchdog Setting
 
 result_inventory "Kernel Version" "$(uname -r)"
 result_inventory "Default Locale" "$LANG"
@@ -44,3 +44,5 @@ if [ "$days" != "" ]; then
                 result_inventory "Uptime" 365
         fi
 fi
+
+result_inventory "NMI Watchdog" "$(cat /proc/sys/kernel/nmi_watchdog)"
