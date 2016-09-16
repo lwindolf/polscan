@@ -13,6 +13,7 @@ result_inventory "External IPs" "$ips"
 result_inventory "Routes" "$(/sbin/ip route | awk '{printf "%s_%s_%s ", $1, $2, $3}')"
 
 result_inventory "Name Servers" $(awk '/^nameserver/ {print $2}' /etc/resolv.conf)
+result_inventory "Time Servers" $(awk '/^server/ {print $2}' /etc/ntp.conf)
 
 result_inventory "IPv6 Address" "$(ip a |grep 'inet6 .*scope global' | wc -l)"
 
