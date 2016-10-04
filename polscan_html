@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+SCHEMA_VERSION=1
 BASE=$(dirname "$0")
 BASE=$(readlink -e "$BASE")
 if [ "$BASE" == "/usr/bin" ]; then
@@ -61,7 +62,7 @@ write_json() {
 
 	echo "Writing $name.json..."
 	(
-		echo '{"date": "'$DATE'", "'$root'":'
+		echo '{"date": "'$DATE'", "schema": '"$SCHEMA_VERSION"', "'$root'":'
 		if [ "$result_type" == 'list' ]; then
 			echo '['
 		else
@@ -215,20 +216,6 @@ done
 		count=$(ls | xargs -n1 grep "^$g (OK|WARNING|FAILED) " | wc -l)
 		echo -n '{"group": "'$g'", "WARNING": '${pgroups[warn_$g]-0}', "FAILED": '${pgroups[fail_$g]-0}', "count": '${count-0}'},'
 	done
-	for s in $(
-		get_scanners remote | sed "s/^/scanners\//"
-		get_scanners standalone | sed "s/^/standalone\//"
-	); do
-		echo "- $s" >&2
-		group=$(get_policy_info "$LIB_DIR/$s" group)
-		policy=$(get_policy_info "$LIB_DIR/$s" name)
-		description=$(get_policy_info "$LIB_DIR/$s" description)
-		tags=$(get_policy_info "$LIB_DIR/$s" tags)
-		solution=$(get_policy_info "$LIB_DIR/$s" solution)
-		solution_cmd=$(get_policy_info "$LIB_DIR/$s" solution-cmd)
-		references=$(get_policy_info "$LIB_DIR/$s" 'source' | xargs)
-		echo -n '{"policy": "'$policy'", "parent": "'$group'", "description": "'${description//\"/\\\"}'", "solution": "'${solution//\"/\\\"}'", "solution_cmd": "'${solution_cmd//\"/\\\"}'", "tags": [ "'${tags// /\",\"}'" ], "references": [ "'${references// /\",\"}'" ], "WARNING": '${policies[warn_$policy]-0}', "FAILED": '${policies[fail_$policy]-0}'},'
-	done
 ) | write_json list overview 'WARNING": '${pall[warn]-0}', "FAILED": '${pall[fail]-0}', "hostCount": '$(echo $HOST_LIST | wc -w)', "overview'
 
 # Host infos
@@ -250,6 +237,7 @@ declare -A histogram
 declare -A histogram_ids
 declare -A histogram_labels
 
+# FIXME: Histogram generation doesn't follow optional relative start date
 histogram_ids['all']='all'
 i=0
 while [ $i -le 30 ]; do
@@ -276,6 +264,7 @@ labels=$(
 )
 
 (
+# FIXME: Histogram generation doesn't follow optional relative start date
 for p in ${!histogram_ids[*]}; do
 	echo -n ',{"id": "'${histogram_ids[$p]}'",'
 	for severity in FAILED WARNING; do
@@ -342,6 +331,28 @@ fi
 		i=$((i + 1))
 	done
 ) | write_json list "../calendar" days
+
+# Update policies index
+(
+	for s in $(
+		get_available_scanners remote
+		get_available_scanners standalone
+	); do
+		echo "- $s" >&2
+		group=$(get_policy_info "$LIB_DIR/$s" group)
+		policy=$(get_policy_info "$LIB_DIR/$s" name)
+		description=$(get_policy_info "$LIB_DIR/$s" description)
+		tags=$(get_policy_info "$LIB_DIR/$s" tags)
+		solution=$(get_policy_info "$LIB_DIR/$s" solution)
+		solution_cmd=$(get_policy_info "$LIB_DIR/$s" solution-cmd)
+		references=$(get_policy_info "$LIB_DIR/$s" 'source' | xargs)
+		enabled=0
+		if grep -q "^$(basename "$s")" "$CONF_DIR/scanners.conf" "$CONF_DIR/standalone.conf"; then
+			enabled=1
+		fi
+		echo -n '{"policy": "'$policy'", "parent": "'$group'", "description": "'${description//\"/\\\"}'", "solution": "'${solution//\"/\\\"}'", "solution_cmd": "'${solution_cmd//\"/\\\"}'", "tags": [ "'${tags// /\",\"}'" ], "references": [ "'${references// /\",\"}'" ], "WARNING": '${policies[warn_$policy]-0}', "FAILED": '${policies[fail_$policy]-0}', "enabled": '$enabled'},'
+	done
+) | write_json list policies results
 
 if [ $LATEST == 1 ]; then
 	# Link latest results

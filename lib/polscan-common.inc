@@ -103,3 +103,29 @@ get_scanners() {
 
 	grep -v "^ *#" "$conf_file" 2>/dev/null
 }
+
+################################################################################
+# get_available_scanners
+#
+# $1	type "standalone" or "remote"
+#
+# Returns scanner file names (relative to root dir) for all available scanners
+# of a type
+################################################################################
+get_available_scanners() {
+	scanner_type=$1
+
+	case $scanner_type in
+		remote)
+			dir="scanners"
+			;;
+		standalone)
+			dir="standalone"
+			;;
+		*)
+			echo "ERROR: get_available_scanners() called with invalid scanner type!"
+			exit 1
+	esac
+
+	(cd "$LIB_DIR"; grep -l "^# group: [^[:space:]]" "${dir}"/* 2>/dev/null)
+}

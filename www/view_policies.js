@@ -22,8 +22,8 @@ views.PoliciesView.prototype.update = function(params) {
 		"</tr></thead><tbody/></table>"
 	);
 	
-	getData("overview", function(data) {
-		$.each(data.overview, function(i, item) {
+	getData("policies", function(data) {
+		$.each(data.results, function(i, item) {
 			if(item.policy) {
 				var solution = "";
 				var references = "";
@@ -41,7 +41,8 @@ views.PoliciesView.prototype.update = function(params) {
 				}
 
 				$(id+" table.resultTable tbody").append(
-					"<tr><td>&#10003;</td><td>" +
+					"<tr><td>" +
+					(item.enabled == 1 ? "&#10003;" : "") + "</td><td>" +
 					item.parent + "</td><td>" +
 					item.policy + "</td><td>" +
 					item.description + solution + 

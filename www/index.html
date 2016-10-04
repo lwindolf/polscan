@@ -111,7 +111,6 @@
 			}
 			.errorbox {
 				padding: 24px;
-				margin:12px;
 				background: #f44;
 				border: 3px solid #f22;
 			}
@@ -613,6 +612,7 @@ a.resolve {
 		<div id='results'></div>
 
 		<script>
+			var SCHEMA_VERSION = 1;
 			var views = {};
 			var resultCache = new Array();
 			var hostGroupNamespaces = new Array();
@@ -672,9 +672,13 @@ a.resolve {
 
 				return $.getJSON(baseUrl + name + ".json", {})
 				.done(function(data) {
-                    currentResultSet = cacheName;
-                    resultCache[cacheName] = data;
-					callback(resultCache[cacheName]);
+					if(data["schema"] == SCHEMA_VERSION) {
+	                    currentResultSet = cacheName;
+		                resultCache[cacheName] = data;
+						callback(resultCache[cacheName]);
+					} else {
+						error('Fetched results have an outdated schema version! They were created by a much older polscan version.<br/><br/>Please update the results of this day by running: <pre>polscan_html '+data.date+'</pre>When reloading ensure to clear your browser cache first!');
+					}
 				})
 				.fail(function(j, t, e) {
 					if(errorcb)
@@ -797,6 +801,7 @@ a.resolve {
 			}
 
 			(function() {
+				clean();
 				onLocationHashChange();
 
 				// Allow some simple navigation by browser history 
