@@ -131,8 +131,9 @@ views.OverviewView.prototype.update = function(params) {
 						} catch(e) {
 							console.log("Failed to get values for "+item.id+" Exception:"+e);
 						}
-						var tmp = '<tr><td class="group" title="'+item.description+'" filter="' + group + '">' + group + '</td><td class="policy" filter="' + group + '---' + policy + '">' + (policy?policy:"") + '</td>';
-						tmp += '<td>';
+						var pf = 'filter="' + group + '---' + policy + '"';
+						var tmp = '<tr><td class="group" title="'+item.description+'" filter="' + group + '">' + group + '</td><td class="policy" '+pf+'>' + (policy?policy:"") + '</td>';
+						tmp += '<td class="policy" '+pf+'>';
 						if(failed > 0)
 							tmp += '<span class="FAILED" title="Total failures found">' + failed + '</span>';
 						else
@@ -141,7 +142,7 @@ views.OverviewView.prototype.update = function(params) {
 						diff = failed - failed2;
 						if(diff != 0)
 							tmp += '<span class="'+(diff>0?"FAILED":"compliant")+' changes" filter="'+(diff>0?'new':'solved')+'---' + policy + '" title="Total change problems">+' + Math.abs(diff) + '</span>';
-						tmp += '</td><td>';
+						tmp += '</td><td class="policy" '+pf+'>';
 						if(warning > 0)
 							tmp += '<span class="WARNING" title="Total warnings seen">' + warning + '</span>';
 						else
@@ -158,7 +159,10 @@ views.OverviewView.prototype.update = function(params) {
 				$("#findingsPerPolicy").tablesorter({sortList: [[3,1],[2,1],[5,1],[4,1]]});
 
 				$("#findingsPerPolicy .group").click(function() {
-					setLocationHash({ fG: $(this).attr('filter') });
+					setLocationHash({
+					    fG: $(this).attr('filter'),
+   						view: 'results'
+					});
 				});
 				$("#findingsPerPolicy .policy").click(function() {
 					var fields = $(this).attr('filter').split(/---/);
