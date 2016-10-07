@@ -6,11 +6,19 @@ views.NetworkView = function NetworkView(parentDiv, params) {
 	this.parentDiv = parentDiv;
 	this.filterOptions = {
 		filterby: true,
-		search: true
+		search: true,
+		nt: true
 	};
 };
 
 views.NetworkView.prototype.update = function(params) {
+	if(!params.nt)
+		setLocationHash({
+			nt: params.nt?params.nt:'TCP connection'
+		});
+		
+	this.neType = params.nt;
+		
 	clean();
 	$('#loadmessage').show();
 	$('#loadmessage i').html("Loading...");
@@ -71,39 +79,32 @@ var link = svg.append("g").selectAll(".link"),
 	else
 		$('#loadmessage').hide();
 
-        getData("Network", function(netdata) {
+	getData("netedge "+this.neType, function(data) {
 		$.each(selectedHosts, function(host, hostData) {
-		        // get connections for these hosts
+		    // get connections for these hosts
 			var connections = [];
-			$.each(netdata.results, function(i, item) {
-				if(item.host == host && item.policy == "Connections") {
-				var m = item.message.split(/ /);
-				for(var c in m) {
-					var fields = m[c].split(/:/);
-					if(fields[5]) {
-						var resolved=resolveIp(fields[3]);
-						if(resolved.match(/^[0-9]/)) {
-							if(resolved.match(/^(172|196|10)\./))
-								resolved="Unresolved_Internal";
-							else
-								resolved="Unresolved_External";
-						} else {
-							if(!(resolved in selectedHosts)) {
-								if(classes.length < hostLimit) {
-									// We can add one more...
-									selectedHosts[resolved]={name: resolved.split(/\./).reverse().join('.'), size:1, imports:[]};
-									classes.push(selectedHosts[resolved]);
-								} else {
-									resolved="Not_Shown";
-								}
+			$.each(data.results, function(i, item) {
+				if(item.host == host) {
+					var resolved=resolveIp(item.rtn);
+					if(resolved.match(/^[0-9]/)) {
+						if(resolved.match(/^(172|196|10)\./))
+							resolved="Unresolved_Internal";
+						else
+							resolved="Unresolved_External";
+					} else {
+						if(!(resolved in selectedHosts)) {
+							if(classes.length < hostLimit) {
+								// We can add one more...
+								selectedHosts[resolved]={name: resolved.split(/\./).reverse().join('.'), size:1, imports:[]};
+								classes.push(selectedHosts[resolved]);
+							} else {
+								resolved="Not_Shown";
 							}
 						}
-
-						//console.log("conn "+ host+ " <-> "+fields[3]+" ("+resolved+")");
-						if(resolved in selectedHosts)
-							hostData.imports.push(resolved.split(/\./).reverse().join('.'));
 					}
-				}
+
+					if(resolved in selectedHosts)
+						hostData.imports.push(resolved.split(/\./).reverse().join('.'));
 				}
 			});
 			hostData.size = hostData.imports.length*30 + 1;
