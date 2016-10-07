@@ -230,14 +230,16 @@ views.NetmapView.prototype.addHost = function() {
 }
 
 views.NetmapView.prototype.update = function(params) {
-	if(!params.h || !params.nt)
+	if(!("h" in params) || !("nt" in params)) {
 		setLocationHash({
 			h: params.h?params.h:Object.keys(hosts)[0],
 			nt: params.nt?params.nt:'TCP connection'
 		});
+		return;
+	}
 
 	clean();
-	$('#results').append('<div id="netmap" style="height:'+$(window).height()*2/3+'px;margin-bottom:12px;border:1px solid #aaa;background:white;overflow:auto"/><div id="selectedGroup"/><table id="netMapTable" class="resultTable tablesorter"><thead><tr><th>Program</th><th>Local IP</th><th>Local Port</th><th>Remote Host/IP</th><th>Remote Port</th><th>In/Out</th><th>Count</th></tr></thead><tbody/></table></div>');
+	$('#results').append('<div id="netmap" style="height:'+$(window).height()*2/3+'px;margin-bottom:12px;border:1px solid #aaa;background:white;overflow:auto"/><div id="selectedGroup"/><table id="netMapTable" class="resultTable tablesorter"><thead><tr><th>Scope</th><th>Local Name</th><th>Local Transport</th><th>Remote Name</th><th>Remote Transport</th><th>In/Out</th><th>Count</th></tr></thead><tbody/></table></div>');
 	this.previousNode = params.pN;
 	this.currentNode = params.h;
 	this.neType = params.nt;

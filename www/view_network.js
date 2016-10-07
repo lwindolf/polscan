@@ -12,10 +12,12 @@ views.NetworkView = function NetworkView(parentDiv, params) {
 };
 
 views.NetworkView.prototype.update = function(params) {
-	if(!params.nt)
+	if(!("nt" in params)) {
 		setLocationHash({
 			nt: params.nt?params.nt:'TCP connection'
 		});
+		return;
+	}
 		
 	this.neType = params.nt;
 		
