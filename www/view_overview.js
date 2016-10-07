@@ -37,6 +37,7 @@ function addPieChart(id, title, size, pColor, data) {
 			},
 			"mainLabel": {
 				"fontSize": 16,
+				"color": "black"
 			},
 			"percentage": {
 				"color": pColor,
