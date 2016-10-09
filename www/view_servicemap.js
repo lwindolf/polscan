@@ -59,16 +59,16 @@ views.ServicemapView.prototype.updateGraph = function() {
 	svg.attr("height", g.graph().height + 40);
 }
 
-views.ServicemapView.prototype.addUniqueEdge = function(fields, service, resolvedService) {
+views.ServicemapView.prototype.addUniqueEdge = function(e, service, resolvedService) {
 	var escaped = service.replace(/ /g, '');
 	var escapedT = resolvedService.replace(/ /g, '');
-	var ke = fields[5] + "_" + service + "_" + fields[2] + "_" + resolvedService + "_" + fields[4];
+	var ke = e.dir + "_" + service + "_" + e.rn + "_" + resolvedService + "_" + e.rtn;
 	if(!this.uniqueEdges.hasOwnProperty(ke)) {
 		this.uniqueEdges[ke] = 1;
-		if(fields[5] === 'out')
-			this.edges.push({ direction: fields[5], source: escaped, target: escapedT, port: fields[4] });
+		if(e.dir === 'out')
+			this.edges.push({ direction: e.dir, source: escaped, target: escapedT, port: e.rn });
 		else
-			this.edges.push({ direction: fields[5], target: escaped, source: escapedT, port: fields[2] });
+			this.edges.push({ direction: e.dir, target: escaped, source: escapedT, port: e.ln });
 	}
 }
 
@@ -89,67 +89,49 @@ views.ServicemapView.prototype.addHosts = function(filteredHosts) {
 	this.uniqueEdges = {};
 
 	// get connections for this host
-	getData("Network", function(data) {
+	getData("netedge TCP connection", function(data) {
 		var nodeportToProgram = {};
 		var portToProgram = new Array();
 		$.each(data.results, function(i, item) {
-			if(item.policy == "Connections" && (-1 !== filteredHosts.indexOf(item.host))) {
-				var connections = item.message.split(/ /);
-				for(var c in connections) {
-					var fields = connections[c].split(/:/);
-					if(fields[5]) {
-						var id, port = fields[2], program = fields[0];
-						if(program === "-")
-							continue;
-						if(fields[5] === 'in')
-							continue;
-						// For now we do not visualize local connections
-//						if(fields[1] == fields[3])
-//							continue;
-						if(!nodeportToProgram.hasOwnProperty(fields[1]+"_"+fields[2])) {
-							nodeportToProgram[fields[1]+"_"+fields[2]] = program;
-						}
-					}
+			if(-1 !== filteredHosts.indexOf(item.host)) {
+				var id, port = item.ltn, program = item.scope;
+				if(program === "-")
+					return;
+				if(item.dir === 'in')
+					return;
+				if(!nodeportToProgram.hasOwnProperty(item.ln+"_"+item.ltn)) {
+					nodeportToProgram[item.ln+"_"+item.ltn] = program;
 				}
 			}
 		});
 
 		$.each(data.results, function(i, item) {
-			if(item.policy == "Connections" && (-1 !== filteredHosts.indexOf(item.host))) {
-				var connections = item.message.split(/ /);
-				for(var c in connections) {
-					var fields = connections[c].split(/:/);
-					if(fields[5]) {
-						var port = fields[2], program = fields[0];
+			if(-1 !== filteredHosts.indexOf(item.host)) {
+				var port = item.ltn, program = item.scope;
 
-						// For now we do not visualize local connections
-//						if(fields[1] == fields[3])
-//							continue;
+				// Resolve program for close-wait, time-wait listings
+				if(program !== "-" && !(port in portToProgram))
+					portToProgram[port] = program;
+				if(program === "-" && (port in portToProgram))
+					program = portToProgram[port];
 
-						// Resolve program for close-wait, time-wait listings
-						if(program !== "-" && !(port in portToProgram))
-							portToProgram[port] = program;
-						if(program === "-" && (port in portToProgram))
-							program = portToProgram[port];
+				// Reduce connections to service<->service connections
+				if(program === "-")
+					return; 	// displaying unknown procs is just useless
 
-						// Reduce connections to service<->service connections
-						if(program === "-")
-							continue; 	// displaying unknown procs is just useless
+				view.addUniqueService(program, port, 'local');
 
-						view.addUniqueService(program, port, 'local');
-
-						var resolvedService = nodeportToProgram[fields[3]+"_"+fields[4]];
-						if(resolvedService) {
-								view.addUniqueEdge(fields, program, resolvedService);
-						} else {
-							if(fields[3].match(/^(10\.|172\.|192\.)/)) {
-								view.addUniqueService('Internal '+fields[5], undefined, 'other', fields[3]);
-								view.addUniqueEdge(fields, program, 'Internal '+fields[5]);
-							} else {
-								view.addUniqueService('External '+fields[5], undefined, 'other', fields[3]);
-								view.addUniqueEdge(fields, program, 'External '+fields[5]);
-							}
-						}
+				var resolvedService = nodeportToProgram[item.rn+"_"+item.rtn];
+				if(resolvedService) {
+						view.addUniqueEdge(item, program, resolvedService);
+				} else {
+				    // FIXME: private net match
+					if(item.rn.match(/^(10\.|172\.|192\.)/)) {
+						view.addUniqueService('Internal '+item.dir, undefined, 'other', item.rn);
+						view.addUniqueEdge(item, program, 'Internal '+item.dir);
+					} else {
+						view.addUniqueService('External '+item.dir, undefined, 'other', item.rn);
+						view.addUniqueEdge(item, program, 'External '+item.dir);
 					}
 				}
 			}

@@ -44,7 +44,7 @@ views.NetedgeView.prototype.addTooltip = function() {
 			console.log("Fatal: cannot determine host");
 //			return;
 		}
-console.log("host:"+host);
+
 		if(!cache)
 			console.log("Fatal: no cache for "+view.dataGroup);
 		else
@@ -79,59 +79,64 @@ console.log("host:"+host);
 
 views.NetedgeView.prototype.addHosts = function(cid, filteredHosts) {
     var view = this;
+	view.hosts = {};
 	view.hostNames = new Array();
 
-	getData(this.dataGroup, function(data) {
+	getData("netedge TCP connection", function(data) {
 		var dc = $('#'+cid).get(0).getContext("2d");
 		var offsetX = 0;
 
 		$.each(data.results, function(i, item) {
-			if(-1 !== filteredHosts.indexOf(item.host) && item.policy == "Connections") {
+			if(-1 !== filteredHosts.indexOf(item.host)) {
 				var cin = new Array();
 				var cout = new Array();
 				var count = 0;
-				for(var i = 1; i < 224; i++) {
-					cin[i]=0;
-					cout[i]=0;
-				}
-				var connections = item.message.split(/ /);
-				for(var c in connections) {
-					var fields = connections[c].split(/:/);
-					if(fields[5]) {
-						// For now we do not visualize local connections
-						if(fields[1] == fields[3])
-							continue;
 
-						var tmp = fields[3].split(/\./);
-						tmp[0] = parseInt(tmp[0]);
-						tmp[1] = parseInt(tmp[1]);
-						if(filteredHosts.length < 100 || (tmp[0] !== 10 && tmp[0] !== 127 && tmp[0] !== 172 && tmp[0] !== 192)) { // FIXME!!!!
-							if(fields[5] === 'in')
-								cin[tmp[0]] += fields[6];
-							else
-								cout[tmp[0]] += fields[6];
-							count++;
-						}
-					}
-				}
-				if(count > 0) {
-					offsetX += 6;
-					view.hostNames[view.hostNames.length] = item.host;
-					for(var i = 1; i < 224; i++) {
-						if(cin[i] != 0) {
-							dc.fillStyle = "yellow";
-							dc.fillRect(offsetX, i*6, 4, 4);
-						} else if(cout[i] != 0) {
-							dc.fillStyle = "white";
-							dc.fillRect(offsetX, i*6, 4, 4);
-						} else {
-							dc.fillStyle = "#222";
-							dc.fillRect(offsetX, i*6, 4, 4);
-						}
-					}
+				// For now we do not visualize local connections
+				if(item.ln == item.rn)
+					return;
+
+				var tmp = item.rn.split(/\./);
+				tmp[0] = parseInt(tmp[0]);
+				tmp[1] = parseInt(tmp[1]);
+				if(filteredHosts.length < 100 || (tmp[0] !== 10 && tmp[0] !== 127 && tmp[0] !== 172 && tmp[0] !== 192)) { // FIXME!!!!
+			        if(!view.hosts[item.host]) {
+			        console.log("adding "+item.host+ " "+view.hosts.length);
+			            view.hosts[item.host] = {
+    					    cin:  new Array(224),
+    					    cout: new Array(224),
+    					    name: item.host
+        				};
+	       				for(var i = 1; i < 224; i++) {
+	            			view.hosts[item.host].cin[i]=0;
+        					view.hosts[item.host].cout[i]=0;
+			            }
+			            view.hostNames[view.hostNames.length] = item.host;
+                    }
+
+					if(item.dir === 'in')
+						view.hosts[item.host].cin[tmp[0]] += item.cnt;
+					else
+    					view.hosts[item.host].cout[tmp[0]] += item.cnt;
 				}
 			}
 		});
+
+		$.each(view.hosts, function(h, host) {			
+			offsetX += 6;
+			for(var i = 1; i < 224; i++) {
+				if(host.cin[i] != 0) {
+					dc.fillStyle = "yellow";
+					dc.fillRect(offsetX, i*6, 4, 4);
+				} else if(host.cout[i] != 0) {
+					dc.fillStyle = "white";
+					dc.fillRect(offsetX, i*6, 4, 4);
+				} else {
+					dc.fillStyle = "#222";
+					dc.fillRect(offsetX, i*6, 4, 4);
+				}
+			}
+        });
 		view.addTooltip();
 	});
 }
