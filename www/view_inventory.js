@@ -74,7 +74,7 @@ views.InventoryView.prototype.update = function(params) {
 		params.gT = "Primary-Network";
 
 	clean();
-	$(this.parentDiv).append('<div id="legend"><b>Legend</b></div><table id="inventoryMap" class="resultTable tablesorter"><thead><tr><th>Group</th><th>Results</th></tr></thead></table>');
+	$(this.parentDiv).append('<div id="legend" title="Click to filter a legend item. Hold Ctrl and click to multi-select."><b>Legend</b></div><table id="inventoryMap" class="resultTable tablesorter"><thead><tr><th>Group</th><th>Results</th></tr></thead></table>');
 
 	var filteredHosts = get_hosts_filtered(params, true)
 	var view = this;
