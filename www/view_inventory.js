@@ -13,6 +13,7 @@ views.InventoryView = function InventoryView(parentDiv, params) {
 		search: true
 	};
 	this.legendColorIndex = {};
+	this.legendSelection = [];
 };
 
 /* Smart legend sorting by trying to extract leading float
@@ -29,25 +30,38 @@ views.InventoryView.prototype.legendSort = function(a, b) {
 }
 
 views.InventoryView.prototype.selectLegendItem = function(e) {
-	$('#inventoryMap div.hostMapBox').hide();
-	$('#legend .legendItem').css('background', '#ccc');
+	var view = e.data;
     var li;
 	$.each(e.target.className.split(/\s+/), function(i, item) {
 			if(item.indexOf("legendIndex") == 0)
 				li = item.substring(11);
 	});
-	if(li) {
+	if(!li) {
+		console.log("Error: could not find legend index!");
+		return;
+	}
+
+	if (!e.ctrlKey)
+		view.legendSelection = [];
+	view.legendSelection.push(li);
+
+	// Hide all
+	$('#inventoryMap div.hostMapBox').hide();
+	$('#legend .legendItem').css('background', '#ccc');
+
+	// Selectively show stuff
+	$.each(view.legendSelection, function(i, li) {
 		$('#legend .legendIndex'+li).css("background", color(li));
 		$('#inventoryMap div.hostMapBox td.legendIndex'+li).show();
 		$('#inventoryMap div.hostMapBox td.legendIndex'+li).parents().show();
-		$('#inventoryMap tr.hostMapGroup').each(function() {
-			console.log("row visible count=");
-			if($(this).find('table:visible').length == 0)
-				$(this).hide();
-			else
-				$(this).children().show();
-		});
-	}
+	});
+	$('#inventoryMap tr.hostMapGroup').each(function() {
+		console.log("row visible count=");
+		if($(this).find('table:visible').length == 0)
+			$(this).hide();
+		else
+			$(this).children().show();
+	});
 }
 
 views.InventoryView.prototype.update = function(params) {
@@ -128,6 +142,6 @@ views.InventoryView.prototype.update = function(params) {
 			}
 
 			$("#inventoryMap").tablesorter({sortList: [[0,0]]});
-			$("#legend .legendItem").on("click", view.selectLegendItem);
+			$("#legend .legendItem").on("click", view, view.selectLegendItem);
 	});
 };
