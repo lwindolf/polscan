@@ -12,8 +12,8 @@ views.InventoryView = function InventoryView(parentDiv, params) {
 		filterby: true,
 		search: true
 	};
-	this.legendColorIndex = {};
-	this.legendSelection = [];
+	this.legendColorIndex;
+	this.legendSelection;
 };
 
 /* Smart legend sorting by trying to extract leading float
@@ -78,6 +78,8 @@ views.InventoryView.prototype.update = function(params) {
 
 	var filteredHosts = get_hosts_filtered(params, true)
 	var view = this;
+	this.legendColorIndex = {};
+	this.legendSelection = [];
 
 	getData("inventory "+params.iT, function(data) {
 			var legend = [];
