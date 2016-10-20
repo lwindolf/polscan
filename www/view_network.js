@@ -87,7 +87,7 @@ var link = svg.append("g").selectAll(".link"),
 			var connections = [];
 			$.each(data.results, function(i, item) {
 				if(item.host == host) {
-					var resolved=resolveIp(item.rtn);
+					var resolved=resolveIp(item.rn);
 					if(resolved.match(/^[0-9]/)) {
 						if(resolved.match(/^(172|196|10)\./))
 							resolved="Unresolved_Internal";
