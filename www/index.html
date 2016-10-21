@@ -701,15 +701,9 @@ a.resolve {
 			function resolveIp(ip) {
 				if(!hostByIp) {
 					hostByIp = new Array();
-					getData("Network", function(data) {
+					getData("netedge TCP connection", function(data) {
 						$.each(data.results, function(i, item) {
-							if(item.policy == "Connections") {
-								var connections = item.message.split(/ /);
-								for(var c in connections) {
-									var fields = connections[c].split(/:/);
-									hostByIp[fields[1]] = item.host;
-								}
-							}
+							hostByIp[item.ln] = item.host;
 						});
 					});
 				}
