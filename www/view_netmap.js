@@ -152,6 +152,10 @@ views.NetmapView.prototype.addHost = function() {
 		$.each(data.results, function(i, item) {
 			if(item.host == host) {
 				found = true;
+
+				if(item.ln === '' || item.ltn === '' || item.rn === '' || item.rtn === '')
+					return;
+
 				// Resolve program for close-wait, time-wait listings
 				if(item.scope !== "-" && !(item.ltn in portToProgram))
 					portToProgram[item.ltn] = item.scope;
