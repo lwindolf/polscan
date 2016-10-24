@@ -73,6 +73,7 @@ while read proto recvq sendq localaddr remoteaddr state program rest; do
 done < <(/bin/netstat -tlp --numeric-hosts | grep -v " 127" | grep "^tcp.*LISTEN")
 
 # Analyze connections
+results=
 while read proto recvq sendq localaddr remoteaddr state program rest; do
 	localip=${localaddr%%:*}
 	localport=${localaddr##*:}
