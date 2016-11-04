@@ -56,7 +56,26 @@ function addPieChart(id, title, size, pColor, data) {
 	});
 }
 
+views.OverviewView.prototype.addTopChanges = function(changes, type) {
+	var results = [];
+        var sortbar = [];
+
+	$.each(changes[type], function(name, count) {
+		sortbar.push({ "name": name, "count": count });
+        });
+	$.each(sortbar.sort(function(a,b) {
+		return b["count"]-a["count"];
+	}), function(i,item) {
+		if(results.length < 3)
+			results.push("<div>"+item["name"] + " (+"+item["count"]+")</div>");
+	});
+	if(results.length != -1)
+		$('#topChanges').append("<div class='changeList'><div class='changeItems "+type.toUpperCase()+"'>"+results.join('')+"</div></div>");
+}
+
 views.OverviewView.prototype.update = function(params) {
+	var view = this;
+
 	clean();
 	$(this.parentDiv).css('margin-left:0;');
 	$("<div id='overviewBoxContainer'>").appendTo(this.parentDiv);
@@ -114,9 +133,12 @@ views.OverviewView.prototype.update = function(params) {
 			// FIXME: addPieChart('pieChartHosts', 'Warnings', 260, pieGroupHosts);
 
 			$( "<div id='policies' class='overviewBox'>" ).appendTo( "#row2" )
+			$( "<h3>Top Changes</h3><div id='topChanges'></div>").appendTo("#policies")
+
 			$( "<h3>Findings / Changes per Policy</h3><table class='resultTable tablesorter' id='findingsPerPolicy'><thead><tr><th>Group</th><th>Policy</th><th>Problems</th><th>Change</th><th>Warnings</th><th>Change</th></tr></thead><tbody></tbody></table>").appendTo("#policies")
 
 			getData("histogram", function(data) {
+				var changes = { 'ok': {}, 'failed': {}, 'warning': {}};
 				$.each(data.histogram, function(i, item ) {
 					if(-1 != item.id.indexOf(":::")) {
 						var compliant = 1;
@@ -140,8 +162,14 @@ views.OverviewView.prototype.update = function(params) {
 							tmp += '<span title="Total failures found">0</span>';
 						tmp += '</td><td class="change">';
 						diff = failed - failed2;
-						if(diff != 0)
+						if(diff != 0) {
 							tmp += '<span class="'+(diff>0?"FAILED":"compliant")+' changes" filter="'+(diff>0?'new':'solved')+'---' + policy + '" title="Total change problems">+' + Math.abs(diff) + '</span>';
+							if(diff > 0) {
+								changes['failed'][group+'---'+policy] = Math.abs(diff);
+							} else {
+								changes['ok'][group+'---'+policy] = Math.abs(diff);
+							}
+						}
 						tmp += '</td><td class="policy" '+pf+'>';
 						if(warning > 0)
 							tmp += '<span class="WARNING" title="Total warnings seen">' + warning + '</span>';
@@ -149,14 +177,24 @@ views.OverviewView.prototype.update = function(params) {
 							tmp += '<span title="Total warnings found">0</span>';
 						tmp += '</td><td class="change">';
 						diff = warning - warning2;
-						if(diff != 0)
+						if(diff != 0) {
 							tmp += '<span class="'+(diff>0?"WARNING":"compliant")+' changes" filter="'+(diff>0?'new':'solved')+'---' + policy + '" title="Total change warnings">+' + Math.abs(diff) + '</span>';
+							if(diff > 0) {
+								changes['warning'][group+'---'+policy] = Math.abs(diff);
+							} else {
+								changes['ok'][group+'---'+policy] = Math.abs(diff);
+							}
+						}
 						tmp += '</td>';
 						tmp += '</tr>';
 						$("#findingsPerPolicy").append(tmp);
 					}
 				});
 				$("#findingsPerPolicy").tablesorter({sortList: [[3,1],[2,1],[5,1],[4,1]]});
+
+				view.addTopChanges(changes, 'failed');
+				view.addTopChanges(changes, 'warning');
+				view.addTopChanges(changes, 'ok');
 
 				$("#findingsPerPolicy .group").click(function() {
 					setLocationHash({
