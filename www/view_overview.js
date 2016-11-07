@@ -67,7 +67,7 @@ views.OverviewView.prototype.addTopChanges = function(changes, type) {
 		return b["count"]-a["count"];
 	}), function(i,item) {
 		if(results.length < 3)
-			results.push("<div>"+item["name"] + " (+"+item["count"]+")</div>");
+			results.push("<div>"+item["name"] + " <b>(+"+item["count"]+")</b></div>");
 	});
 	if(results.length != -1)
 		$('#topChanges').append("<div class='changeList'><div class='changeItems "+type.toUpperCase()+"'>"+results.join('')+"</div></div>");
@@ -132,9 +132,10 @@ views.OverviewView.prototype.update = function(params) {
 			addPieChart('pieChartWarning', 'Warnings', 260, '#777' ,groupWarning);
 			// FIXME: addPieChart('pieChartHosts', 'Warnings', 260, pieGroupHosts);
 
-			$( "<div id='policies' class='overviewBox'>" ).appendTo( "#row2" )
-			$( "<h3>Top Changes</h3><div id='topChanges'></div>").appendTo("#policies")
+			$( "<div id='topChangesBox' class='overviewBox'>" ).appendTo( "#row2" )
+			$( "<h3>Top Changes</h3><div id='topChanges'></div>").appendTo("#topChangesBox")
 
+			$( "<div id='policies' class='overviewBox'>" ).appendTo( "#row2" )
 			$( "<h3>Findings / Changes per Policy</h3><table class='resultTable tablesorter' id='findingsPerPolicy'><thead><tr><th>Group</th><th>Policy</th><th>Problems</th><th>Change</th><th>Warnings</th><th>Change</th></tr></thead><tbody></tbody></table>").appendTo("#policies")
 
 			getData("histogram", function(data) {
