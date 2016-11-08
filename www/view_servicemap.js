@@ -66,9 +66,9 @@ views.ServicemapView.prototype.addUniqueEdge = function(e, service, resolvedServ
 	if(!this.uniqueEdges.hasOwnProperty(ke)) {
 		this.uniqueEdges[ke] = 1;
 		if(e.dir === 'out')
-			this.edges.push({ direction: e.dir, source: escaped, target: escapedT, port: e.rn });
+			this.edges.push({ direction: e.dir, source: escaped, target: escapedT, port: e.rtn });
 		else
-			this.edges.push({ direction: e.dir, target: escaped, source: escapedT, port: e.ln });
+			this.edges.push({ direction: e.dir, target: escaped, source: escapedT, port: e.ltn });
 	}
 }
 
