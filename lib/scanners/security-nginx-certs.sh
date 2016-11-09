@@ -1,6 +1,6 @@
 # group: Security
-# name: Apache SSL Certs
-# description: An Apache production webserver should not use weak certificates. Checks for weak signatures (better than SHA-256) and RSA public key size (>=4096)
+# name: nginx SSL Certs
+# description: An nginx production webserver should not use weak certificates. Checks for weak signatures (better than SHA-256) and RSA public key size (>=4096)
 # solution: You need to create a new certificate with stronger signing signature and/or RSA public key size
 # tags: NIST-800-57
 # source: http://csrc.nist.gov/publications/nistpubs/800-57/sp800-57_part1_rev3_general.pdf
@@ -11,7 +11,8 @@
 # source: https://support.microsoft.com/en-us/kb/2661254
 
 
-for dir in /etc/apache2 /usr/local/apache2/conf /usr/local/apache/conf; do
+
+for dir in /etc/nginx /usr/local/nginx/conf; do
 	if [ -d $dir ]; then
 		while read c; do
 			x=$(openssl x509 -in "$c" -text)
@@ -26,18 +27,19 @@ for dir in /etc/apache2 /usr/local/apache2/conf /usr/local/apache/conf; do
 			# Check for insufficient RSA key sizes
 			key_size=$(
 				echo "$x" | grep "RSA Public Key: ([0-9][0-9]* bit)" |\
-				sed 's/.*\(([0-9][0-9]*\) bit).*/\1/'
+				sed 's/.*(\([0-9][0-9]*\) bit).*/'
 			)
 			if [ "$key_size" != "" ]; then
 				if [ "$key_size" -lt 1024 ]; then
 					result_failed "$c has public key size '$key_size' which is insecure!"
 				elif [ "$key_size" -lt 4096 ]; then
-					result_warning "$c has public key size '$key_size' which is insufficient (should be >=4096)."
+					result_warning "$c has public key size '$key_size' which is insufficient (should be >=4096)"
 				fi
 			fi
+				
 		done < <(
-			grep -h "^[^#]*SSLCertificateFile" "$dir/"*-enabled/* 2>/dev/null |\
-			sed 's/^.*SSLCertificateFile *//'
+			grep -h "^[^#]*ssl_certificate[^_]" "$dir/"*-enabled/* 2>/dev/null |\
+			sed 's/^.*ssl_certificate *//;s/;//'
 		)
 	fi
 done
