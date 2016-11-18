@@ -64,16 +64,32 @@ views.InventoryView.prototype.selectLegendItem = function(e) {
 	});
 }
 
+// Provide a menu of all inventories
+views.InventoryView.prototype.inventory_list = function() {
+	$(this.parentDiv).append('<div id="group_list"/>');
+	getData("overview", function(data) {
+		$.each(data.overview.sort(function(a,b) {
+			if(!a.inventory || !b.inventory)
+				return 0;
+			return a.inventory.localeCompare(b.inventory);
+		}), function(i, d) {
+			if(!d.inventory)
+				return;
+			$('#group_list').append(render('inventory_list_item', d));
+		});
+	});
+}
+
 views.InventoryView.prototype.update = function(params) {
+	clean();
 	if(params.iT === undefined) {
-		params.iT = 'Network active TCP services';
-		setLocationHash(params);
+		$(this.parentDiv).append('<h2>Available Inventories</h2>');
+		$(this.parentDiv).append(this.inventory_list());
 		return;
 	}
 	if(!params.gT)
-		params.gT = "Primary-Network";
+		params.gT = "Domain";
 
-	clean();
 	$(this.parentDiv).append('<div id="legend" title="Click to filter a legend item. Hold Ctrl and click to multi-select."><b>Legend</b></div><table id="inventoryMap" class="resultTable tablesorter"><thead><tr><th>Group</th><th>Results</th></tr></thead></table>');
 
 	var filteredHosts = get_hosts_filtered(params, true)
