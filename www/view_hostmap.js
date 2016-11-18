@@ -105,7 +105,7 @@ views.HostmapView.prototype.addHostsToMap = function(params) {
 			} else {
 				html += "UNKNOWN";
 			}
-			html += "' onclick='setLocationHash({ fG: \"all\", sT: \""+host+"\"}, true)'>&nbsp;</div> ";
+			html += "' onclick='setLocationHash({ view: \"results\", fG: \"all\", sT: \""+host+"\"}, true)'>&nbsp;</div> ";
 			var groupName = getGroupByHost(params.gT, host);
 			var groupClassName = groupName.replace(/[\.#\/]/g, "_");
 			if($('#hostmap').find('#'+groupClassName).length == 0)
@@ -128,12 +128,15 @@ views.HostmapView.prototype.addHostsToMap = function(params) {
 
 views.HostmapView.prototype.update = function(params) {
 	clean();
-	$(this.parentDiv).append('<table id="hostmap" class="resultTable tablesorter"><thead><tr><th>Group</th><th>C</th><th>W</th><th>Nr</th></tr></thead></table><div id="selectedGroup"/>');
 	
-	if(!params.fG)
-		params.fG = "new";
-	if(!params.gT)
-		params.gT = "Domain";	// This usually does exist
+	if(params.fG) {
+		if(!params.gT)
+			params.gT = "Domain";	// This usually does exist
 
-	this.addHostsToMap(params);
+		$(this.parentDiv).append('<table id="hostmap" class="resultTable tablesorter"><thead><tr><th>Group</th><th>C</th><th>W</th><th>Nr</th></tr></thead></table><div id="selectedGroup"/>');
+		this.addHostsToMap(params);
+	} else {
+		$(this.parentDiv).append('<h2>Findings By Group</h2>');
+		group_list(this.parentDiv, 'hostmap');
+	}
 };

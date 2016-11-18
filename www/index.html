@@ -12,6 +12,9 @@
 		<script type="text/javascript" src="jquery-ui.min.js"></script>
 		<script type="text/javascript" src="d3pie.min.js"></script>
 		<script type="text/javascript" src="sankey.js"></script>
+		<script type="text/javascript" src="templates.js"></script>
+		<script type="text/javascript" src="handlebars.min-latest.js"></script>
+		<script type="text/javascript" src="group_list.js"></script>
 		<link rel="stylesheet" href="jquery-ui.min.css">
 		<script src="jquery-ui.min.js"></script>
 		<meta charset="utf-8">
@@ -613,6 +616,25 @@ a.resolve {
 			#policies {
 				float:left;
 				clear:both;
+			}
+			.group_list_item .title {
+				font-size:130%;
+				font-weight:bold;
+				margin-bottom:3px;
+				display:block;
+			}
+			.group_list_item {
+				border:1px solid gray;
+				float:left;
+				width:200px;
+				margin:12px 6px;
+				padding:12px;
+				background:white;
+				text-decoration:none;
+				color:#444;
+			}
+			.group_list_item:hover {
+				background:#ddd;
 			}
 		</style>
 	</head>
