@@ -50,7 +50,7 @@ function addPieChart(id, title, size, pColor, data) {
 		},
 		'callbacks': {
 			'onClickSegment': function(segment) {
-				setLocationHash({ fG: segment.data.label});
+				setLocationHash({ fG: segment.data.label, view: 'results'});
 			}
 		}
 	});
