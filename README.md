@@ -51,6 +51,10 @@ Screenshots
 
 ![screenshot](http://lzone.de/images/polscan-hostmap-group-by-domain.png)
 
+*Visualizing Network Connections*
+
+![screenshot](http://lzone.de/images/polscan-netviews.png)
+
 Note: polscan is intentionally limited to Debian and for simplicity tries not to implement any distro-specific dependencies.
 
 How to run it
