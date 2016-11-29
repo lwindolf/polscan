@@ -10,7 +10,8 @@ views.InventoryView = function InventoryView(parentDiv, params) {
 		inventory: true,
 		groupbyhg: true,
 		filterby: true,
-		search: true
+		search: true,
+		copyHosts: true
 	};
 	this.legendColorIndex;
 	this.legendSelection;
@@ -130,7 +131,7 @@ views.InventoryView.prototype.update = function(params) {
 							content += "<td style='border:0;padding:1px;height:10px' class='legendIndex"+view.legendColorIndex[values[p]]+"'></td>";
 						content += "</tr></table>";
 					}
-					content = "<div class='hostMapBox KNOWN' title='"+f.host+" "+(values.length > 0?values.join(","):"")+"' onclick='setLocationHash({view:\"netmap\",h:\""+f.host+"\"});'>" + content + "</div>";
+					content = "<div class='hostMapBox KNOWN' host='"+f.host+"' title='"+f.host+" "+(values.length > 0?values.join(","):"")+"' onclick='setLocationHash({view:\"netmap\",h:\""+f.host+"\"});'>" + content + "</div>";
 					$('#' + groupClassName + ' .boxes').append(content);
 			});
 

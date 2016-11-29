@@ -708,8 +708,8 @@ a.resolve {
 					hosts = $('td.host:visible').map(function() {
 						return $(this).html();
 					}).get();
-				if(currentViewName === 'hostmap')
-					hosts = $('div.hostMapBox').map(function() {
+				if(currentViewName === 'hostmap' || currentViewName === 'inventory')
+					hosts = $('div.hostMapBox:visible').map(function() {
 						if($(this).hasClass('UNKNOWN'))
 							return;
 						if($(this).hasClass('OK'))
@@ -721,7 +721,7 @@ a.resolve {
 				var result = "";
 				for(var i = 0; i < hosts.length; i++) {
 					if(!tmp[hosts[i]])
-						result += hosts[i] + " ";
+						result += hosts[i] + "\n";
 					tmp[hosts[i]] = 1;
 				}	
 				$('#hostlist textarea').html(result);
