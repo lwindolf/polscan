@@ -228,8 +228,27 @@ views.NetmapView.prototype.addHost = function() {
 
 			$("#netMapTable").tablesorter({sortList: [[1,1],[2,1],[3,1]]});
 		} else {
-			error("Sorry! No data found for "+host+" on this day.");
+			error("Sorry! No connection data available for "+host+" on this day.");
 		}
+
+		// Present network inventory
+		// FIXME: rather have a getInventories() method
+		getData("overview", function(data) {
+			$.each(data.overview, function(i, v) {
+				if(v.inventory && 0 === v.inventory.indexOf("Network")) {
+					getData("inventory "+v.inventory, function(data) {
+						var invValue;
+						$.each(data.results, function(i, item) {
+							if(item.host === host) {
+								invValue = item.values;
+								return;
+							}
+						});
+						$('#inventoryTable').append("<tr><td><b>"+v.inventory.replace("Network ", "")+"</b><br/> "+invValue+"</td></tr>");
+					});
+				}
+			});
+		});
 	});
 }
 
@@ -243,9 +262,13 @@ views.NetmapView.prototype.update = function(params) {
 	}
 
 	clean();
-	$('#results').append('<div id="netmap" style="height:'+$(window).height()*2/3+'px;margin-bottom:12px;border:1px solid #aaa;background:white;overflow:auto"/><div id="selectedGroup"/><table id="netMapTable" class="resultTable tablesorter"><thead><tr><th>Scope</th><th>Local Name</th><th>Local Transport</th><th>Remote Name</th><th>Remote Transport</th><th>In/Out</th><th>Count</th></tr></thead><tbody/></table></div>');
+	$('#results').append('<table border="0" cellspacing="0" cellpadding="0" style="width:100%" height="'+$(window).height()+'px"><tr><td valign="top" width="100%"><div id="netmap" style="height:'+$(window).height()+'px;width:100%;margin-bottom:12px;border:1px solid #aaa;background:white;overflow:auto"/></td>' +
+	                     '</td><td valign="top"><table id="inventoryTable" class="resultTable tablesorter" style="width:300px"><thead><tr><th>Network Inventory</th></tr></thead><tbody/></table></td></tr></table>'+
+	                     '<table id="netMapTable" class="resultTable tablesorter"><thead><tr><th>Scope</th><th>Local Name</th><th>Local Transport</th><th>Remote Name</th><th>Remote Transport</th><th>In/Out</th><th>Count</th></tr></thead><tbody/></table>'
+);
 	this.previousNode = params.pN;
 	this.currentNode = params.h;
 	this.neType = params.nt;
 	this.addHost();
+//	this.addInventory("Network");
 };
