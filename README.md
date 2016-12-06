@@ -20,12 +20,12 @@ Features
 
 Detecting automation issues...
 
-Product   | Host Discovery | Resource Coverage
---------- | -------------- | -----------------
-Puppet    | y              | Mounts, Users, SSH Keys, ulimit, sysctl, sudoers, 3rd party APT repos, Crons 
-Chef      | y              | %
-Ansible   | y              | %
-SaltStack | y              | %
+Product     | Host Discovery | Resource Coverage
+----------- | -------------- | -----------------
+Puppet2/3/4 | y              | Mounts, Users, SSH Keys, ulimit, sysctl, sudoers, 3rd party APT repos, Crons 
+Chef        | y              | %
+Ansible     | y              | %
+SaltStack   | y              | %
 Mcollective | y | %
 
 Detecting package issues...
