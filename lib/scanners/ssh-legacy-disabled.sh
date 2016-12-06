@@ -1,6 +1,6 @@
 # group: SSH
 # name: Legacy Options
-# description: Checks /etc/ssh/sshd_config for disabled legacy features: IgnoreRhosts yes, HostbasedAuthentication no, RhostsRSAAuthentication no, Protocol 2 (no 1)
+# description: Checks /etc/ssh/sshd_config for disabled legacy features: IgnoreRhosts yes, HostbasedAuthentication no, RhostsRSAAuthentication no, Protocol 2 (no 1). Use for older SSH versions only as these options are default e.g. in Jessie.
 # tags: CCE-27124-7 CCE-27091-8 CCE-26887-0 
 
 if ! grep -q "IgnoreRhosts yes" /etc/ssh/sshd_config 2>/dev/null; then
