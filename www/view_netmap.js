@@ -113,7 +113,7 @@ views.NetmapView.prototype.addGraphNode = function(service, direction) {
 						console.log("prev="+name);
 					if(name == view.previousNode)
 						tmp += "class='previousNode' ";
-					tmp += "href='#view=netmap&pN="+view.currentNode+"&h="+name+"'>"+name+"</a><br/> ";
+					tmp += "class='host_"+name.replace(/[.\-]/g,'_')+"' href='#view=netmap&pN="+view.currentNode+"&h="+name+"'>"+name+"</a><br/> ";
 				}
 			}
 			if (i == 6)
@@ -190,7 +190,7 @@ views.NetmapView.prototype.addHost = function() {
 				else if(resolvedRemote.match(/^[0-9]/))
 					remoteName = '<a class="resolve" href="javascript:lookupIp(\''+resolvedRemote+'\')" title="Click to resolve IP">'+resolvedRemote+'</a>';
 				else
-					remoteName = '<a href="#view=netmap&h='+resolvedRemote+'">'+resolvedRemote+'</a>';
+					remoteName = '<a class="host_'+resolvedRemote.replace(/[.\-]/g,'_')+'" href="#view=netmap&h='+resolvedRemote+'">'+resolvedRemote+'</a>';
 
 				$('#netMapTable tbody').append('<tr>'+
 					'<td>'+item.scope+'</td>' +
@@ -249,11 +249,68 @@ views.NetmapView.prototype.addHost = function() {
 				}
 			});
 		});
+
+		// Fetch and overlay monitoring
+		// FIXME: only when checking stuff for today
+		$.getJSON("/api/icinga2", {})
+	        .done(function(data) {
+			console.log(data);
+			$.each(data.results, function(i, d) {
+				var host = d.name.replace(/!.*/, "");
+				var id = host.replace(/[.\-]/g, "_");
+				// FIXME type host needs to be mapped to host link
+				if($(".host_"+id).length) {
+					var severity = 'FAILED';
+					if(d.attrs.state === 2.0) severity = 'WARNING';
+					if(d.attrs.state === 3.0) severity = 'UNKNOWN';
+					$('.host_'+id).addClass(severity);
+				}
+			});
+      	 	 })
+
+	});
+}
+
+views.NetmapView.prototype.listHosts = function(params) {
+	clean();
+	$('#results').append('<h3>Please select a host</h3>');
+
+	getData("hosts", function(data) {
+		$.each(data.results, function(h) {
+			$('#results').append('<span id="host_'+h.replace(/[.\-]/g,"_")+'"><a href="#view=netmap&nt='+(params.nt?params.nt:'TCP connection')+'&h='+h+'">'+h+'</a></span><br/>');
+		});
+
+		// Fetch monitoring
+		// FIXME: only when checking stuff for today
+		$.getJSON("/api/icinga2", {})
+	        .done(function(data) {
+			console.log(data);
+			$.each(data.results, function(i, d) {
+				var host = d.name.replace(/!.*/, "");
+				var name = d.name.replace(/.*!/, "");
+				var id = host.replace(/[.\-]/g, "_");
+				// FIXME type host needs to be mapped to host link
+				if($("#host_"+id).length) {
+					var severity = 'FAILED';
+					if(d.attrs.state === 2.0) severity = 'WARNING';
+					if(d.attrs.state === 3.0) severity = 'UNKNOWN';
+					$('#host_'+id).append(" <span class='"+severity+"'>"+name+'</span>');
+				}
+			});
+      	 	 })
+       		 .fail(function(j, t, e) {
+			console.log("Sorry no Icinga info available!");
+		});
 	});
 }
 
 views.NetmapView.prototype.update = function(params) {
-	if(!("h" in params) || !("nt" in params)) {
+	if(!("h" in params) || (params.h === "")) {
+		this.listHosts(params);
+		return;
+	}
+
+	if(!("nt" in params) || (params.nt === "")) {
 		setLocationHash({
 			h: params.h?params.h:Object.keys(hosts)[0],
 			nt: params.nt?params.nt:'TCP connection'
