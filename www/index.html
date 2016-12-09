@@ -729,6 +729,35 @@ a.resolve {
 				$('#hostlist').show();
 			}
 
+			function overlayMonitoring(host, alertTableId, append) {
+				// FIXME: do not be icinga specific here
+				getAPI("icinga2", function(data) {
+					$.each(data.results, function(i, d) {
+						var h = d.name.replace(/!.*/, "");
+						var name = d.name.replace(/.*!/, "");
+						var id = h.replace(/[.\-]/g, "_");
+						var severity = 'FAILED';
+						if(d.attrs.state === 2.0) severity = 'WARNING';
+						if(d.attrs.state === 3.0) severity = 'UNKNOWN';
+						// FIXME type host needs to be mapped to host link
+						if($(".host_"+id).length) {
+							$('.host_'+id).addClass(severity);
+						}
+						// Optionally: for current host add alerts in inventory table
+						if(host === h && undefined !== alertTableId) {
+							if(!$("#"+alertTableId+" .alerts_td").length) {
+								$('#'+alertTableId).append("<tr class='alerts_td'><th>Monitoring</th></tr>");
+							}
+							$('#'+alertTableId).append("<tr><td class='"+severity+"'>"+name+"</td></tr>");
+						}
+
+						// Optionally append to host id element
+						if(append)
+							$('#host_'+id).append(" <span class='"+severity+"'>"+name+'</span>');
+					});
+				 })
+			}
+
 			function getAPI(name, callback, errorcb) {
 				var cacheName = "api_"+ name.replace('-', '_');
 

@@ -138,6 +138,8 @@ views.ServicemapView.prototype.addHosts = function(filteredHosts) {
 		});
 
 		view.updateGraph();
+		if(isLive())
+			overlayMonitoring(undefined, undefined, false);
 	});
 }
 

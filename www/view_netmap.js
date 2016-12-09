@@ -240,29 +240,15 @@ views.NetmapView.prototype.addHost = function() {
 								return;
 							}
 						});
-						$('#inventoryTable').append("<tr><td><b>"+v.inventory.replace("Network ", "")+"</b><br/> "+invValue+"</td></tr>");
+						if(invValue !== '')
+							$('#inventoryTable').append("<tr><td><b>"+v.inventory.replace("Network ", "")+"</b><br/> "+invValue+"</td></tr>");
 					});
 				}
 			});
 		});
 
-		// Fetch and overlay monitoring
-		if(isLive()) {
-			getAPI("icinga2", function(data) {
-				$.each(data.results, function(i, d) {
-					var host = d.name.replace(/!.*/, "");
-					var id = host.replace(/[.\-]/g, "_");
-					// FIXME type host needs to be mapped to host link
-					if($(".host_"+id).length) {
-						var severity = 'FAILED';
-						if(d.attrs.state === 2.0) severity = 'WARNING';
-						if(d.attrs.state === 3.0) severity = 'UNKNOWN';
-						$('.host_'+id).addClass(severity);
-					}
-				});
-      		 	 })
-		}
-
+		if(isLive()) 
+			overlayMonitoring(host, "inventoryTable", false);
 	});
 }
 
@@ -275,23 +261,8 @@ views.NetmapView.prototype.listHosts = function(params) {
 			$('#results').append('<span id="host_'+h.replace(/[.\-]/g,"_")+'"><a href="#view=netmap&nt='+(params.nt?params.nt:'TCP connection')+'&h='+h+'">'+h+'</a></span><br/>');
 		});
 
-		// Fetch monitoring
-		if(isLive()) {
-			getAPI("icinga2", function(data) {
-				$.each(data.results, function(i, d) {
-					var host = d.name.replace(/!.*/, "");
-					var name = d.name.replace(/.*!/, "");
-					var id = host.replace(/[.\-]/g, "_");
-					// FIXME type host needs to be mapped to host link
-					if($("#host_"+id).length) {
-						var severity = 'FAILED';
-						if(d.attrs.state === 2.0) severity = 'WARNING';
-						if(d.attrs.state === 3.0) severity = 'UNKNOWN';
-						$('#host_'+id).append(" <span class='"+severity+"'>"+name+'</span>');
-					}
-				});
-			});
-		}
+		if(isLive())
+			overlayMonitoring(undefined, undefined, true);
 	});
 }
 
