@@ -38,3 +38,28 @@ result_network_edge() {
 Network NETEDGE |||$etype||| {"host": "$(hostname -f)", "scope": "$scope", "ln": "$ln", "ltn": "$ltn", "rn": "$rn", "rtn": "$rtn", "dir": "$dir", "cnt": "$cnt"}
 EOT
 }
+
+puppet_enabled() {
+	test "$puppet_report" != ""
+	return $?
+} 
+
+puppet_run_ok() {
+	grep -q "^  status: failed" $puppet_report 2>/dev/null
+	return $?
+}
+
+puppet_resource_exists() {
+	resource_type=$1;	shift
+	value=$1		shift
+
+	# We need to switch checks for Puppet 2/3 and 4, because
+	# Puppetlabs APT module in Puppet4 has File resources with absolute
+	# file path which was not the case before
+	if [ "$resource_type" == "File" -a "$puppet_version" == "23" ]; then
+		value=$(basename $value)
+	fi
+
+	grep -q "resource: $resource_type\[$value\]" "$puppet_report" 2>/dev/null
+	return $?
+}

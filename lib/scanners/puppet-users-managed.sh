@@ -1,21 +1,13 @@
 # group: Puppet
 # name: Users managed
-# description: Checks for Puppet 2/3/4 wether all UID > 1000 are managed
+# description: Checks for Puppet 2/3/4 wether all UID > 1000 are managed using Puppet resources
 
-if [ -f /var/lib/puppet/state/last_run_report.yaml ]; then
-	# Puppet 2/3
-	puppet_report=/var/lib/puppet/state/last_run_report.yaml
-else
-	# Puppet 4
-	puppet_report=/opt/puppetlabs/puppet/cache/state/last_run_report.yaml
-fi
-
-if [ -f $puppet_report ]; then
-	if ! grep -q "^  status: failed" $puppet_report 2>/dev/null; then 
+if puppet_enabled; then
+	if puppet_run_ok; then
 		users=$(awk -F: '{if(($3 >= 1000) && ($3 < 65534)) { print $1 }}' /etc/passwd)
 		unmanaged=
 		for u in $users; do
-			if ! grep -q "resource: User\[$u\]" $puppet_report 2>/dev/null; then
+			if ! puppet_resource_exists "User" "$u"; then
 				unmanaged="${unmanaged} $u"
 			fi
 		done

@@ -1,22 +1,14 @@
 # group: Puppet
 # name: APT repos managed
-# description: Checks for Puppet 2/3/4 wether all APT repos are managed
+# description: Checks for Puppet 2/3/4 wether all APT repos with the exception of the default debian definition are managed
 
-if [ -f /var/lib/puppet/state/last_run_report.yaml ]; then
-	# Puppet 2/3
-	puppet_report=/var/lib/puppet/state/last_run_report.yaml
-else
-	# Puppet 4
-	puppet_report=/opt/puppetlabs/puppet/cache/state/last_run_report.yaml
-fi
-
-if [ -f $puppet_report ]; then
-	if ! grep -q "^  status: failed" $puppet_report 2>/dev/null; then 
+if puppet_enabled; then
+	if puppet_run_ok; then
 		# Note: puppetlabs-apt module has file resources with just the file name...
-		repo_files=$(cd /etc/apt/sources.list.d/ && ls || grep -v '^default_debian*')
+		repo_files=$(ls /etc/apt/sources.list.d/* 2>/dev/null || grep -v '^default_debian*')
 		unmanaged=
 		for f in $repo_files; do
-			if ! grep -q "resource: File\[$f\]" $puppet_report 2>/dev/null; then
+			if ! puppet_resource_exists "File" "$f"; then
 				unmanaged="${unmanaged} $f"
 			fi
 		done

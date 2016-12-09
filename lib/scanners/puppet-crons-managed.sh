@@ -1,17 +1,9 @@
 # group: Puppet
 # name: Cron Jobs managed
-# description: Checks for Puppet 2/3/4 wether all cron jobs are managed
+# description: Checks for Puppet 2/3/4 wether all cron jobs are managed using the Puppet cron resource
 
-if [ -f /var/lib/puppet/state/last_run_report.yaml ]; then
-	# Puppet 2/3
-	puppet_report=/var/lib/puppet/state/last_run_report.yaml
-else
-	# Puppet 4
-	puppet_report=/opt/puppetlabs/puppet/cache/state/last_run_report.yaml
-fi
-
-if [ -f $puppet_report ]; then
-	if ! grep -q "^  status: failed" $puppet_report 2>/dev/null; then 
+if puppet_enabled; then
+	if puppet_run_ok; then
 		unmanaged=
 		for f in /etc/crontab /var/spool/cron/crontabs/*; do
 			results=$(
