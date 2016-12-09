@@ -13,11 +13,7 @@ views.NetmapView = function NetmapView(parentDiv, params) {
 	this.previousNode;
 };
 
-// FIXME: scope
-var viewBoxX, viewBoxY;
-
 function lookupIp(ip) {
-	console.log("Resolving "+ip);
 	$.getJSON('http://ipinfo.io/'+ip, function(data){
 		alert("IP: "+data.ip+
 		      "\nName: "+data.hostname+
@@ -251,22 +247,21 @@ views.NetmapView.prototype.addHost = function() {
 		});
 
 		// Fetch and overlay monitoring
-		// FIXME: only when checking stuff for today
-		$.getJSON("/api/icinga2", {})
-	        .done(function(data) {
-			console.log(data);
-			$.each(data.results, function(i, d) {
-				var host = d.name.replace(/!.*/, "");
-				var id = host.replace(/[.\-]/g, "_");
-				// FIXME type host needs to be mapped to host link
-				if($(".host_"+id).length) {
-					var severity = 'FAILED';
-					if(d.attrs.state === 2.0) severity = 'WARNING';
-					if(d.attrs.state === 3.0) severity = 'UNKNOWN';
-					$('.host_'+id).addClass(severity);
-				}
-			});
-      	 	 })
+		if(isLive()) {
+			getAPI("icinga2", function(data) {
+				$.each(data.results, function(i, d) {
+					var host = d.name.replace(/!.*/, "");
+					var id = host.replace(/[.\-]/g, "_");
+					// FIXME type host needs to be mapped to host link
+					if($(".host_"+id).length) {
+						var severity = 'FAILED';
+						if(d.attrs.state === 2.0) severity = 'WARNING';
+						if(d.attrs.state === 3.0) severity = 'UNKNOWN';
+						$('.host_'+id).addClass(severity);
+					}
+				});
+      		 	 })
+		}
 
 	});
 }
@@ -281,26 +276,22 @@ views.NetmapView.prototype.listHosts = function(params) {
 		});
 
 		// Fetch monitoring
-		// FIXME: only when checking stuff for today
-		$.getJSON("/api/icinga2", {})
-	        .done(function(data) {
-			console.log(data);
-			$.each(data.results, function(i, d) {
-				var host = d.name.replace(/!.*/, "");
-				var name = d.name.replace(/.*!/, "");
-				var id = host.replace(/[.\-]/g, "_");
-				// FIXME type host needs to be mapped to host link
-				if($("#host_"+id).length) {
-					var severity = 'FAILED';
-					if(d.attrs.state === 2.0) severity = 'WARNING';
-					if(d.attrs.state === 3.0) severity = 'UNKNOWN';
-					$('#host_'+id).append(" <span class='"+severity+"'>"+name+'</span>');
-				}
+		if(isLive()) {
+			getAPI("icinga2", function(data) {
+				$.each(data.results, function(i, d) {
+					var host = d.name.replace(/!.*/, "");
+					var name = d.name.replace(/.*!/, "");
+					var id = host.replace(/[.\-]/g, "_");
+					// FIXME type host needs to be mapped to host link
+					if($("#host_"+id).length) {
+						var severity = 'FAILED';
+						if(d.attrs.state === 2.0) severity = 'WARNING';
+						if(d.attrs.state === 3.0) severity = 'UNKNOWN';
+						$('#host_'+id).append(" <span class='"+severity+"'>"+name+'</span>');
+					}
+				});
 			});
-      	 	 })
-       		 .fail(function(j, t, e) {
-			console.log("Sorry no Icinga info available!");
-		});
+		}
 	});
 }
 
