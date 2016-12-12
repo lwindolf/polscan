@@ -104,7 +104,7 @@ views.OverviewView.prototype.update = function(params) {
 							"color": "#ff0000"
 							});
 						compliant = 0;
-						tmp += ' <span class="FAILED" title="Total failures found">' +
+						tmp += ' <span class="FAILED problems" title="Total failures found">' +
 						item.FAILED +
 						'</span>';
 					}
@@ -115,12 +115,12 @@ views.OverviewView.prototype.update = function(params) {
 							"color": "#ee0"
 							});
 						compliant = 0;
-						tmp += ' <span class="WARNING" title="Total warnings seen">' +
+						tmp += ' <span class="WARNING problems" title="Total warnings seen">' +
 						item.WARNING +
 						'</span>'
 					}
 					if(compliant) {
-						tmp += ' <span class="compliant" title="100% compliance for this group">compliant</span>';
+						tmp += ' <span class="compliant problems" title="100% compliance for this group">compliant</span>';
 					}
 				}
 			});
@@ -158,7 +158,7 @@ views.OverviewView.prototype.update = function(params) {
 						var tmp = '<tr><td class="group" title="'+item.description+'" filter="' + group + '">' + group + '</td><td class="policy" '+pf+'>' + (policy?policy:"") + '</td>';
 						tmp += '<td class="policy" '+pf+'>';
 						if(failed > 0)
-							tmp += '<span class="FAILED_ni" title="Total failures found">' + failed + '</span>';
+							tmp += '<span class="FAILED problems" title="Total failures found">' + failed + '</span>';
 						else
 							tmp += '<span title="Total failures found">0</span>';
 						tmp += '</td><td class="change">';
@@ -173,7 +173,7 @@ views.OverviewView.prototype.update = function(params) {
 						}
 						tmp += '</td><td class="policy" '+pf+'>';
 						if(warning > 0)
-							tmp += '<span class="WARNING_ni" title="Total warnings seen">' + warning + '</span>';
+							tmp += '<span class="WARNING problems" title="Total warnings seen">' + warning + '</span>';
 						else
 							tmp += '<span title="Total warnings found">0</span>';
 						tmp += '</td><td class="change">';
