@@ -103,7 +103,7 @@ views.HostmapView.prototype.addHostsToMap = function(params) {
 			} else if(-1 != value.indexOf('O')) {
 				html += "OK";
 			} else {
-				html += "UNKNOWN";
+				html += "NORESULTS";
 			}
 			html += "' onclick='setLocationHash({ view: \"results\", fG: \"all\", sT: \""+host+"\"}, true)'>&nbsp;</div> ";
 			var groupName = getGroupByHost(params.gT, host);
