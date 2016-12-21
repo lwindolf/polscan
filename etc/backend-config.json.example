@@ -1,0 +1,15 @@
+{
+	"api": {
+		"monitoring": {
+			"hostname": "icinga.example.com",
+			"port": 5665,
+			"path": "/v1/objects/services?filter=service.state!=0&attrs=__name&attrs=type&attrs=acknowledgement&attrs=state",
+    			"ssl_key": "../etc/ssl/icinga.key",
+			"ssl_cert": "../etc/ssl/icinga.crt"
+		}
+	},
+	"static": {
+		"rootdir": "../www",
+		"results": "../results"
+	}
+}
