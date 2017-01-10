@@ -26,6 +26,9 @@ function lookupIp(ip) {
 	})
 }
 
+var viewBoxX =0;
+var viewBoxY = 0;
+
 views.NetmapView.prototype.updateGraph = function() {
 	var width = $('#netmap').width();
 	var	height = $('#netmap').height();
@@ -36,7 +39,7 @@ views.NetmapView.prototype.updateGraph = function() {
 
 	// Allow panning as suggested in by dersinces (CC BY-SA 3.0) in
 	// http://stackoverflow.com/questions/20099299/implement-panning-while-keeping-nodes-draggable-in-d3-force-layout
-/*	var drag = d3.behavior.drag();
+	var drag = d3.behavior.drag();
 	drag.on('drag', function() {
 	    viewBoxX -= d3.event.dx;
 	    viewBoxY -= d3.event.dy;
@@ -51,7 +54,7 @@ views.NetmapView.prototype.updateGraph = function() {
 	  .attr('width', width)
 	  .attr('height', height)
 	  .call(drag);
-*/
+
 	var nodeArea = svg.append('g').classed('node-area', true);
 
 	var g = new dagreD3.graphlib.Graph()
@@ -289,5 +292,4 @@ views.NetmapView.prototype.update = function(params) {
 	this.currentNode = params.h;
 	this.neType = params.nt;
 	this.addHost();
-//	this.addInventory("Network");
 };
