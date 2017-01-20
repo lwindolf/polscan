@@ -705,7 +705,7 @@ a.resolve {
 				$('#hostlist').html('<textarea id="copyHostList">');
 				var hosts;
 				if(currentViewName === 'results')
-					hosts = $('td.host:visible').map(function() {
+					hosts = $('.host:visible').map(function() {
 						return $(this).html();
 					}).get();
 				if(currentViewName === 'hostmap' || currentViewName === 'inventory')

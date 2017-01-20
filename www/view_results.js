@@ -135,7 +135,7 @@ function createGroupTable(id, results) {
 	for(var key in values) {
 		var hostlinks = "";
 		for(var h in hosts[key])
-			hostlinks += "<a href='javascript:setLocationHash({ fG: \"all\", sT: \""+hosts[key][h]+"\"}, true);'>"+hosts[key][h]+"</a> ";
+			hostlinks += "<a href='javascript:setLocationHash({ fG: \"all\", sT: \""+hosts[key][h]+"\"}, true);' class='host'>"+hosts[key][h]+"</a> ";
 		rows.push('<td class="groupByValue">' + key + '</td>' +
 				'<td class="count">' + hosts[key].length + '</td>' +
 				'<td class="hosts">' + hostlinks + '</td>');
