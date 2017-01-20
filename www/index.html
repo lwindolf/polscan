@@ -846,7 +846,7 @@ a.resolve {
 				$.getScript("view_"+name+".js")
 				.done(function(s, t) {
 					try {
-						currentView = new views[name[0].toUpperCase()+name.slice(1)+"View"]('#results', params);
+						currentView = new views[name[0].toUpperCase()+name.slice(1)+"View"]('#results');
 						currentViewName = name;
 						loadFilterSettings(params);
 						currentView.update(params);

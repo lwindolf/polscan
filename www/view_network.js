@@ -2,7 +2,7 @@
 /* A view visualizing active network connections using 
    network inventory. */
 
-views.NetworkView = function NetworkView(parentDiv, params) {
+views.NetworkView = function NetworkView(parentDiv) {
 	this.parentDiv = parentDiv;
 	this.filterOptions = {
 		filterby: true,

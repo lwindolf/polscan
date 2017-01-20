@@ -3,7 +3,7 @@
    from/to the internet as well as changes in those over
    a certain time range */
 
-views.NetedgeView = function NetedgeView(parentDiv, params) {
+views.NetedgeView = function NetedgeView(parentDiv) {
 	this.parentDiv = parentDiv;
 	this.filterOptions = {
 		filterby: true,

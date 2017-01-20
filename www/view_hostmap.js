@@ -3,7 +3,7 @@
    Represents hosts as color coded boxes according to maximum
    finding severity */
 
-views.HostmapView = function HostmapView(parentDiv, params) {
+views.HostmapView = function HostmapView(parentDiv) {
 	this.parentDiv = parentDiv;
 	this.filterOptions = {
 		findings: true,

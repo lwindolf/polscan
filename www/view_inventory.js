@@ -4,7 +4,7 @@
    host boxes. Suitable for mapping out inventory where each
    host has less than 5 findings */
 
-views.InventoryView = function InventoryView(parentDiv, params) {
+views.InventoryView = function InventoryView(parentDiv) {
 	this.parentDiv = parentDiv;
 	this.filterOptions = {
 		inventory: true,

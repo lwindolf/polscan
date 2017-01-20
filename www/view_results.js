@@ -1,7 +1,7 @@
 // vim: set ts=4 sw=4: 
 // View for displaying finding details in a sortable table
 
-views.ResultsView = function ResultsView(parentDiv, params) {
+views.ResultsView = function ResultsView(parentDiv) {
 	this.parentDiv = parentDiv;
 	this.filterOptions = {
 		findings: true,

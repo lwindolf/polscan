@@ -1,7 +1,7 @@
 // vim: set ts=4 sw=4: 
 // The overview...
 
-views.OverviewView = function OverviewView(parentDiv, params) {
+views.OverviewView = function OverviewView(parentDiv) {
 	this.parentDiv = parentDiv;
 };
 
