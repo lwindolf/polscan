@@ -1,6 +1,7 @@
 # group: Security
 # name: Enforce Bash History
 # description: Enforce safe Bash history for all users. Enforce timestamp for history.
+# source: http://akyl.net/securing-bashhistory-file-make-sure-your-linux-system-users-won%E2%80%99t-hide-or-delete-their-bashhistory
 
 patterns="HISTIGNORE=[\"'][\"']
 HISTCONTROL=[\"'][\"']
