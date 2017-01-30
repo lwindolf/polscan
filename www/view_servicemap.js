@@ -2,7 +2,7 @@
 /* A view visualizing service relations as a directed graph.
    with external IPs being the tree root */
 
-views.ServicemapView = function ServicemapView(parentDiv, params) {
+views.ServicemapView = function ServicemapView(parentDiv) {
 	this.parentDiv = parentDiv;
 	this.filterOptions = {
                 filterby: true,

@@ -2,7 +2,7 @@
 /* A view presenting all available polscan scanners with
    all details and extra statistics for all enabled scanners. */
 
-views.PoliciesView = function PoliciesView(parentDiv, params) {
+views.PoliciesView = function PoliciesView(parentDiv) {
 	this.parentDiv = parentDiv;
 	this.filterOptions = {};
 };

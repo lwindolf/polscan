@@ -705,7 +705,7 @@ a.resolve {
 				$('#hostlist').html('<textarea id="copyHostList">');
 				var hosts;
 				if(currentViewName === 'results')
-					hosts = $('td.host:visible').map(function() {
+					hosts = $('.host:visible').map(function() {
 						return $(this).html();
 					}).get();
 				if(currentViewName === 'hostmap' || currentViewName === 'inventory')
@@ -846,7 +846,7 @@ a.resolve {
 				$.getScript("view_"+name+".js")
 				.done(function(s, t) {
 					try {
-						currentView = new views[name[0].toUpperCase()+name.slice(1)+"View"]('#results', params);
+						currentView = new views[name[0].toUpperCase()+name.slice(1)+"View"]('#results');
 						currentViewName = name;
 						loadFilterSettings(params);
 						currentView.update(params);
