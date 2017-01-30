@@ -664,6 +664,7 @@ a.resolve {
 			<a href="#view=hostmap">Findings</a>
 			<a href="#view=inventory">Inventory</a>
 			<a href="#view=netmenu">Net</a>
+			<a href="#view=vulnerabilities">Vulnerabilities</a>
 
 			Findings: 
 			<a href="#view=results&fG=all">All</a>
@@ -704,7 +705,7 @@ a.resolve {
 			function onCopyHosts() {
 				$('#hostlist').html('<textarea id="copyHostList">');
 				var hosts;
-				if(currentViewName === 'results')
+				if(currentViewName === 'results' || currentViewName === 'vulnerabilities')
 					hosts = $('.host:visible').map(function() {
 						return $(this).html();
 					}).get();
