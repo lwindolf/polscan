@@ -31,7 +31,7 @@ function addResultRows(name, rows, offset, count, sortOrder) {
 	var r = "";
 	for(var i = offset; i < offset+count; i++) {
 		if(rows[i])
-			r += "<tr>" + rows[i];
+			r += "<tr>" + rows[i] + "</tr>";
 	}
 	$("#resultTable"+name+" tbody").append(r);
 	if(offset + count < rows.length) {
