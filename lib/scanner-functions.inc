@@ -23,6 +23,16 @@ result_inventory() {
 	echo "INVENTORY |||$name||| $@"
 }
 
+result_vulnerability() {
+	cve=$1; shift
+	pkg=$1; shift
+	tags=$1; shift
+
+	cat <<EOT
+Security VULN |||$pkg||| {"cve": "$cve", "pkg": "$pkg", "tags": ["${tags//, /\",\"}"]}
+EOT
+}
+
 result_network_edge() {
 	etype=$1;	shift
         scope=$1;	shift
