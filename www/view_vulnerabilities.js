@@ -47,7 +47,7 @@ function addVulnResultRows(rows, offset, count, sortOrder) {
 			setLocationHash({ sT: $(this).html()}, true);
 		});
 	    $('#resultTable a.more').click(function(event){
-    	    event.preventDefault();
+       	 	    event.preventDefault();
    		    $(this).hide().prev().hide();
    		    $(this).next().show();        
    		});
@@ -94,12 +94,12 @@ function createVulnGroupTable(id, results) {
 		var hostlinks = "";
 		var i = 0;
 		for(var h in hosts[key]) {
-			if(i++ == 15) {
+			if(i++ == 10) {
 				hostlinks += ' <a href="#" class="more">...</a><span style="display:none">';
 			}
-			hostlinks += "<a href='javascript:setLocationHash({ sT: \""+hosts[key][h]+"\"}, true);' class='host'>"+hosts[key][h]+"</a> ";
+			hostlinks += hosts[key][h]+" ";
 		}
-		if(i >= 15)
+		if(i >= 10)
 			hostlinks += '</span>';
 
 		rows.push('<td class="vulnerability"><a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name='+values[key].cve+'">'+ values[key].cve +'</a></td>' +
