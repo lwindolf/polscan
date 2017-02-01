@@ -737,7 +737,7 @@ a.resolve {
 							if(!$("#"+alertTableId+" .alerts_td").length) {
 								$('#'+alertTableId).append("<tr class='alerts_td'><th>Monitoring</th></tr>");
 							}
-							$('#'+alertTableId).append("<tr><td class='"+severity+"'>"+name+"</td></tr>");
+							$('#'+alertTableId+' tr.alerts_td').after("<tr><td class='"+severity+"'>"+name+"</td></tr>");
 						}
 
 						// Optionally append to host id element
