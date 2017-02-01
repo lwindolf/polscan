@@ -257,19 +257,40 @@ views.NetmapView.prototype.addHost = function() {
 
 views.NetmapView.prototype.listHosts = function(params) {
 	clean();
-	$('#results').append('<h3>Please select a host</h3>');
+	$(this.parentDiv).append('<h3>Please select a host</h3><table class="resultTable tablesorter"><thead><tr><th>Host Name</th><th>Problems</th><th>Max Severity</th></tr></thead><tbody/></table>');
 
 	getData("hosts", function(data) {
 		$.each(data.results, function(h) {
-			$('#results').append('<span id="host_'+h.replace(/[.\-]/g,"_")+'"><a href="#view=netmap&nt='+(params.nt?params.nt:'TCP connection')+'&h='+h+'">'+h+'</a></span><br/>');
+			$('.resultTable').append('<tr><td><a href="#view=netmap&nt='+(params.nt?params.nt:'TCP connection')+'&h='+h+'">'+h+'</a></td><td class="problems" id="host_'+h.replace(/[.\-]/g,"_")+'"></td><td class="severity"></td></tr>');
 		});
 
-		if(isLive())
-			overlayMonitoring(undefined, undefined, true);
+		if(isLive()) {
+			$('#loadmessage').show();
+			$('#loadmessage i').html('Checking monitoring...');
+			overlayMonitoring(undefined, undefined, true, function() {
+				// Ugly: Calculate severity from text tags to allow severity sorting
+				$(".resultTable td.problems").each(function(i,t) {
+					var val = $(this).html();
+					var severity = 0;
+					if(-1 !== val.indexOf('UNKNOWN'))
+						severity = 1;
+					if(-1 !== val.indexOf('WARNING'))
+						severity = 2;
+					if(-1 !== val.indexOf('FAILED'))
+						severity = 3;
+					if(-1 !== val.indexOf('DOWN'))
+						severity = 3;
+					$(this).parent().find('td.severity').html(severity);
+				});
+				$(".resultTable").tablesorter({sortList: [[2,1],[0,0]]});
+				$('#loadmessage').hide();
+			});
+		}
 	});
 }
 
 views.NetmapView.prototype.update = function(params) {
+	clean();
 	if(!("h" in params) || (params.h === "")) {
 		this.listHosts(params);
 		return;
@@ -283,7 +304,6 @@ views.NetmapView.prototype.update = function(params) {
 		return;
 	}
 
-	clean();
 	$('#results').append('<table border="0" cellspacing="0" cellpadding="0" style="width:100%" height="'+$(window).height()+'px"><tr><td valign="top" width="100%"><div id="netmap" style="height:'+$(window).height()+'px;width:100%;margin-bottom:12px;border:1px solid #aaa;background:white;overflow:auto"/></td>' +
 	                     '</td><td valign="top"><table id="inventoryTable" class="resultTable tablesorter" style="width:300px"><thead><tr><th>Network Inventory</th></tr></thead><tbody/></table></td></tr></table>'+
 	                     '<table id="netMapTable" class="resultTable tablesorter"><thead><tr><th>Scope</th><th>Local Name</th><th>Local Transport</th><th>Remote Name</th><th>Remote Transport</th><th>In/Out</th><th>Count</th></tr></thead><tbody/></table>'

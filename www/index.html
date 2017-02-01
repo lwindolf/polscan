@@ -176,7 +176,8 @@
 				font-weight:bold;
 				background: #eee;
 			}
-			#results {
+			#viewlist {
+				padding:24px;
 			}
 			.resultTable {
 				border: 1px solid #aaa;
@@ -387,17 +388,6 @@
 			}
 			.hostMapGroup {
 				width:100%;
-			}
-			#hostmap th {
-				background:#555;
-				color:white;
-				font-weight:normal;
-			}
-			#hostmap tr.hostMapGroup {
-				background:#ddd;
-			}
-			#hostmap .hostMapGroup td {
-				border:0;
 			}
 		@media (min-width: 1024px) {
 			.hostMapGroup .groupName {
@@ -621,8 +611,7 @@ a.resolve {
 				float:left;
 				clear:both;
 			}
-			#group_list .title {
-				font-size:130%;
+			#viewlist .title {
 				font-weight:bold;
 				margin-bottom:3px;
 				display:block;
@@ -729,7 +718,7 @@ a.resolve {
 				$('#hostlist').show();
 			}
 
-			function overlayMonitoring(host, alertTableId, append) {
+			function overlayMonitoring(host, alertTableId, append, cb) {
 				// FIXME: do not be icinga specific here
 				getAPI("icinga2", function(data) {
 					$.each(data.results, function(i, d) {
@@ -755,6 +744,7 @@ a.resolve {
 						if(append)
 							$('#host_'+id).append(" <span class='"+severity+"'>"+name+'</span>');
 					});
+					cb();
 				 })
 			}
 
