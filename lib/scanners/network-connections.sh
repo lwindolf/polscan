@@ -73,7 +73,6 @@ while read proto recvq sendq localaddr remoteaddr state program rest; do
 done < <(/bin/netstat -tlp --numeric-hosts | grep -v " 127" | grep "^tcp.*LISTEN")
 
 # Analyze connections
-results=
 while read proto recvq sendq localaddr remoteaddr state program rest; do
 	localip=${localaddr%%:*}
 	localport=${localaddr##*:}
@@ -105,18 +104,18 @@ while read proto recvq sendq localaddr remoteaddr state program rest; do
 	else
 		direction=out
 	fi
-	results="$results$program:$localip:$localport:$remoteip:$remoteport:$direction "
-	if [ $direction == "in" ]; then
-		inventory="${inventory}${program} "
-	fi
-done < <(/bin/netstat -tap --numeric-hosts | egrep -v "( 127| ::1|LISTEN)" | grep "^tcp")
+	printf "%s\n" "$program:$localip:$localport:$remoteip:$remoteport:$direction"
+done < <(/bin/netstat -tap --numeric-hosts | egrep -v "( 127| ::1|LISTEN)" | grep "^tcp") |\
 
 # Reduce and write TCP connection edges
-/bin/echo $results | xargs -n 1 | sort | uniq -c |\
+xargs -n 1 | sort | uniq -c |
 awk '{print $2 " " $1}' | sed "s/:/ /g" |\
 while read program localip localport remoteip remoteport direction count; do
+	if [ "$program" == "-" ]; then
+		program="(unknown)"
+	fi
 	result_network_edge "TCP connection" "$program" "$localip" "$localport" "$remoteip" "$remoteport" "$direction" "$count"
 done
 
-result_inventory "active TCP services" $(/bin/echo $inventory | xargs -n 1 | sort -u)
+# Write port inventory
 result_inventory "running TCP services" $(/bin/echo $listen_inventory | xargs -n 1 | sort -u)
