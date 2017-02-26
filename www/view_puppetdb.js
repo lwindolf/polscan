@@ -30,7 +30,7 @@ views.PuppetdbView.prototype.update = function(params) {
 			// Apply Foreman like >85min means out-of-date
 			if(undefined !== d && (now.getTime() - d.getTime() > 85*60000))
 				stats[3].value++;
-			if(host["latest_report_status"] === "unchanged")
+			else if(host["latest_report_status"] === "unchanged")
 				stats[0].value++;
 			if(host["latest_report_status"] === "failed")
 				stats[2].value++;
@@ -43,11 +43,7 @@ views.PuppetdbView.prototype.update = function(params) {
 
 			total++;
 		});
-		$("<table id='puppetStatusTable' class='resultTable' style='margin-top:24px;float:right;margin-left:64px'><thead><tr><th>Status</th><th>Count</th></tr></thead><tbody>"+
-		stats.map(function(i) {
-			return "<tr><td><div style='width:20px;height:20px;float:left;margin-right:12px;background:"+i.color+"'/>"+i.label+"</td><td>"+i.value+"</td></tr>";
-		}).join("") + "</tbody></table>").appendTo('#findingsPies');
-		$('.puppetStatusTable tbody').append('<tr><td><b>Total Hosts</b></td><td>'+total+'</td></tr>');
+		$('#findingsPies').append(render('puppetdb', { "stats": stats, "total": total }));
 		
 		addPieChart('pieChartStatus', 'Puppet Run Status', 260, '#fff', stats);
     });
