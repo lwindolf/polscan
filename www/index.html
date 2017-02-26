@@ -638,6 +638,12 @@ a.resolve {
 			#group_list a:hover {
 				background:#ddd;
 			}
+
+			#page_title {
+				font-weight: bold;
+				font-size:150%;
+				margin:12px 12px;
+			}
 		</style>
 	</head>
 	<body class='main'>
@@ -662,6 +668,7 @@ a.resolve {
 			<a href="#view=policies">Policies</a>
 			</div>
 		</div>
+		<div id='page_title'></div>
 
 		<div id='filter' class='sidebar'></div>
 		<div id='results'></div>
@@ -871,6 +878,14 @@ a.resolve {
 				} catch(e) {
 					console.log("Invalid parameter encoding! "+e);
 				}
+
+				if(params.fullscreen === "1")
+					$('#menu').hide();
+				else
+					$('#menu').show();
+
+				if(params.title)
+					$('#page_title').html(params.title);
 
 				if(params.d) {
 					var newBaseUrl = "results/json/"+params.d+"/";
