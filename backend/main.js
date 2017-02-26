@@ -17,7 +17,6 @@ try {
 puppetdb_rest = { 
     hostname: config["api"]["puppetdb"]["hostname"],
     port:     config["api"]["puppetdb"]["port"],
-    path:     config["api"]["puppetdb"]["path"],
     method: 'GET'
 //    key: fs.readFileSync(config["api"]["puppetdb"]["ssl_key"]), 
 //    cert: fs.readFileSync(config["api"]["puppetdb"]["ssl_cert"])
@@ -28,7 +27,9 @@ puppetdb_rest = {
 
 function puppetdb_api(request, response) {
    response.writeHead(200, {'Content-Type': 'application/json'});
-   var req = https.request(puppetdb_rest, function(res) { 
+   var rest = puppetdb_rest;
+   rest.path = config["api"]["puppetdb/"+request.params.method]["path"];
+   var req = https.request(rest, function(res) { 
        res.on('data', function(data) { 
            response.write(data); 
        }); 
@@ -95,7 +96,7 @@ app.get('/api/monitoring', function(req, res) {
    monitoring_api(req, res);
 });
 
-app.get('/api/puppetdb', function(req, res) {
+app.get('/api/puppetdb/:method', function(req, res) {
    puppetdb_api(req, res);
 });
 
