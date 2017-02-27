@@ -4,20 +4,19 @@
 	<head>
 		<script type="text/javascript" src="filter.js"></script>
 		<script type="text/javascript" src="tooltip.js"></script>
-		<script type="text/javascript" src="d3.min.js"></script>
-		<script type="text/javascript" src="dagre.min.js"></script>
-		<script type="text/javascript" src="dagre-d3.min.js"></script>
-		<script type="text/javascript" src="jquery-2.1.4.min.js"></script>
-		<script type="text/javascript" src="jquery.tablesorter.min.js"></script>
-		<script type="text/javascript" src="Chart.min.js"></script>
-		<script type="text/javascript" src="jquery-ui.min.js"></script>
-		<script type="text/javascript" src="d3pie.min.js"></script>
-		<script type="text/javascript" src="sankey.js"></script>
+		<script type="text/javascript" src="pie_chart.js"></script>
 		<script type="text/javascript" src="templates.js"></script>
-		<script type="text/javascript" src="handlebars.min-latest.js"></script>
 		<script type="text/javascript" src="group_list.js"></script>
-		<link rel="stylesheet" href="jquery-ui.min.css">
-		<script src="jquery-ui.min.js"></script>
+		<script type="text/javascript" src="lib/d3.min.js"></script>
+		<script type="text/javascript" src="lib/dagre.min.js"></script>
+		<script type="text/javascript" src="lib/dagre-d3.min.js"></script>
+		<script type="text/javascript" src="lib/jquery-2.1.4.min.js"></script>
+		<script type="text/javascript" src="lib/jquery.tablesorter.min.js"></script>
+		<script type="text/javascript" src="lib/Chart.min.js"></script>
+		<script type="text/javascript" src="lib/jquery-ui.min.js"></script>
+		<script type="text/javascript" src="lib/d3pie.min.js"></script>
+		<script type="text/javascript" src="lib/handlebars.min-latest.js"></script>
+		<link rel="stylesheet" href="lib/jquery-ui.min.css">
 		<meta charset="utf-8">
 		<style type="text/css">
 			body.main {
@@ -431,7 +430,6 @@
 				float:left;
 			}
 
-
 text {
   font-weight: 300;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -640,6 +638,12 @@ a.resolve {
 			#group_list a:hover {
 				background:#ddd;
 			}
+
+			#page_title {
+				font-weight: bold;
+				font-size:150%;
+				margin:12px 12px;
+			}
 		</style>
 	</head>
 	<body class='main'>
@@ -664,6 +668,7 @@ a.resolve {
 			<a href="#view=policies">Policies</a>
 			</div>
 		</div>
+		<div id='page_title'></div>
 
 		<div id='filter' class='sidebar'></div>
 		<div id='results'></div>
@@ -873,6 +878,14 @@ a.resolve {
 				} catch(e) {
 					console.log("Invalid parameter encoding! "+e);
 				}
+
+				if(params.fullscreen === "1")
+					$('#menu').hide();
+				else
+					$('#menu').show();
+
+				if(params.title)
+					$('#page_title').html(params.title);
 
 				if(params.d) {
 					var newBaseUrl = "results/json/"+params.d+"/";
