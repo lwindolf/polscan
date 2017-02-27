@@ -40,6 +40,26 @@ PIP       | yes       | yes           |
 CPAN      | no         | 
 NPM       | no         | 
 
+Collects inventories for
+
+* NTP / DNS Servers
+* OS Releases,  Kernel Version
+* External IPs, IPv6 Adresses
+* 3rd party APT repos used
+* CPU-RAM size, CPU type, Server type
+* RAID Vendor
+...
+
+Graphs network topologies
+
+* TCP Connections
+* Remote FS Mounts
+* Nginx Upstreams / Apache ProxyPass
+* SSH Key Equivalencies
+* Network Routes
+
+Provides vulnerabilities statistics per CVE using debsecan.
+
 Screenshots
 -----------
 
