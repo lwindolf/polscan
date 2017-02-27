@@ -27,9 +27,11 @@ result_vulnerability() {
 	cve=$1; shift
 	pkg=$1; shift
 	tags=$1; shift
+	tags=${tags//, /,}
+	tags=${tags//,/\",\"}
 
 	cat <<EOT
-Security VULN |||$pkg||| {"cve": "$cve", "pkg": "$pkg", "tags": ["${tags//, /\",\"}"]}
+Security VULN |||$pkg||| {"cve": "$cve", "pkg": "$pkg", "tags": ["${tags}"]}
 EOT
 }
 
