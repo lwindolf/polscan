@@ -9,7 +9,7 @@ var http = require("http"),
 var config = require('../etc/backend-config.json');
 var probes = require('../etc/probes.json');
 app.use(express.static(path.join(__dirname, config["static"]["rootdir"])));
-app.use(express.static("/results", path.join(__dirname, config["static"]["results"])));
+app.use("/results", express.static(path.join(__dirname, config["static"]["results"])));
 
 // Query PuppetDB API
 var puppetdb_rest = undefined;
