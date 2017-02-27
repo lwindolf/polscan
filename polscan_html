@@ -99,7 +99,7 @@ declare -A netedge_types
 
 # Produce vulnerability index
 (
-	ls | xargs -n1 grep -H "^Security VULN " | sed "s/.*||| //;s/$/,/"
+	ls | xargs -n1 grep -H "^Security VULN " | sed 's/^\([^:]*\):.*||| {/{"host":"\1",/;s/$/,/;'
 ) | write_json list vulnerabilities results
 
 # Produce inventory indices
