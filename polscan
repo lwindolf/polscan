@@ -83,17 +83,20 @@ fi
 
 # 1. If none given determine host list automatically
 if [ "$HOST_LIST" == "" ]; then 
-	echo "Fetching host list (provider '$HOST_LIST_PROVIDER')..."
-	HLP="$LIB_DIR/host-list-providers/$HOST_LIST_PROVIDER"
-	if [ ! -f "$HLP" ]; then
-		echo "ERROR: Could not find host list provider $HLP"
-		exit 1
-	fi
-	HOST_LIST=$($HLP)
-	if [ $? -ne 0 ]; then
-		echo "ERROR: Could not determine '$HOST_LIST_PROVIDER' host list!"
-		exit 1
-	fi
+	for h in $HOST_LIST_PROVIDER; do
+		echo "Fetching host list (provider '$h')..."
+		HLP="$LIB_DIR/host-list-providers/$h"
+		if [ ! -f "$HLP" ]; then
+			echo "ERROR: Could not find host list provider $HLP"
+			exit 1
+		fi
+		HOST_LIST="${HOST_LIST}
+$($HLP)"
+		if [ $? -ne 0 ]; then
+			echo "ERROR: Could not determine '$h' host list!"
+			exit 1
+		fi
+	done
 fi
 
 if [ "$HOST_LIST" == "" ]; then
