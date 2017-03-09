@@ -46,3 +46,5 @@ if [ "$days" != "" ]; then
 fi
 
 result_inventory "NMI Watchdog" "$(cat /proc/sys/kernel/nmi_watchdog)"
+
+result_inventory "Clock Source" "$(cat /sys/devices/system/clocksource/clocksource0/current_clocksource)"
