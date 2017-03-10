@@ -4,7 +4,7 @@
 
 declare -a fstab
 while read mountpoint; do
-	fstab[$mountpoint]=1
+	fstab[m_${mountpoint//\//_}]=1
 done < <(
 	grep -v '^#' /etc/fstab | awk '{print $2}'
 )
@@ -14,7 +14,7 @@ non_persistent=
 
 for m in $mountpoints
 do
-	if [[ ${fstab[$m]} != 1 ]]; then
+	if [[ ${fstab[m_${m//\//_}]} != 1 ]]; then
 		non_persistent="$non_persistent $m"
 	fi
 done
