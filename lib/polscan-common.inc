@@ -45,26 +45,6 @@ RESULT_DIR="${RESULT_BASE_DIR}/${DATE}"
 JSON_DIR="${RESULT_BASE_DIR}/json/${DATE}"
 
 ################################################################################
-# Determine host groups
-#
-# Host group providers give <host group>+<host> tuples. Which we regroup here
-# to per host group host lists.
-#
-# Fills the global hash "host_groups"
-################################################################################
-
-declare -A host_groups
-
-load_host_groups() {
-	export HOST_LIST	# Some providers might want to use it
-	export RESULT_DIR	# Some providers might want to use it
-
-	while read host_group host rest; do
-		host_groups[''$host_group]="${host_groups[''$host_group]}${host} "
-	done < <($LIB_DIR/host-group-providers/$HOST_GROUP_PROVIDERS | grep -v '^$')
-}
-
-################################################################################
 # get_policy_info
 #
 # $1	file name

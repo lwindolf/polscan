@@ -45,8 +45,6 @@ cd "$RESULT_DIR" || exit 1
 # Determine host list from input result dir
 HOST_LIST=$(cd "$RESULT_DIR" && ls)
 
-load_host_groups
-
 ###############################################################################
 # Helper method to write JSON, solves the issue of forbidden final comma in
 # array lists...
@@ -96,6 +94,31 @@ declare -A hosts	# contains host states (FIXME: wrong name 'hosts')
 declare -A host_names
 declare -A inventory_types
 declare -A netedge_types
+
+# Never overwrite host groups without need
+if [ ! -f "${JSON_DIR}/host_groups.json" ]; then
+	# Some preparations for running the host group providers:
+        export HOST_LIST        # Some host group providers might want to use it
+        export RESULT_DIR       # Some host group providers might want to use it
+
+	# Write hostgroups to intermediate file
+	# FIXME: Account for multiple host group providers!
+	$LIB_DIR/host-group-providers/$HOST_GROUP_PROVIDERS | grep -v '^$' >"${JSON_DIR}/hgs"
+
+	# Determine host group names
+	hgs=$(awk '{print $1}' "${JSON_DIR}/hgs" | sort -u)
+
+	# Write JSON
+	(
+		for hg in $hgs; do
+			printf '"%s": ["' "$hg"
+			grep -h "^$hg " "${JSON_DIR}/hgs" | awk '{print $2}' | xargs | sed 's/ /","/g;s/$/"],/'
+		done
+	) | write_json hash host_groups results
+#	rm ${JSON_DIR}/hgs
+else
+	echo "Using existing host_groups.json."
+fi
 
 # Produce vulnerability index
 (
@@ -229,13 +252,6 @@ done
 		echo -n "\"$h\": {\"WARNING\": ${hosts["warn_$h"]-0}, \"FAILED\": ${hosts["fail_$h"]-0}},"
 	done
 ) | write_json hash hosts results
-(
-	for h in ${!host_groups[*]}; do
-		tmp=${host_groups[$h]% }
-		tmp=${tmp// /\",\"}
-		echo -n "\"$h\": [\"$tmp\"],"
-	done
-) | write_json hash host_groups results
 
 # 30 days per-policy histogram
 declare -A histogram
