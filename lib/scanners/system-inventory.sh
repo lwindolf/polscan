@@ -46,5 +46,5 @@ if [ "$days" != "" ]; then
 fi
 
 result_inventory "NMI Watchdog" "$(cat /proc/sys/kernel/nmi_watchdog)"
-
-result_inventory "Clock Source" "$(cat /sys/devices/system/clocksource/clocksource0/current_clocksource)"
+result_inventory "Clock Source" "$(cat /sys/devices/system/clocksource/clocksource0/current_clocksource 2>/dev/null)"
+result_inventory "Block IO Scheduler" $(grep -vh "^none" /sys/block/*/queue/scheduler 2>/dev/null | sed 's/.*\[\(.*\)\].*/\1/' | sort -u)
