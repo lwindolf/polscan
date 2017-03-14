@@ -14,7 +14,8 @@
 
 for dir in /etc/nginx /usr/local/nginx/conf; do
 	if [ -d $dir ]; then
-		while read c; do
+		while read -r c; do
+			c=${c//[\'\"]}
 			x=$(openssl x509 -in "$c" -text)
 
 			# Check for weak signature algorithm
