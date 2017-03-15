@@ -8,8 +8,6 @@ var http = require("http"),
 
 var config = require('../etc/backend-config.json');
 var probes = require('../etc/probes.json');
-app.use(express.static(path.join(__dirname, config["static"]["rootdir"])));
-app.use("/results", express.static(path.join(__dirname, config["static"]["results"])));
 
 // Query PuppetDB API
 var puppetdb_rest = undefined;
@@ -99,6 +97,9 @@ app.get('/api/monitoring', function(req, res) {
 app.get('/api/puppetdb/:method', function(req, res) {
    puppetdb_api(req, res);
 });
+
+app.use(express.static(path.join(__dirname, config["static"]["rootdir"])));
+app.use("/results", express.static(path.join(__dirname, config["static"]["results"])));
 
 app.all('*', function(req, res) {
    res.sendfile('index.html')  
