@@ -2,7 +2,7 @@
 
 # polscan_html: Process polscan results into static HTML
 
-# Copyright (C) 2015-2016  Lars Windolf <lars.windolf@gmx.de>
+# Copyright (C) 2015-2017  Lars Windolf <lars.windolf@gmx.de>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -309,12 +309,12 @@ if [ -d "$RESULT_BASE_DIR/$ONE_DAY_AGO/" ]; then
 	# in one result set and those with a "Polscan" failure
 	# inside as diffing those produces false solved/new
 	# counts.
-        diff=$(diff -u <(cd "$RESULT_BASE_DIR/$ONE_DAY_AGO" && grep -F "|||" * | sort) <(cd "$RESULT_BASE_DIR/$DATE" && grep -F "|||" * | sort) | grep "^[-+]" | egrep -v " (INVENTORY|NETEDGE|OK) [|][|][|]")
-        new_today=$(echo "$diff" | grep "^+[^+]")
-        solved_today=$(echo "$diff" | grep "^-[^-]")
+        diff=$(diff -u <(cd "$RESULT_BASE_DIR/$ONE_DAY_AGO" && grep -F "|||" * | sort) <(cd "$RESULT_BASE_DIR/$DATE" && grep -F "|||" * | sort) | grep "^[-+]" | egrep -v " (INVENTORY|NETEDGE|OK|VULN) [|][|][|]")
+        new_today=$(printf "%s\n" "$diff" | grep "^+[^+]")
+        solved_today=$(printf "%s\n" "$diff" | grep "^-[^-]")
 
 	(
-		echo "$new_today" | sed "s/^+//" |\
+		printf "%s\n" "$new_today" | sed "s/^+//" |\
 		sed 's/:/ /' | grep -v "^$" |\
 		while read host group severity details; do
 			policy=${details/#|||/}
@@ -328,7 +328,7 @@ if [ -d "$RESULT_BASE_DIR/$ONE_DAY_AGO/" ]; then
 	) | write_json list new results
 
 	(
-		echo "$solved_today" | sed "s/^-//" |\
+		printf "%s\n" "$solved_today" | sed "s/^-//" |\
 		sed 's/:/ /' | grep -v "^$" |\
 		while read host group severity details; do
 			policy=${details/#|||/}
