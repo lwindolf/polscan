@@ -8,8 +8,8 @@
 
 all=$(/sbin/sysctl -a 2>/dev/null)
 results=$(
-while read m; do
-	/bin/echo "$all" | grep -q "$m"
+while read -r m; do
+	printf "%s\n" "$all" | grep -q "$m"
 done < <(
 	/bin/egrep -vh "^ *#|^ *$" /etc/sysctl.conf /etc/sysctl.d/*.conf 2>/dev/null | sed "s/ *= */ = /" 2>/dev/null
 ) | grep -v '^$'
