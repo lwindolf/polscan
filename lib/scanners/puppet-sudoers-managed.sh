@@ -4,7 +4,7 @@
 
 if puppet_enabled; then
 	if puppet_run_ok; then
-		sudoers_files=$(ls /etc/sudoers.d/* 2>/dev/null)
+		sudoers_files=$(ls /etc/sudoers.d/* 2>/dev/null | grep -v README)
 		unmanaged=
 		for f in $sudoers_files; do
 			if ! puppet_resource_exists "File" "$f"; then

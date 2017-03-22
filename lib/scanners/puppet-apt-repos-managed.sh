@@ -4,11 +4,14 @@
 
 if puppet_enabled; then
 	if puppet_run_ok; then
-		# Note: puppetlabs-apt module has file resources with just the file name...
 		repo_files=$(ls /etc/apt/sources.list.d/* 2>/dev/null || grep -v '^default_debian*')
 		unmanaged=
 		for f in $repo_files; do
-			if ! puppet_resource_exists "File" "$f"; then
+			# Note: puppetlabs-apt module has file resources with just the file name...
+			# also allow absolute filenames for other e.g. self-written definitions
+			if puppet_resource_exists "File" "$f" || puppet_resource_exists "File" "$(basename "$f")"; then
+				:
+			else
 				unmanaged="${unmanaged} $f"
 			fi
 		done

@@ -4,7 +4,7 @@
    host boxes. Suitable for mapping out inventory where each
    host has less than 5 findings */
 
-views.InventoryView = function InventoryView(parentDiv, params) {
+views.InventoryView = function InventoryView(parentDiv) {
 	this.parentDiv = parentDiv;
 	this.filterOptions = {
 		inventory: true,
@@ -16,6 +16,29 @@ views.InventoryView = function InventoryView(parentDiv, params) {
 	this.legendColorIndex;
 	this.legendSelection;
 };
+
+views.InventoryView.prototype.tooltip = function(container, event) {
+	var host = $(container).attr('host');
+	var details = "";
+	var cache = resultCache["inventory "+($('#inventoryType').val().replace('-', '_'))];
+
+	if(!cache)
+		console.log("Fatal: no cache for "+$('#findingsGroup').val());
+	else
+		$.each(cache.results, function(i, item) {
+			if(item.host == host) {
+				details += "<tr>";
+				if(item.group)
+					details += "<td class='group'>" + item.group + "</td>";
+				// FIXME: perform value splitting!
+				details += "<td class='values'>" + item.values + "</td></tr>";
+			}
+		});
+		if(details == "")
+			details = "<br/><br/>No inventory results for this host. This means that the scanner was not run or failed on this host.";
+
+		return '<b>'+host+'</b><table class="resultTable">'+details+'</table>';
+}
 
 /* Smart legend sorting by trying to extract leading float
    numbers (e.g. versions) from legend string. Falls back
@@ -131,7 +154,7 @@ views.InventoryView.prototype.update = function(params) {
 							content += "<td style='border:0;padding:1px;height:10px' class='legendIndex"+view.legendColorIndex[values[p]]+"'></td>";
 						content += "</tr></table>";
 					}
-					content = "<div class='hostMapBox KNOWN' host='"+f.host+"' title='"+f.host+" "+(values.length > 0?values.join(","):"")+"' onclick='setLocationHash({view:\"netmap\",h:\""+f.host+"\"});'>" + content + "</div>";
+					content = "<div class='hostMapBox KNOWN' host='"+f.host+"' onclick='setLocationHash({view:\"netmap\",h:\""+f.host+"\"});'>" + content + "</div>";
 					$('#' + groupClassName + ' .boxes').append(content);
 			});
 
@@ -162,5 +185,7 @@ views.InventoryView.prototype.update = function(params) {
 
 			$("#inventoryMap").tablesorter({sortList: [[0,0]]});
 			$("#legend .legendItem").on("click", view, view.selectLegendItem);
+
+		installTooltip('.hostMapBox', view.tooltip); 
 	});
 };

@@ -4,7 +4,10 @@
 # solution-cmd: apt-get install $(debsecan --only-fixed 2>&1 | grep "high urgency" | awk '{print $2}')
 
 if [ -f /usr/bin/debsecan ]; then 
-	cves=$(/usr/bin/timeout -k 5 -s 9 4 /usr/bin/debsecan --only-fixed --suite "$(lsb_release -cs)" 2>/dev/null | awk '/high urgency/{print $1 ":" $2}' | sort -u)
+	# Note: explicitely pass --config and SOURCE= to workaround Debian #842428
+	cves=$(/usr/bin/timeout -k 5 -s 9 4 /usr/bin/debsecan --only-fixed --config <(/bin/echo SOURCE="https://security-tracker.debian.org/tracker/debsecan/release/1/") --suite "$(lsb_release -cs)" 2>/dev/null |\
+	grep -v "obsolete" |\
+	awk '/high urgency/{print $1 ":" $2}' | sort -u)
 	if [ "$cves" != "" ]; then
 		result_failed "Unpatched CVE: " $cves
 	else

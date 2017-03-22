@@ -2,7 +2,7 @@
 /* A view visualizing active network connections using 
    network inventory. */
 
-views.NetworkView = function NetworkView(parentDiv, params) {
+views.NetworkView = function NetworkView(parentDiv) {
 	this.parentDiv = parentDiv;
 	this.filterOptions = {
 		filterby: true,
@@ -55,33 +55,42 @@ var link = svg.append("g").selectAll(".link"),
 	var i = 0, overflow = 0;
 	var selectedHosts = {};
 	var hostLimit = 200;
-	$.each(filteredHosts, function(h, host) {
-		if(i < hostLimit) {
-			// Reverse hostname to allow DNS grouping
-			var reversed = host.split(/\./).reverse().join('.');
-			var hostData = {name: reversed, size:1, imports:[]};
-			classes.push(hostData);
-			selectedHosts[host] = hostData;
-			i+=1;
-		} else {
-			overflow = 1;
-		}
-	});
-
-	// Add two Unresolved and NotShown hosts where we can put all unresolvable connections
-	selectedHosts['Unresolved_Internal'] = {name: 'Unresolved_Internal', size:1, imports:[]};
-	selectedHosts['Unresolved_External'] = {name: 'Unresolved_External', size:1, imports:[]};
-	selectedHosts['Not_Shown'] = {name: 'Not_Shown', size:1, imports:[]};
-	classes.push(selectedHosts['Unresolved_Internal']);
-	classes.push(selectedHosts['Unresolved_External']);
-	classes.push(selectedHosts['Not_Shown']);
-
-	if(overflow)
-		$('#loadmessage i').html("Only displaying the first "+hostLimit+" of "+filteredHosts.length+" hosts in this filter/selection. Please choose a smaller group!");
-	else
-		$('#loadmessage').hide();
 
 	getData("netedge "+this.neType, function(data) {
+		// Filter hosts a 2nd time to drop all without connections
+		var hostsWithConnections = {};
+		$.each(data.results, function(i, item) {
+			hostsWithConnections[item.host] = 1;
+		});
+
+		$.each(filteredHosts, function(h, host) {
+			if(!hostsWithConnections[host])
+				return;
+			if(i < hostLimit) {
+				// Reverse hostname to allow DNS grouping
+				var reversed = host.split(/\./).reverse().join('.');
+				var hostData = {name: reversed, size:1, imports:[]};
+				classes.push(hostData);
+				selectedHosts[host] = hostData;
+				i+=1;
+			} else {
+				overflow = 1;
+			}
+		});
+
+		// Add two Unresolved and NotShown hosts where we can put all unresolvable connections
+		selectedHosts['Unresolved_Internal'] = {name: 'Unresolved_Internal', size:1, imports:[]};
+		selectedHosts['Unresolved_External'] = {name: 'Unresolved_External', size:1, imports:[]};
+		selectedHosts['Not_Shown'] = {name: 'Not_Shown', size:1, imports:[]};
+		classes.push(selectedHosts['Unresolved_Internal']);
+		classes.push(selectedHosts['Unresolved_External']);
+		classes.push(selectedHosts['Not_Shown']);
+
+		if(overflow)
+			$('#loadmessage i').html("Only displaying the first "+hostLimit+" of "+filteredHosts.length+" hosts in this filter/selection. Please choose a smaller group!");
+		else
+			$('#loadmessage').hide();
+
 		$.each(selectedHosts, function(host, hostData) {
 		    // get connections for these hosts
 			var connections = [];

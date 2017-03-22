@@ -1,7 +1,7 @@
 // vim: set ts=4 sw=4: 
 // View for displaying finding details in a sortable table
 
-views.ResultsView = function ResultsView(parentDiv, params) {
+views.ResultsView = function ResultsView(parentDiv) {
 	this.parentDiv = parentDiv;
 	this.filterOptions = {
 		findings: true,
@@ -31,7 +31,7 @@ function addResultRows(name, rows, offset, count, sortOrder) {
 	var r = "";
 	for(var i = offset; i < offset+count; i++) {
 		if(rows[i])
-			r += "<tr>" + rows[i];
+			r += "<tr>" + rows[i] + "</tr>";
 	}
 	$("#resultTable"+name+" tbody").append(r);
 	if(offset + count < rows.length) {
@@ -57,34 +57,38 @@ function addResultRows(name, rows, offset, count, sortOrder) {
 	}
 }
 
-function createGroupTable(params, id, results) {
-	var filteredHosts = get_hosts_filtered(params, false)
+function itemMatches(item) {
+	if(this.params.gI !== undefined && item.message.indexOf(this.params.gI) == -1)
+		return false;
+	if(this.params.sT !== undefined && item.severity == 'OK')
+		return false;
+
+	if(params.sT &&
+	  !((item.host.indexOf(this.params.sT) != -1) ||
+	    (item.policy.indexOf(this.params.sT) != -1) ||
+	    (item.message.indexOf(this.params.sT) != -1)))
+		return false;
+
+	if(-1 == this.filteredHosts.indexOf(item.host))
+		return false;
+	return true;
+}
+
+function createGroupTable(id, results) {
 
 	clearTimeout(resultTableLoadTimeout);
 	$('#loadmessage').show();
 	$('.resultTable').empty();
 	$('.resultTable').remove();
-	$("<table id='resultTable"+params.fG+"' class='resultTable tablesorter'>")
-	.html("<thead><tr><th>"+params.gI+"</th><th>Count</th><th>Hosts</th></thead><tbody/>")
+	$("<table id='resultTable"+this.params.fG+"' class='resultTable tablesorter'>")
+	.html("<thead><tr><th>"+this.params.gI+"</th><th>Count</th><th>Hosts</th></thead><tbody/>")
 	.appendTo(id);
 
-	console.log("Grouping hosts by '"+params.gI+"'");
+	console.log("Grouping hosts by '"+this.params.gI+"'");
 	var hosts = new Array();
 	var values = new Array();
 	var view = this;
-	$.each(results, function( i, item ) {
-			if(item.message.indexOf(params.gI) == -1)
-				return;
-
-			if(params.sT &&
-			  !((item.host.indexOf(params.sT) != -1) ||
-				(item.policy.indexOf(params.sT) != -1) ||
-				(item.message.indexOf(params.sT) != -1)))
-				return;
-
-			if(-1 == filteredHosts.indexOf(item.host))
-				return;
-
+	$.each(results.filter(itemMatches, view), function( i, item ) {
 			if(item.severity == 'FAILED')
 				view.failed++;
 			else if(item.severity == 'WARNING')
@@ -131,7 +135,7 @@ function createGroupTable(params, id, results) {
 	for(var key in values) {
 		var hostlinks = "";
 		for(var h in hosts[key])
-			hostlinks += "<a href='javascript:setLocationHash({ fG: \"all\", sT: \""+hosts[key][h]+"\"}, true);'>"+hosts[key][h]+"</a> ";
+			hostlinks += "<a href='javascript:setLocationHash({ fG: \"all\", sT: \""+hosts[key][h]+"\"}, true);' class='host'>"+hosts[key][h]+"</a> ";
 		rows.push('<td class="groupByValue">' + key + '</td>' +
 				'<td class="count">' + hosts[key].length + '</td>' +
 				'<td class="hosts">' + hostlinks + '</td>');
@@ -145,8 +149,7 @@ function createGroupTable(params, id, results) {
 	sortTable("#resultTable"+params.fG, {sortList: [[1,1]]});
 }
 
-function createResultTable(params, id, data) {
-	var filteredHosts = get_hosts_filtered(params, false)
+function createResultTable(id, data) {
 	var group = '';
 	var name = params.fG;
 
@@ -167,52 +170,40 @@ function createResultTable(params, id, data) {
 	var rows = "";
 	var view = this;
 	var visibleHosts = new Array();
-	$.each(data, function( i, item ) {
-			var severity = 0;
+	$.each(data.filter(itemMatches, view), function( i, item ) {
+		var severity = 0;
 
-			if(!params.sT && item.severity == 'OK')
-				return;
+		if(item.severity == 'FAILED') {
+			view.failed++;
+			severity = 2;
+		}
+		if(item.severity == 'WARNING') {
+			view.warning++;
+			severity = 1;
+		}
+		visibleHosts[item.host] = 1;
 
-			if(-1 == filteredHosts.indexOf(item.host))
-				return;
+		rows += '<tr><td class="host">' + item.host + '</td>';
+		if(item.group)
+			rows += '<td class="group">' + item.group + '</td>';
+		rows +=
+			'<td class="policy">' + item.policy + '</td>' +
+			'<td class="severity '+item.severity+'">'+severity+'</td>' +
+			'<td class="message">' + item.message + '</td></tr>';
 
-			if(params.sT &&
-				!((item.host.indexOf(params.sT) != -1) ||
-				(item.policy.indexOf(params.sT) != -1) ||
-				(item.message.indexOf(params.sT) != -1)))
-				return;
-
-			if(item.severity == 'FAILED') {
-				view.failed++;
-				severity = 2;
+		// Fill array of possible groupings
+		//
+		// A group is indicated by a colon in the detail message
+		// followed by any whitespace or comma separated list.
+		var pos = item.message.indexOf(':');
+		if(pos != -1) {
+			var groupByStr = item.message.substring(0, pos); 
+			if(groupBy[groupByStr] === undefined) {
+				groupBy[groupByStr] = 1;
+			} else {
+				groupBy[groupByStr]++;
 			}
-			if(item.severity == 'WARNING') {
-				view.warning++;
-				severity = 1;
-			}
-			visibleHosts[item.host] = 1;
-
-			rows += '<tr><td class="host">' + item.host + '</td>';
-			if(item.group)
-				rows += '<td class="group">' + item.group + '</td>';
-			rows +=
-				'<td class="policy">' + item.policy + '</td>' +
-				'<td class="severity '+item.severity+'">'+severity+'</td>' +
-				'<td class="message">' + item.message + '</td></tr>';
-
-			// Fill array of possible groupings
-			//
-			// A group is indicated by a colon in the detail message
-			// followed by any whitespace or comma separated list.
-			var pos = item.message.indexOf(':');
-			if(pos != -1) {
-				var groupByStr = item.message.substring(0, pos); 
-				if(groupBy[groupByStr] === undefined) {
-					groupBy[groupByStr] = 1;
-				} else {
-					groupBy[groupByStr]++;
-				}
-			}
+		}
 	});
 	view.hostCount = Object.keys(visibleHosts).length;
 	console.log("Parsing done");
@@ -238,26 +229,28 @@ views.ResultsView.prototype.update = function(params) {
 	clean();
 
 	getData(params.fG, function(data) {
-			this.failed = 0;
-			this.warning = 0;
-			this.hostCount = 0;
+		this.failed = 0;
+		this.warning = 0;
+		this.hostCount = 0;
+		this.params = params;
+		this.filteredHosts = get_hosts_filtered(params, false);
 
-			$(id).append("<div id='badgeRow'/><div id='tableRow'/>");
+		$(id).append("<div id='badgeRow'/><div id='tableRow'/>");
 
-			if(!params.gI)
-				createResultTable(params, '#tableRow', data.results);
-			else
-				createGroupTable(params, '#tableRow', data.results);
+		if(!params.gI)
+			createResultTable('#tableRow', data.results);
+		else
+			createGroupTable('#tableRow', data.results);
 
-			var badgeTitle;
-			if(params.sT)
-				badgeTitle = "<small>Filter</small><br/> " + params.sT;
-			else if(params.fG)
-				badgeTitle = "<small>Group</small><br/> " + params.fG;
-			else
-				badgeTitle = "Overall";
+		var badgeTitle;
+		if(params.sT)
+			badgeTitle = "<small>Filter</small><br/> " + params.sT;
+		else if(params.fG)
+			badgeTitle = "<small>Group</small><br/> " + params.fG;
+		else
+			badgeTitle = "Overall";
 
-			createBadges('#badgeRow', this.failed, this.warning, badgeTitle, this.hostCount);
-			createHistogram('#badgeRow', params.fG, params.sT);
+		createBadges('#badgeRow', this.failed, this.warning, badgeTitle, this.hostCount);
+		createHistogram('#badgeRow', params.fG, params.sT);
 	});
 };

@@ -12,7 +12,7 @@ if [ -d $puppet_state_dir ]; then
 	if [ ! -f $puppet_state_dir/puppetdlock -a ! -f $puppet_state_dir/agent_disabled.lock ]; then
 		result_ok
 	else
-		comment=$(cat $puppet_state_dir/agent_disabled.lock | sed 's/.*disabled_message":"\([^"]*\)"/\1/')
+		comment=$(cat $puppet_state_dir/agent_disabled.lock 2>/dev/null | sed 's/.*disabled_message":"\([^"]*\)"/\1/')
 		result_failed "Agent disabled (reason: $comment)!"
 	fi
 fi

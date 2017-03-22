@@ -3,20 +3,20 @@
 <html>
 	<head>
 		<script type="text/javascript" src="filter.js"></script>
-		<script type="text/javascript" src="d3.min.js"></script>
-		<script type="text/javascript" src="dagre.min.js"></script>
-		<script type="text/javascript" src="dagre-d3.min.js"></script>
-		<script type="text/javascript" src="jquery-2.1.4.min.js"></script>
-		<script type="text/javascript" src="jquery.tablesorter.min.js"></script>
-		<script type="text/javascript" src="Chart.min.js"></script>
-		<script type="text/javascript" src="jquery-ui.min.js"></script>
-		<script type="text/javascript" src="d3pie.min.js"></script>
-		<script type="text/javascript" src="sankey.js"></script>
+		<script type="text/javascript" src="tooltip.js"></script>
+		<script type="text/javascript" src="pie_chart.js"></script>
 		<script type="text/javascript" src="templates.js"></script>
-		<script type="text/javascript" src="handlebars.min-latest.js"></script>
 		<script type="text/javascript" src="group_list.js"></script>
-		<link rel="stylesheet" href="jquery-ui.min.css">
-		<script src="jquery-ui.min.js"></script>
+		<script type="text/javascript" src="lib/d3.min.js"></script>
+		<script type="text/javascript" src="lib/dagre.min.js"></script>
+		<script type="text/javascript" src="lib/dagre-d3.min.js"></script>
+		<script type="text/javascript" src="lib/jquery-2.1.4.min.js"></script>
+		<script type="text/javascript" src="lib/jquery.tablesorter.min.js"></script>
+		<script type="text/javascript" src="lib/Chart.min.js"></script>
+		<script type="text/javascript" src="lib/jquery-ui.min.js"></script>
+		<script type="text/javascript" src="lib/d3pie.min.js"></script>
+		<script type="text/javascript" src="lib/handlebars.min-latest.js"></script>
+		<link rel="stylesheet" href="lib/jquery-ui.min.css">
 		<meta charset="utf-8">
 		<style type="text/css">
 			body.main {
@@ -175,7 +175,8 @@
 				font-weight:bold;
 				background: #eee;
 			}
-			#results {
+			#viewlist {
+				padding:24px;
 			}
 			.resultTable {
 				border: 1px solid #aaa;
@@ -387,17 +388,6 @@
 			.hostMapGroup {
 				width:100%;
 			}
-			#hostmap th {
-				background:#555;
-				color:white;
-				font-weight:normal;
-			}
-			#hostmap tr.hostMapGroup {
-				background:#ddd;
-			}
-			#hostmap .hostMapGroup td {
-				border:0;
-			}
 		@media (min-width: 1024px) {
 			.hostMapGroup .groupName {
 				width:200px;
@@ -439,7 +429,6 @@
 			div.pie {
 				float:left;
 			}
-
 
 text {
   font-weight: 300;
@@ -620,8 +609,7 @@ a.resolve {
 				float:left;
 				clear:both;
 			}
-			#group_list .title {
-				font-size:130%;
+			#viewlist .title {
 				font-weight:bold;
 				margin-bottom:3px;
 				display:block;
@@ -650,6 +638,12 @@ a.resolve {
 			#group_list a:hover {
 				background:#ddd;
 			}
+
+			#page_title {
+				font-weight: bold;
+				font-size:150%;
+				margin:12px 12px;
+			}
 		</style>
 	</head>
 	<body class='main'>
@@ -663,6 +657,7 @@ a.resolve {
 			<a href="#view=hostmap">Findings</a>
 			<a href="#view=inventory">Inventory</a>
 			<a href="#view=netmenu">Net</a>
+			<a href="#view=vulnerabilities">Vulnerabilities</a>
 
 			Findings: 
 			<a href="#view=results&fG=all">All</a>
@@ -673,6 +668,7 @@ a.resolve {
 			<a href="#view=policies">Policies</a>
 			</div>
 		</div>
+		<div id='page_title'></div>
 
 		<div id='filter' class='sidebar'></div>
 		<div id='results'></div>
@@ -703,8 +699,8 @@ a.resolve {
 			function onCopyHosts() {
 				$('#hostlist').html('<textarea id="copyHostList">');
 				var hosts;
-				if(currentViewName === 'results')
-					hosts = $('td.host:visible').map(function() {
+				if(currentViewName === 'results' || currentViewName === 'vulnerabilities')
+					hosts = $('.host:visible').map(function() {
 						return $(this).html();
 					}).get();
 				if(currentViewName === 'hostmap' || currentViewName === 'inventory')
@@ -727,7 +723,7 @@ a.resolve {
 				$('#hostlist').show();
 			}
 
-			function overlayMonitoring(host, alertTableId, append) {
+			function overlayMonitoring(host, alertTableId, append, cb) {
 				// FIXME: do not be icinga specific here
 				getAPI("icinga2", function(data) {
 					$.each(data.results, function(i, d) {
@@ -746,13 +742,14 @@ a.resolve {
 							if(!$("#"+alertTableId+" .alerts_td").length) {
 								$('#'+alertTableId).append("<tr class='alerts_td'><th>Monitoring</th></tr>");
 							}
-							$('#'+alertTableId).append("<tr><td class='"+severity+"'>"+name+"</td></tr>");
+							$('#'+alertTableId+' tr.alerts_td').after("<tr><td class='"+severity+"'>"+name+"</td></tr>");
 						}
 
 						// Optionally append to host id element
 						if(append)
 							$('#host_'+id).append(" <span class='"+severity+"'>"+name+'</span>');
 					});
+					cb();
 				 })
 			}
 
@@ -845,7 +842,7 @@ a.resolve {
 				$.getScript("view_"+name+".js")
 				.done(function(s, t) {
 					try {
-						currentView = new views[name[0].toUpperCase()+name.slice(1)+"View"]('#results', params);
+						currentView = new views[name[0].toUpperCase()+name.slice(1)+"View"]('#results');
 						currentViewName = name;
 						loadFilterSettings(params);
 						currentView.update(params);
@@ -881,6 +878,14 @@ a.resolve {
 				} catch(e) {
 					console.log("Invalid parameter encoding! "+e);
 				}
+
+				if(params.fullscreen === "1")
+					$('#menu').hide();
+				else
+					$('#menu').show();
+
+				if(params.title)
+					$('#page_title').html(params.title);
 
 				if(params.d) {
 					var newBaseUrl = "results/json/"+params.d+"/";

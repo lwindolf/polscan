@@ -14,7 +14,8 @@
 
 for dir in /etc/nginx /usr/local/nginx/conf; do
 	if [ -d $dir ]; then
-		while read c; do
+		while read -r c; do
+			c=${c//[\'\"]}
 			x=$(openssl x509 -in "$c" -text)
 
 			# Check for weak signature algorithm
@@ -27,7 +28,7 @@ for dir in /etc/nginx /usr/local/nginx/conf; do
 			# Check for insufficient RSA key sizes
 			key_size=$(
 				echo "$x" | grep "RSA Public Key: ([0-9][0-9]* bit)" |\
-				sed 's/.*(\([0-9][0-9]*\) bit).*/'
+				sed 's/.*(\([0-9][0-9]*\) bit).*/\1/'
 			)
 			if [ "$key_size" != "" ]; then
 				if [ "$key_size" -lt 1024 ]; then

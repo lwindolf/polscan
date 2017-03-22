@@ -1,7 +1,7 @@
 // vim: set ts=4 sw=4: 
 /* A view that allow to select the network view you want :-) */
 
-views.NetmenuView = function NetmenuView(parentDiv, params) {
+views.NetmenuView = function NetmenuView(parentDiv) {
 	this.parentDiv = parentDiv;
 	this.filterOptions = {};
 };
