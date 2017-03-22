@@ -36,7 +36,7 @@ fi
 # Determine previous date (going back up to 7 days)
 i=1
 ONE_DAY_AGO=nonsense
-while [ ! -d "$RESULT_BASE_DIR/$ONE_DAY_AGO" ]; do
+while [ ! -d "$RESULT_BASE_DIR/$ONE_DAY_AGO" -a $i -lt 30 ]; do
 	ONE_DAY_AGO=$(date -d "$DATE $i day ago" +%Y/%m/%d)
 	i=$(( $i + 1 ))
 done
