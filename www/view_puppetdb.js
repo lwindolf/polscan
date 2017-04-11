@@ -54,9 +54,44 @@ views.PuppetdbView.prototype.update = function(params) {
 			return "<tr><td><div style='width:20px;height:20px;float:left;margin-right:12px;background:#f77'/>"+i.certname+"</td><td>"+new Date(i.report_timestamp).toLocaleString()+"</td></tr>";
 		}).join("") + "</tbody></table>").appendTo('#row2');
 		if(data.length === 0)
-			$("<<tr><td colspan='2'>No problems right now.</td></tr>").appendTo('#puppetFailedTable tbody');
+			$("<tr><td colspan='2'>No problems right now.</td></tr>").appendTo('#puppetFailedTable tbody');
 		if(data.length === 50)
 			$("<small>(Max. 50 Hosts are shown)</small>").appendTo('#row2');
 	    $("#puppetFailedTable").tablesorter({sortList: [[1,1]]});
+	});
+
+	getAPI("puppetdb/changed", function(data) {
+		var max = 6;
+		$("<div class='badges' style='padding:6px 24px'><b>Recently Changed Resources</b><table id='puppetChangedTable' class='resultTable tablesorter'><thead><tr><th>Resource</th><th>Count</th></tr></thead><tbody>" +
+		data.sort(function(a,b) {
+			if(a.successes + b.successes > 0)
+				return b.successes - a.successes;
+		}).map(function(i) {
+			if(max <= 0)
+				return;
+			if(i.successes === 0)
+				return "";
+			max--;
+			return "<tr><td><div style='width:20px;height:20px;float:left;margin-right:12px;background:#44c'/>"+i.subject.title+"</td><td>"+i.successes+"</td></tr>";
+
+		}).join("") +
+		"</tbody></table></div>").appendTo('#row1');
+
+		max = 6;
+		$("<div class='badges' style='padding:6px 24px'><b>Recently Failed Resources</b><table id='puppetChangedTable' class='resultTable tablesorter'><thead><tr><th>Resource</th><th>Count</th></tr></thead><tbody>" +
+		data.sort(function(a,b) {
+			if(a.failures + b.failures > 0)
+				return b.failures - a.failures;
+		}).map(function(i) {
+			if(max <= 0)
+				return;
+			if(i.failures === 0)
+				return "";
+			max--;
+			return "<tr><td><div style='width:20px;height:20px;float:left;margin-right:12px;background:#f77'/>"+i.subject.title+"</td><td>"+i.failures+"</td></tr>";
+
+		}).join("") +
+		"</tbody></table></div>").appendTo('#row1');
+
 	});
 };
