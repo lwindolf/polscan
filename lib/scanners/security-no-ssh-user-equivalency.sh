@@ -19,7 +19,6 @@ for h in $homes; do
 done
 
 for k in $keys; do
-	echo "$k"
 	kvalue=$(cut -d " " -f 2 "$k")
 	if grep -q "$kvalue" $authorized_keys_files; then
 		result="$result $k"
@@ -29,5 +28,5 @@ done
 if [ "$result" == "" ]; then
 	result_ok
 else
-	result_warning "Keys with possible user equivalency: $result"
+	result_warning "Keys with possible user equivalency:" $result
 fi
