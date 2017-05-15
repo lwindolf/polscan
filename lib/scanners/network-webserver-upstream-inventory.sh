@@ -12,7 +12,7 @@ fi
 
 for d in /etc/apache2/sites-enabled /usr/local/apache2/conf/sites-enabled; do
 	if [ -d "$d" ]; then
-		grep -h "^[[:space:]]*BalancerMember.*://" "$d"/*
+		grep -h "^[[:space:]]*BalancerMember.*://" "$d"/* 2>/dev/null
 	fi
 done | sed "s/.*:\/\///;s/[[:space:]].*//;s/:/ /g" | sort -u |\
 while read name port rest; do
