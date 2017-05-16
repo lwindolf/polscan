@@ -7,12 +7,12 @@ if ! pgrep puppet >/dev/null; then
 	result_failed "No Puppet process running!"
 fi
 
-puppet_state_dir=$(dirname $puppet_report)
-if [ -d $puppet_state_dir ]; then
-	if [ ! -f $puppet_state_dir/puppetdlock -a ! -f $puppet_state_dir/agent_disabled.lock ]; then
+puppet_state_dir=$(dirname "$puppet_report" 2>/dev/null)
+if [ -d "$puppet_state_dir" ]; then
+	if [ ! -f "$puppet_state_dir/puppetdlock" -a ! -f "$puppet_state_dir/agent_disabled.lock" ]; then
 		result_ok
 	else
-		comment=$(cat $puppet_state_dir/agent_disabled.lock 2>/dev/null | sed 's/.*disabled_message":"\([^"]*\)"/\1/')
-		result_failed "Agent disabled (reason: $comment)!"
+		comment=$(sed 's/.*disabled_message":"\([^"]*\)"/\1/' "$puppet_state_dir/agent_disabled.lock" 2>/dev/null)
+		result_failed "Agent disabled (reason: ${comment-unknown})!"
 	fi
 fi
