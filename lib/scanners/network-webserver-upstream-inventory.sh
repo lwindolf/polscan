@@ -16,7 +16,7 @@ for d in /etc/apache2/sites-enabled /usr/local/apache2/conf/sites-enabled; do
 	fi
 done | sed "s/.*:\/\///;s/[[:space:]].*//;s/:/ /g" | sort -u |\
 while read name port rest; do
-	result_network_edge "Webserver Upstreams" "Apache" "$(hostname -f)" "upstream" "$name" "$port" "out" 1
+	result_network_edge "Webserver Upstream" "Apache" "$(hostname -f)" "upstream" "$name" "$port" "out" 1
 done
 
 
