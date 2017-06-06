@@ -42,10 +42,15 @@ function addVulnResultRows(rows, offset, count, sortOrder) {
 			sortTable("#resultTable", sortOrder);
 		else
 			$('#loadmessage').hide();
+
 		// Enable clicking
-//		$("#resultTable .host").click(function() {
-//			setLocationHash({ sT: $(this).html()}, true);
-//		});
+		var view = this;
+		$("#resultTable .hosts a").click(function() {
+			var key = $(this).attr('id').replace("vuln_","");
+			$('#copyHostList').remove();
+			$('#filter').append('<textarea id="copyHostList">'+view.hosts[key]+'</textarea>');
+			return false;
+		});
 	}
 }
 
@@ -90,7 +95,7 @@ function createVulnGroupTable(id, results) {
 				'<td class="pkg"><a href="javascript:setLocationHash({ sT: \''+values[key].pkg+'\'}, true);">' + values[key].pkg + '</a></td>' +
 				'<td>' + values[key].tags + '</td>' +
 				'<td>' + view.hosts[key].length + '</td>' +
-				'<td class="hosts"><a href="">Show List</a></td>');
+				'<td class="hosts"><a href="" id="vuln_'+key+'">Show List</a></td>');
 	}
 	$('#tableRow').width('100%');
 	$('#loadmessage i').html("Sorting by CVE...");
