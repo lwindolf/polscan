@@ -18,6 +18,7 @@ function sortTable(id, sortOrder) {
 		try {
 			$(id).tablesorter(sortOrder);
 		} catch(e) {
+			console.err(e);
 		}
 		console.log("Table sorting done.");
 		$('#loadmessage').hide();
@@ -98,8 +99,7 @@ function createVulnGroupTable(id, results) {
 				'<td class="hosts"><a href="" id="vuln_'+key+'">Show List</a></td>');
 	}
 	$('#tableRow').width('100%');
-	$('#loadmessage i').html("Sorting by CVE...");
-	addVulnResultRows(rows.sort().reverse(), 0, 250, null);
+	addVulnResultRows(rows.sort().reverse(), 0, 250, {sortList: [[0,1]]});
 }
 
 views.VulnerabilitiesView.prototype.update = function(params) {
