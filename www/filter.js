@@ -123,7 +123,7 @@ function addCalendar(id, initialDate) {
 		dateFormat: "yy/mm/dd",
 		firstDay: 1,
 		defaultDate: new Date(initialDate),
-		onSelect: function(date) { setLocationHash({ d: date }, false); }
+		onSelect: function(date) { applyFilterSettings(date); }
 	});
 	getData('host_groups', function(data) {
 		var yearMonth = data.date.substring(0, data.date.length - 2);
@@ -143,10 +143,15 @@ function addCalendar(id, initialDate) {
 	});
 }
 
-function applyFilterSettings(oldParams) {
+function applyFilterSettings(date) {
 	var o = currentView.filterOptions;
-	var params = {
-		d: $('#datepicker').val()
+	var params = {};
+	if(!o)
+		o = {};
+	if(!date) {
+		params.d = $('#datepicker').val()
+	} else {
+		params.d = date;
 	}
 
 	if(o.inventory)
