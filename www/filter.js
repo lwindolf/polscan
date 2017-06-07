@@ -259,6 +259,6 @@ function loadFilterSettings(params) {
 	});
 
 	$('.filterGo').click(function() {
-		applyFilterSettings(params);
+		applyFilterSettings();
 	});
 }
