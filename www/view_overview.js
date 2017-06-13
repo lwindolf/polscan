@@ -85,7 +85,7 @@ views.OverviewView.prototype.update = function(params) {
 			$( "<h3>Top Changes</h3><div id='topChanges'></div>").appendTo("#topChangesBox")
 
 			$( "<div id='policies' class='overviewBox'>" ).appendTo( "#row2" )
-			$( "<h3>Findings / Changes per Policy</h3><table class='resultTable tablesorter' id='findingsPerPolicy'><thead><tr><th>Group</th><th>Policy</th><th>Problems</th><th>Change</th><th>Warnings</th><th>Change</th></tr></thead><tbody></tbody></table>").appendTo("#policies")
+			$( "<h3>Findings / Changes per Policy</h3><table class='resultTable tablesorter' id='findingsPerPolicy'><thead><tr><th>Group</th><th>Policy</th><th>Problems</th><th>Change</th><th>Warnings</th><th>Change</th><th colspan='2'>Trend</th></tr></thead><tbody></tbody></table>").appendTo("#policies")
 
 			getData("histogram", function(data) {
 				var changes = { 'ok': {}, 'failed': {}, 'warning': {}};
@@ -136,8 +136,20 @@ views.OverviewView.prototype.update = function(params) {
 							}
 						}
 						tmp += '</td>';
+						tmp += '<td><div class="inlinesparkline_f'+group+'___'+policy.replace(/[^a-zA-Z]/g, '')+'"/></td>';
+						tmp += '<td><div class="inlinesparkline_w'+group+'___'+policy.replace(/[^a-zA-Z]/g, '')+'"/></td>';
 						tmp += '</tr>';
 						$("#findingsPerPolicy").append(tmp);
+						$('.inlinesparkline_w'+group+'___'+policy.replace(/[^a-zA-Z]/g, '')).sparkline(item.WARNING, {
+							type: 'line',
+							lineColor: '#a0a000',
+							fillColor: '#ffff00'
+						});
+						$('.inlinesparkline_f'+group+'___'+policy.replace(/[^a-zA-Z]/g, '')).sparkline(item.FAILED, {
+							type: 'line',
+							lineColor: '#ff0000',
+							fillColor: '#ffa0a0'
+						});
 					}
 				});
 				$("#findingsPerPolicy").tablesorter({sortList: [[3,1],[2,1],[5,1],[4,1]]});
