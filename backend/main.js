@@ -150,7 +150,7 @@ app.get('/api/probe/:probe/:host', function(req, res) {
    probe(req, res);
 });
 
-app.get('/api/monitoring', function(req, res) {
+app.get('/api/icinga2', function(req, res) {
    monitoring_api(req, res);
 });
 
