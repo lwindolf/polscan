@@ -3,7 +3,7 @@
 		"monitoring": {
 			"hostname": "icinga.example.com",
 			"port": 5665,
-			"path": "/v1/objects/services?filter=service.state!=0&attrs=__name&attrs=type&attrs=acknowledgement&attrs=state",
+			"path": "/v1/objects/services?filter=service.state!=0&attrs=__name&attrs=type&attrs=acknowledgement&attrs=state&attrs=last_check_result",
     			"ssl_key": "../etc/ssl/icinga.key",
 			"ssl_cert": "../etc/ssl/icinga.crt"
 		},
