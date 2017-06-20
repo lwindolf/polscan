@@ -732,8 +732,8 @@ a.resolve {
 						var name = d.name.replace(/.*!/, "");
 						var id = h.replace(/[.\-]/g, "_");
 						var severity = 'FAILED';
-						if(d.attrs.state === 2.0) severity = 'WARNING';
-						if(d.attrs.state === 3.0) severity = 'UNKNOWN';
+						if(d.attrs.state === 1) severity = 'WARNING';
+						if(d.attrs.state === 3) severity = 'UNKNOWN';
 						// FIXME type host needs to be mapped to host link
 						if($(".host_"+id).length) {
 							$('.host_'+id).addClass(severity);
