@@ -905,6 +905,7 @@ a.resolve {
 
 				// FIXME: Update generic filter model
 				getData('hosts', function(data) {
+				getData('host_groups', function(data) {
 					hosts = data.results;
 
 					$("#menu a.current").removeClass("current");
@@ -919,6 +920,7 @@ a.resolve {
 						loadView("results", params);
 						$("#menu a[href='#view=results&fG="+params.fG+"']").addClass("current");
 					}
+				});
 				});
 			}
 
