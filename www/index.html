@@ -904,8 +904,8 @@ a.resolve {
 					delete params.gI;
 
 				// FIXME: Update generic filter model
-				getData('hosts', function(data) {
 				getData('host_groups', function(data) {
+				getData('hosts', function(data) {
 					hosts = data.results;
 
 					$("#menu a.current").removeClass("current");
