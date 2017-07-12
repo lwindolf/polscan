@@ -113,7 +113,6 @@ views.InventoryView.prototype.update = function(params) {
 	}
 	if(!params.gT)
 		params.gT = "Domain";
-
 	$(this.parentDiv).append('<div id="legend" title="Click to filter a legend item. Hold Ctrl and click to multi-select."><b>Legend</b></div><table id="inventoryMap" class="resultTable tablesorter"><thead><tr><th>Group</th><th>Results</th></tr></thead></table>');
 
 	var filteredHosts = get_hosts_filtered(params, true)
@@ -126,7 +125,8 @@ views.InventoryView.prototype.update = function(params) {
 			var pcolor = [];
 
 			$.each(data.results, function (i, f) {
-					if(-1 == filteredHosts.indexOf(f.host))
+					if(this.filteredHosts !== undefined &&
+					   -1 == filteredHosts.indexOf(f.host))
 						return;
 
 					var values = f.values.split(/ /).filter(function(i) {

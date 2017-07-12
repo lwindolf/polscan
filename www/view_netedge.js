@@ -145,6 +145,9 @@ views.NetedgeView.prototype.update = function(params) {
 	var filteredHosts = get_hosts_filtered(params);
 	var view = this;
 
+	if(undefined === filteredHosts)
+		filteredHosts = Object.keys(hosts);
+
 	clean();
 	$('#results').append('<div>Network: <span id="selectedNetwork">(hover for values)</span></div><div> Host: <span id="edgeHost"></span></div><canvas id="netedge" style="background:black;" width="'+filteredHosts.length*6+'" height="1344"/>');
 	this.addHosts('netedge', filteredHosts);

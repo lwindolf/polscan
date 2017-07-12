@@ -18,7 +18,7 @@ function sortTable(id, sortOrder) {
 		try {
 			$(id).tablesorter(sortOrder);
 		} catch(e) {
-			console.err(e);
+			console.log(e);
 		}
 		console.log("Table sorting done.");
 		$('#loadmessage').hide();
@@ -60,7 +60,8 @@ function vulnMatches(item) {
 	  !((undefined !== item.host && item.host.indexOf(this.params.sT) != -1) ||
 	    (undefined !== item.pkg && item.pkg.indexOf(this.params.sT) != -1)))
 		return false;
-	if(-1 == this.filteredHosts.indexOf(item.host))
+	if(undefined !== filteredHosts &&
+       -1 == this.filteredHosts.indexOf(item.host))
 		return false;
 	return true;
 }

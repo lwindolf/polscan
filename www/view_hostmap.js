@@ -57,6 +57,9 @@ views.HostmapView.prototype.addHostsToMap = function(params) {
 			findingsByHost[item.host] += item.severity.substring(0,1);
 		});
 
+		if(undefined === filteredHosts)
+			filteredHosts = Object.keys(findingsByHost);
+
 		for(h in filteredHosts) {
 			var host = filteredHosts[h];
 			var value = findingsByHost[host];
