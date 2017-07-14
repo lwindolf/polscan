@@ -27,8 +27,6 @@ views.NetworkView.prototype.update = function(params) {
 	$(this.parentDiv).append('<div id="networkSelectedName"><i>Hover over names to view FQDNs and click to see connection details.</i></div><div id="netgraph"/>');
 
 	var filteredHosts = get_hosts_filtered(params, true);
-	if(undefined === filteredHosts)
-		filteredHosts = Object.keys(hosts);
 
 // FIXME: link to mbostock example id
 var diameter = $(window).height(),

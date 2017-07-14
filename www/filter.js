@@ -16,14 +16,12 @@ function get_hosts_filtered(params, searchNames) {
 
 	if(params.fT && params.fT !== "" && params.fV && params.fV !== "")
 		hg = params.fT + "::" + params.fV;
-	else
-		return undefined;
 
 	for(host in hosts) {
 		if(searchNames && params.sT && params.sT !== "" && host.indexOf(params.sT) == -1)
 			continue;
 
-		if(params.fV == getGroupByHost(params.fT, host))
+		if(undefined === hg || params.fV == getGroupByHost(params.fT, host))
 			results.push(host);
 	}
 	return results;
