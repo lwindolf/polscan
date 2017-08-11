@@ -93,7 +93,8 @@ views.ServicemapView.prototype.addHosts = function(filteredHosts) {
 		var nodeportToProgram = {};
 		var portToProgram = new Array();
 		$.each(data.results, function(i, item) {
-			if(-1 !== filteredHosts.indexOf(item.host)) {
+			if(undefined === filteredHosts ||
+			   -1 !== filteredHosts.indexOf(item.host)) {
 				var id, port = item.ltn, program = item.scope;
 				if(program === "-")
 					return;
@@ -106,7 +107,8 @@ views.ServicemapView.prototype.addHosts = function(filteredHosts) {
 		});
 
 		$.each(data.results, function(i, item) {
-			if(-1 !== filteredHosts.indexOf(item.host)) {
+			if(undefined === filteredHosts ||
+			   -1 !== filteredHosts.indexOf(item.host)) {
 				var port = item.ltn, program = item.scope;
 
 				// Resolve program for close-wait, time-wait listings

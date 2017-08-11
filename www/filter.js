@@ -14,17 +14,16 @@ function get_hosts_filtered(params, searchNames) {
 	var hg = undefined;
 	var results = new Array();
 
-	if(params.fT && params.fV)
+	if(params.fT && params.fT !== "" && params.fV && params.fV !== "")
 		hg = params.fT + "::" + params.fV;
 
 	for(host in hosts) {
-		if(searchNames && params.sT && host.indexOf(params.sT) == -1)
+		if(searchNames && params.sT && params.sT !== "" && host.indexOf(params.sT) == -1)
 			continue;
 
-		if(!hg || params.fV == getGroupByHost(params.fT, host))
+		if(undefined === hg || params.fV == getGroupByHost(params.fT, host))
 			results.push(host);
 	}
-
 	return results;
 }
 

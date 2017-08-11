@@ -69,7 +69,8 @@ function itemMatches(item) {
 	    (item.message.indexOf(this.params.sT) != -1)))
 		return false;
 
-	if(-1 == this.filteredHosts.indexOf(item.host))
+	if(this.filteredHosts !== undefined &&
+           -1 == this.filteredHosts.indexOf(item.host))
 		return false;
 	return true;
 }
@@ -129,7 +130,7 @@ function createGroupTable(id, results) {
 			}
 	});
 	view.hostCount = Object.keys(hosts).length;
-	console.log("Parsing done.");
+	console.log("Parsing done ("+view.hostCount+" hosts).");
 
 	var rows = new Array(250);
 	for(var key in values) {
@@ -141,7 +142,6 @@ function createGroupTable(id, results) {
 				'<td class="hosts">' + hostlinks + '</td>');
 		// Avoid OOM
 		if(rows.length >= 250) {
-			console.log("addResultRows()");
 			addResultRows(params.fG, rows, 0, 500, null);
 			rows = new Array(250);
 		}
@@ -206,7 +206,7 @@ function createResultTable(id, data) {
 		}
 	});
 	view.hostCount = Object.keys(visibleHosts).length;
-	console.log("Parsing done");
+	console.log("Parsing done ("+view.hostCount+" hosts).");
 	addResultRows(name, rows.split(/<tr>/), 0, 100, {sortList: [[2,1],[0,0]]});
 
 	if(groupBy.length >= 0) {
