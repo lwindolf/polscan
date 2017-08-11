@@ -4,25 +4,87 @@
 views.PuppetdbView = function PuppetdbView(parentDiv) {
 	this.parentDiv = parentDiv;
 	this.filterOptions = {};
+	this.reports = undefined;
 };
 
-views.PuppetdbView.prototype.update = function(params) {
+views.PuppetdbView.prototype.getHostDetails = function(params) {
 	var view = this;
 
+	getAPI("puppetdb/reports", function(data) {
+		var j = 0;
+		view.reports = data;
+		$("<input type='button' value='Back to Host Overview' onclick='setLocationHash({view: \"puppetdb\"})'/>"+
+		"<h3>Recent Reports for "+params.h+"</h3><p>Click a row for report details.</p><table id='puppetFailedTable' class='resultTable tablesorter'><thead><tr><th>Time</th><th>A</th><th>R</th><th>F</th><th>FR</th><th>S</th><th>P</th></tr></thead><tbody>"+
+		data.map(function(i) {
+			j++;
+			var a = 0,r = 0,f = 0,fr = 0,s = 0,p = 0;
+			// Try to find metrics values
+			i.metrics.data.forEach(function(d) {
+				if(d.name === "change") a+=d.value;
+				if(d.name === "corrective_change") a+=d.value;
+				if(d.name === "failed") f+=d.value;
+				if(d.name === "failed_to_restart") fr+=d.value;
+				if(d.name === "restarted") r+=d.value;
+				if(d.name === "skipped") s+=d.value;
+				if(d.name === "scheduled") p+=d.value;
+			});
+			return "<tr class='reportrow' onclick='$(\"tr.reportrowresults\").hide();$(\"#reportrow"+j+"\").show();$(\"#reportrow"+j+"\").children().show()'><td>"+new Date(i.start_time).toLocaleString()+"</a></td>"+
+			"<td>"+(a!==0?"<span class='compliant changes'>"+a+"</span>":"")+"</td>"+
+			"<td>"+(r!==0?"<span class='compliant changes'>"+r+"</span>":"")+"</td>"+
+			"<td>"+(f!==0?"<span class='FAILED'>"+f+"</span>":"")+"</td>"+
+			"<td>"+(fr!==0?"<span class='FAILED'>"+fr+"</span>":"")+"</td>"+
+			"<td>"+(s!==0?"<span class='WARNING'>"+s+"</span>":"")+"</td>"+
+			"<td>"+(p!==0?"<span>"+p+"</span>":"")+"</td>"+
+			"</tr><tr id='reportrow"+j+"' class='reportrowresults'><td style='display:none' colspan='100'><table class='resultTable'><thead><tr><th>Time</th><th>Level</th><th>Info</th></tr></thead><tbody>"+
+			i.logs.data.map(function(l) {
+				return "<tr><td>"+new Date(l.time).toLocaleString()+"</td><td class='"+(l.level==="err"?"FAILED":(l.level==="warning"?"WARNING":"OK"))+"'>"+
+				l.level + "</td><td><b>Source:</b> " +
+				l.source + "<br/><b>Message:</b> " + l.message +
+				"</td></tr>";
+			}).join("")+
+			"</tbody></table></td></tr>";
+		}).join("") + 
+		"</tbody></table>").appendTo('#row2');
+	}, undefined, [{ hostname: params.h }]);
+}
+
+views.PuppetdbView.prototype.update = function(params) {
 	clean();
 	$('#filter').hide();
 	$(this.parentDiv).css('margin-left', '12px');
+	if(undefined === params.h)
+	        this.getOverview(params);
+	else
+	        this.getHostDetails(params);
+}
+
+views.PuppetdbView.prototype.getOverview = function(params) {
+	var view = this;
+	var type = params.type;
+	if(undefined === type)
+		type = "failed";
+
 	$("#row1").html("<div id='findingsPies' class='overviewBox dark'/></div>");
 	$("<div id='pieChartStatus' class='pie'>").appendTo("#findingsPies");
 
 	getAPI("puppetdb/nodes", function(data) {
-		var stats = [
-			{"label": "OK",           "value": 0, "color": "#0b0"},
-			{"label": "changed",      "value": 0, "color": "#44c"},
-			{"label": "failed",       "value": 0, "color": "#f77"},
-			{"label": "outdated",     "value": 0, "color": "#ccf"},
-			{"label": "noop pending", "value": 0, "color": "#a7c"},
-		];
+		var colors = {
+			"OK"           : "#0b0",
+			"changed"      : "#44c",
+			"failed"       : "#f77",
+			"outdated"     : "#ccf",
+			"noop pending" : "#a7c"
+		};
+		var stats = Object.keys(colors).map(function(c) {
+			return {"label":c, "value":0, "color": colors[c]};
+		});
+//		var stats = [
+//			{"label": "OK",           "value": 0, "color": "#0b0"},
+//			{"label": "changed",      "value": 0, "color": "#44c"},
+//			{"label": "failed",       "value": 0, "color": "#f77"},
+//			{"label": "outdated",     "value": 0, "color": "#ccf"},
+//			{"label": "noop pending", "value": 0, "color": "#a7c"}
+//		];
 		var total = 0;
 		var now = new Date();
 		$.each(data, function(h, host) {
@@ -46,18 +108,20 @@ views.PuppetdbView.prototype.update = function(params) {
 		$('#findingsPies').append(render('puppetdb', { "stats": stats, "total": total }));
 		
 		addPieChart('pieChartStatus', 'Puppet Run Status', 260, '#fff', stats);
-    });
 
-	getAPI("puppetdb/nodes_failed", function(data) {
-		$("<h3>Recently Failed Hosts</h3><table id='puppetFailedTable' class='resultTable tablesorter'><thead><tr><th>Host</th><th>Time</th></tr></thead><tbody>"+
-		data.map(function(i) {
-			return "<tr><td><div style='width:20px;height:20px;float:left;margin-right:12px;background:#f77'/>"+i.certname+"</td><td>"+new Date(i.report_timestamp).toLocaleString()+"</td></tr>";
+		$("<div>Hostname <input type='text' size='40' id='host'/> <input type='button' value='Show Reports' onclick='setLocationHash({ h: $(\"#host\").val() });'/></div>"+
+		"<h3>Recently "+type+" Hosts</h3><table id='puppetFailedTable' class='resultTable tablesorter'><thead><tr><th>Host</th><th>Time</th></tr></thead><tbody>"+
+		data.filter(function(h) {
+			return h["latest_report_status"] === type;
+		}).map(function(h, host) {
+			return "<tr><td><div style='width:20px;height:20px;float:left;margin-right:12px;background:#f77'/><a href='#view=puppetdb&h="+h.certname+"'>"+h.certname+"</a></td><td>"+new Date(h.report_timestamp).toLocaleString()+"</td></tr>";
+
 		}).join("") + "</tbody></table>").appendTo('#row2');
-		if(data.length === 0)
+		if(stats[type] === 0)
 			$("<tr><td colspan='2'>No problems right now.</td></tr>").appendTo('#puppetFailedTable tbody');
-		if(data.length === 50)
+		if(stats[type] === 50)
 			$("<small>(Max. 50 Hosts are shown)</small>").appendTo('#row2');
-	    $("#puppetFailedTable").tablesorter({sortList: [[1,1]]});
+		$("#puppetFailedTable").tablesorter({sortList: [[1,1]]});
 	});
 
 	getAPI("puppetdb/changed", function(data) {

@@ -14,9 +14,12 @@
 		"puppetdb/nodes": {
 			"path": "/api/pdb/query/v4/nodes?include_total=true&offset=0&order_by=%5B%7B%22field%22:%22certname%22,%22order%22:%22asc%22%7D%5D&query=null"
 		},
-		"puppetdb/nodes_failed": {
-			"path": "/api/pdb/query/v4/nodes?include_total=true&limit=50&offset=0&order_by=%5B%7B%22field%22:%22certname%22,%22order%22:%22asc%22%7D%5D&query=%5B%22in%22,%22certname%22,%5B%22extract%22,%22certname%22,%5B%22select_nodes%22,%5B%22%3D%22,%22latest_report_status%22,%22failed%22%5D%5D%5D%5D"
-		}
+                        "path": "/api/pdb/query/v4/event-counts?query=[%22and%22,[%22=%22,%22latest_report?%22,true]]&summarize_by=containing_class"
+                },
+                "puppetdb/reports": {
+                        "path": "/api/pdb/query/v4/reports?include_total=true&limit=10&offset=0&order_by=%5B%7B%22field%22:%22end_time%22,%22order%22:%22desc%22%7D%5D&query=%5B%22%3D%22,%22certname%22,%22{{hostname}}%22%5D",
+                        "params": [ "hostname" ]
+                }
 	},
 	"static": {
 		"rootdir": "../www",

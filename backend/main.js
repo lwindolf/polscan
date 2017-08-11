@@ -28,7 +28,15 @@ puppetdb_rest = {
 function puppetdb_api(request, response) {
    response.writeHead(200, {'Content-Type': 'application/json'});
    var rest = puppetdb_rest;
-   rest.path = config["api"]["puppetdb/"+request.params.method]["path"];
+   var api = config["api"]["puppetdb/"+request.params.method];
+   rest.path = api["path"];
+   if(undefined !== api["params"]) {
+       for(p in api["params"]) {
+           var param = api["params"][p];
+           rest.path = rest.path.replace("{{"+param+"}}", request.query[param]);
+       }
+   } 
+
    var req = https.request(rest, function(res) { 
        res.on('data', function(data) { 
            response.write(data); 
