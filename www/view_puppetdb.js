@@ -14,7 +14,7 @@ views.PuppetdbView.prototype.getHostDetails = function(params) {
 		var j = 0;
 		view.reports = data;
 		$("<input type='button' value='Back to Host Overview' onclick='setLocationHash({view: \"puppetdb\"})'/>"+
-		"<h3>Recent Reports for "+params.h+"</h3><p>Click a row for report details.</p><table id='puppetFailedTable' class='resultTable tablesorter'><thead><tr><th>Time</th><th>A</th><th>R</th><th>F</th><th>FR</th><th>S</th><th>P</th></tr></thead><tbody>"+
+		"<h3>Recent Reports for "+params.h+"</h3><p>Click a row for report details.</p><table id='puppetFailedTable' class='resultTable tablesorter'><thead><tr><th>Time</th><th>Applied</th><th>Restarts</th><th>Failed</th><th>Failed Restarts</th><th>Skipped</th><th>Pending</th></tr></thead><tbody>"+
 		data.map(function(i) {
 			j++;
 			var a = 0,r = 0,f = 0,fr = 0,s = 0,p = 0;
@@ -109,7 +109,7 @@ views.PuppetdbView.prototype.getOverview = function(params) {
 		
 		addPieChart('pieChartStatus', 'Puppet Run Status', 260, '#fff', stats);
 
-		$("<div>Hostname <input type='text' size='40' id='host'/> <input type='button' value='Show Reports' onclick='setLocationHash({ h: $(\"#host\").val() });'/></div>"+
+		$("<div>Hostname <input type='text' size='40' id='host'/> <input type='button' value='Show Reports' onclick='setLocationHash({ h: $(\"#host\").val() });'/><input type='button' value='Show Facts' onclick='setLocationHash({ h: $(\"#host\").val(), view: \"puppetdb_facts\" });'/></div>"+
 		"<h3>Recently "+type+" Hosts</h3><table id='puppetFailedTable' class='resultTable tablesorter'><thead><tr><th>Host</th><th>Time</th></tr></thead><tbody>"+
 		data.filter(function(h) {
 			return h["latest_report_status"] === type;
