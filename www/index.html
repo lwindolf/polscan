@@ -2,6 +2,7 @@
 <!doctype html>
 <html>
 	<head>
+		<meta charset="utf-8">
 		<script type="text/javascript" src="filter.js"></script>
 		<script type="text/javascript" src="tooltip.js"></script>
 		<script type="text/javascript" src="pie_chart.js"></script>
@@ -18,7 +19,6 @@
 		<script type="text/javascript" src="lib/handlebars.min-latest.js"></script>
 		<script type="text/javascript" src="lib/jquery.sparkline.min.js"></script>
 		<link rel="stylesheet" href="lib/jquery-ui.min.css">
-		<meta charset="utf-8">
 		<style type="text/css">
 			body.main {
 				font-family: Helvetica;
@@ -743,7 +743,7 @@ a.resolve {
 							if(!$("#"+alertTableId+" .alerts_td").length) {
 								$('#'+alertTableId).append("<tr class='alerts_td'><th>Monitoring</th></tr>");
 							}
-							$('#'+alertTableId+' tr.alerts_td').after("<tr><td class='"+severity+"'>"+name+"</td></tr>");
+							$('#'+alertTableId+' tr.alerts_td').after("<tr><td class='"+severity+"'>"+name+": "+d.attrs.last_check_result.output+"</td></tr>");
 						}
 
 						// Optionally append to host id element
@@ -754,8 +754,14 @@ a.resolve {
 				 })
 			}
 
-			function getAPI(name, callback, errorcb) {
+			function getAPI(name, callback, errorcb, params) {
 				var cacheName = "api_"+ name.replace('-', '_');
+				if(undefined !== params) {
+					name += "?" + params.map(function(obj) {
+						var k = Object.keys(obj)[0];
+						return k + "=" + obj[k];
+					}).join("&");
+				}
 
 				if(resultCache[cacheName]) {
 					console.log("Using API result '"+name+"' from cache");
@@ -904,8 +910,8 @@ a.resolve {
 					delete params.gI;
 
 				// FIXME: Update generic filter model
-				getData('hosts', function(data) {
 				getData('host_groups', function(data) {
+				getData('hosts', function(data) {
 					hosts = data.results;
 
 					$("#menu a.current").removeClass("current");
