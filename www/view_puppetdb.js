@@ -45,6 +45,7 @@ views.PuppetdbView.prototype.getHostDetails = function(params) {
 			"</tbody></table></td></tr>";
 		}).join("") + 
 		"</tbody></table>").appendTo('#row2');
+		$("#reportrow1").children().show();
 	}, undefined, [{ hostname: params.h }]);
 }
 
