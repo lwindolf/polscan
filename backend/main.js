@@ -89,7 +89,7 @@ function probe(request, response) {
       idleTimeoutMS: 15000,
 
       logFunction: function(severity,origin,msg) {
-          console.log(severity.toUpperCase() + " " +origin+" "+ msg);
+          //console.log(severity.toUpperCase() + " " +origin+" "+ msg);
       },
 
       processCommand: '/usr/bin/ssh',
@@ -111,10 +111,25 @@ function probe(request, response) {
       },
    });
 
-   proxy.executeCommands(['hostname',cmd]).then(function(res) {
-      response.writeHead(200, {'Content-Type': 'application/json'});
-      // FIXME really process res, not just sending it
-      response.end(JSON.stringify(res));
+   proxy.executeCommands([cmd]).then(function(res) {
+       response.writeHead(200, {'Content-Type': 'application/json'});
+
+       var msg = {
+           name   : probe,
+           stdout : res[0].stdout,
+           stderr : res[0].stderr,
+           next   : []
+       };
+       if('name'   in probes[probe]) msg['name']   = probes[probe].name;
+       if('render' in probes[probe]) msg['render'] = probes[probe].render;
+
+       // Suggest followup probes
+       for(p in probes) {
+          if(probes[p]['if'] === probe && -1 !== res[0].stdout.indexOf(probes[p]['matches']))
+		msg['next'].push(p);
+       }
+
+      response.end(JSON.stringify(msg));
    }).catch(function(error) {
       console.log("proxy failed:"+error);
       response.writeHead(422, {'Content-Type': 'application/json'});

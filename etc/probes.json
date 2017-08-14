@@ -1,8 +1,10 @@
 {
    "load": {
+	"name"   : "System Load",
         "command": "cat /proc/loadavg"
    },
    "netstat": {
+	"name"   : "Network Connections",
         "command": "(sudo -n netstat -tlpn 2>/dev/null || netstat -tln) | grep -v 'Active Internet'",
         "local"  : "True",
         "render" : {
@@ -11,16 +13,28 @@
         }
    },
    "apache": {
+	"name"   : "Apache vhosts",
         "command": "sudo -n /usr/sbin/apache2ctl -t -D DUMP_VHOSTS 2>/dev/null || /usr/sbin/apache2ctl -t -D DUMP_VHOSTS",
         "if"     : "netstat",
         "matches": "apache"
    },
+   "memcached": {
+	"command": "printf 'stats\nquit\n' | nc localhost 11211 | /bin/egrep 'STAT (version|threads|bytes|curr_connections)'",
+        "if"     : "netstat",
+        "matches": "memcached",
+        "render" : {
+             "type" : "table",
+             "split": "\\s+"
+        }
+   },
    "redis": {
+	"name"   : "Redis Server",
         "command": "redis-cli info keyspace;redis-cli info replication",
         "if"     : "netstat",
         "matches": "redis"
    },
    "systemd": {
+	"name"   : "Systemd Problems",
         "command": "systemctl list-units | /bin/egrep '( loaded (maintenance|failed)| masked )'",
         "refresh": 30,
         "local"  : "True",
@@ -32,7 +46,7 @@
             }
          }
    },
-   "System Problems": {
+   "System Log": {
         "command": "/bin/journalctl -k -p 0..3 -S '12 hours ago' -n 10 | /bin/egrep -v '(Logs begin at|No entries)'",
         "local"  : "True",
         "refresh": 60,
@@ -98,7 +112,7 @@
         }
    },
    "Tomcat": {
-        "command": "/usr/bin/pgrep -a java | /bin/sed 's/.*-Dcatalina.base=\\([^ ]*\\) .*/\\1/' | while read d; do echo $d; (cd $d; find webapps -type d -maxdepth 1;find webapps/ -name '*.war' -maxdepth 1); done",
+        "command": "/usr/bin/pgrep -a java 2>/dev/null | /bin/sed 's/.*-Dcatalina.base=\\([^ ]*\\) .*/\\1/' | while read d; do echo $d; (cd $d; find webapps -type d -maxdepth 1;find webapps/ -name '*.war' -maxdepth 1); done",
         "if"     : "netstat",
         "matches": "java",
         "local"  : "True"

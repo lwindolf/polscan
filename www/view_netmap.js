@@ -132,6 +132,50 @@ views.NetmapView.prototype.addGraphNode = function(service, direction) {
 	}
 }
 
+views.NetmapView.prototype.renderProbe = function(probeResult) {
+	if(undefined === probeResult['render'])
+		return probeResult.stdout;
+
+    try {
+		if(probeResult['render']['type'] === 'table') {
+			var result = "<table style='border-collapse:collapse' cellspacing='0'><tbody>";
+			var columnSplit = new RegExp(probeResult['render']['split']);
+			var lines = probeResult.stdout.split(/\n/);
+			lines.forEach(function(l) {
+				result += "<tr><td>";
+				result += l.split(columnSplit).join("</td><td>");
+				result += "</td></tr>";
+			});
+			result += "</tbody></table";
+			return result;
+		}
+	} catch(e) {
+		console.log(e);
+		return "Rendering error!";
+	}
+}
+
+/* probe node infos using the probe API */
+views.NetmapView.prototype.probe = function(host, probe, id, cb) {
+	var view = this;
+
+	if(!$("#"+id+" .probes").length) {
+			$('#'+id).prepend("<tr class='probes'><th>Live Probes</th></tr>");
+	}
+
+    getAPI('probe/'+probe+'/'+host, function(res) {
+		if(probe !== "netstat")			// Do not render netstat table in inventory bar
+			$('#'+id+' tr.probes').after("<tr><td style='overflow-x:auto;width:300px;' class='"+probe+"'><b>"+probe+"</b><br/>"+view.renderProbe(res)+"</td></tr>");
+
+		// Always trigger follow probes, serialization is done in backend
+		for(p in res.next) {
+			view.probe(host, res.next[p], id, cb);
+		}
+
+		cb(res);
+	});
+}
+
 views.NetmapView.prototype.addHost = function() {
 	var view = this;
 	var host = this.currentNode;
@@ -250,8 +294,23 @@ views.NetmapView.prototype.addHost = function() {
 			});
 		});
 
-		if(isLive()) 
-			overlayMonitoring(host, "inventoryTable", false);
+		if(isLive()) {
+			$('#row1').append('<div class="live">Live: <span class="liveLabel Monitoring">Monitoring</span> <span class="liveLabel Probes">Probes</span></div>');
+
+			overlayMonitoring(host, "inventoryTable", false, function() {
+				$('.liveLabel.Monitoring').addClass('OK');
+			});
+
+			view.probe(host, "load", "inventoryTable", function(res) {
+				$('.liveLabel.Probes').addClass('OK');
+
+				// FIXME: Check load before continuing
+				view.probe(host, "df", "inventoryTable", function(res) { });
+				view.probe(host, "netstat", "inventoryTable", function(res) {
+					// FIXME: Replace/merge scan connection data with live connections
+				} );
+			});
+		}
 	});
 }
 
@@ -304,10 +363,10 @@ views.NetmapView.prototype.update = function(params) {
 		return;
 	}
 
-	$('#results').append('<table border="0" cellspacing="0" cellpadding="0" style="width:100%" height="'+$(window).height()+'px"><tr><td valign="top" width="100%"><div id="netmap" style="height:'+$(window).height()+'px;width:100%;margin-bottom:12px;border:1px solid #aaa;background:white;overflow:auto"/></td>' +
-	                     '</td><td valign="top"><table id="inventoryTable" class="resultTable tablesorter" style="width:300px"><thead><tr id="tr_ninv"><th>Network Inventory</th></tr></thead><tbody/></table></td></tr></table>'+
+	$('#row1').append('<table border="0" cellspacing="0" cellpadding="0" style="width:100%" height="'+$(window).height()+'px"><tr><td valign="top" width="100%"><div id="netmap" style="height:'+$(window).height()+'px;width:100%;margin-bottom:12px;border:1px solid #aaa;background:white;overflow:auto"/></td>' +
+	                     '</td><td valign="top"><table id="inventoryTable" class="resultTable tablesorter" style="width:300px"><tbody><tr id="tr_ninv"><th>Network Inventory</th></tr><tbody/></table></td></tr></table>'+
 	                     '<table id="netMapTable" class="resultTable tablesorter"><thead><tr><th>Scope</th><th>Local Name</th><th>Local Transport</th><th>Remote Name</th><th>Remote Transport</th><th>In/Out</th><th>Count</th></tr></thead><tbody/></table>'
-);
+	);
 	this.previousNode = params.pN;
 	this.currentNode = params.h;
 	this.neType = params.nt;
