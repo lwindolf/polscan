@@ -163,7 +163,7 @@ views.NetmapView.prototype.probe = function(host, probe, id, cb) {
 			$('#'+id).prepend("<tr class='probes'><th>Live Probes</th></tr>");
 	}
 
-    getAPI('probe/'+probe+'/'+host, function(res) {
+	getAPI('probe/'+probe+'/'+host, function(res) {
 		if(probe !== "netstat")			// Do not render netstat table in inventory bar
 			$('#'+id+' tr.probes').after("<tr><td style='overflow-x:auto;width:300px;' class='"+probe+"'><b>"+probe+"</b><br/>"+view.renderProbe(res)+"</td></tr>");
 
@@ -297,10 +297,13 @@ views.NetmapView.prototype.addHost = function() {
 		if(isLive()) {
 			$('#row1').append('<div class="live">Live: <span class="liveLabel Monitoring">Monitoring</span> <span class="liveLabel Probes">Probes</span></div>');
 
-			overlayMonitoring(host, "inventoryTable", false, function() {
+/*			overlayMonitoring(host, "inventoryTable", false, function() {
 				$('.liveLabel.Monitoring').addClass('OK');
+			}, function(j, t, e) {
+				$('.liveLabel.Monitoring').addClass('FAILED');
+				$('.liveLabel.Monitoring').prop('title', 'Failed: '+e);
 			});
-
+*/
 			view.probe(host, "load", "inventoryTable", function(res) {
 				$('.liveLabel.Probes').addClass('OK');
 

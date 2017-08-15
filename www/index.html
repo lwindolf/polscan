@@ -740,7 +740,7 @@ a.resolve {
 				$('#hostlist').show();
 			}
 
-			function overlayMonitoring(host, alertTableId, append, cb) {
+			function overlayMonitoring(host, alertTableId, append, cb, errorcb) {
 				// FIXME: do not be icinga specific here
 				getAPI("icinga2", function(data) {
 					$.each(data.results, function(i, d) {
@@ -767,7 +767,7 @@ a.resolve {
 							$('#host_'+id).append(" <span class='"+severity+"'>"+name+'</span>');
 					});
 					cb();
-				 })
+				 }, errorcb)
 			}
 
 			function getAPI(name, callback, errorcb, params) {
