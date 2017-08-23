@@ -10,7 +10,7 @@ stale_mounts=$(
 )
 
 if [ "$stale_mounts" != "" ]; then
-	result_failed "$stale_mounts"
+	result_failed $stale_mounts
 else
 	result_ok "No stale mounts found."
 fi
