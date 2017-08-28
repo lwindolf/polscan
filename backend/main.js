@@ -69,6 +69,23 @@ icinga2_rest = {
 }
 
 // Remote server probe API
+
+function get_probes(request, response) {
+   response.writeHead(200, {'Content-Type': 'application/json'});
+
+   // Return all probes and initial flag so a frontend knows
+   // where to start
+   var output = {};
+   Object.keys(probes).forEach(function(probe) {
+       var p = probes[probe];
+       output[probe] = {
+           name     : p.name,
+           initial  : p.initial
+       };
+   });
+   response.end(JSON.stringify(output));
+}
+
 function probe(request, response) {
 
    var probe = request.params.probe;
@@ -168,6 +185,12 @@ function static_content(type, path, response) {
       response.end("File not found");
    }
 }
+
+// Routing
+
+app.get('/api/probes', function(req, res) {
+   get_probes(req, res);
+});
 
 app.get('/api/probe/:probe/:host', function(req, res) {
    probe(req, res);
