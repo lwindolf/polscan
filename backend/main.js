@@ -91,6 +91,7 @@ function probe(request, response) {
    var probe = request.params.probe;
    var host = request.params.host;
 
+   try {
    if(!(probe in probes)) {
       response.writeHead(404, {'Content-Type': 'application/json'});
       response.end(JSON.stringify({error:'No such probe'}));
@@ -147,11 +148,13 @@ function probe(request, response) {
        }
 
       response.end(JSON.stringify(msg));
-   }).catch(function(error) {
-      console.log("proxy failed:"+error);
-      response.writeHead(422, {'Content-Type': 'application/json'});
-      response.end(JSON.stringify({"error":error}));
    });
+   } catch(e) {
+      response.writeHead(422, {'Content-Type': 'application/json'});
+      response.end(JSON.stringify({"error":e}));
+      done(e);
+      return;
+   }
 }
 
 // Query Icinga2 API
