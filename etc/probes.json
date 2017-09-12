@@ -1,12 +1,16 @@
 {
    "load": {
 	"name"   : "System Load",
-        "command": "cat /proc/loadavg"
+        "command": "cat /proc/loadavg",
+        "refresh": 30,
+        "initial": "True"
    },
    "netstat": {
 	"name"   : "Network Connections",
         "command": "(sudo -n netstat -tlpn 2>/dev/null || netstat -tln) | grep -v 'Active Internet'",
+        "refresh": 30,
         "local"  : "True",
+        "initial": "True",
         "render" : {
              "type" : "table",
              "split": "\\s+"
@@ -38,6 +42,7 @@
         "command": "systemctl list-units | /bin/egrep '( loaded (maintenance|failed)| masked )'",
         "refresh": 30,
         "local"  : "True",
+        "initial": "True",
         "render" : {
             "type"    : "lines",
             "severity": {
@@ -49,6 +54,7 @@
    "System Log": {
         "command": "/bin/journalctl -k -p 0..3 -S '12 hours ago' -n 10 | /bin/egrep -v '(Logs begin at|No entries)'",
         "local"  : "True",
+        "initial": "True",
         "refresh": 60,
         "render" : {
             "type"    : "lines",
@@ -79,6 +85,7 @@
    "df": {
         "command": "df -hl -x tmpfs",
         "local"  : "True",
+        "initial": "True",
         "render" : {
              "type" : "table",
              "split": "\\s+",
@@ -120,6 +127,7 @@
    "ping 8.8.8.8": {
         "command": "/bin/ping -c5 -i 0.2 -w5 8.8.8.8 | /bin/egrep '(^PING 8.8.8.8|^connect|packet loss|^rtt)'",
         "local"  : "True",
+        "initial": "True",
         "refresh": 30,
         "render" : {
              "type" : "lines",
