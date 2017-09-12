@@ -26,6 +26,11 @@ if [ "$1" == "-l" ]; then
 else
 	HOST_LIST=
 fi
+if [ "$1" == "-t" ]; then
+	shift
+	TEST=$1
+	shift
+fi
 
 LATEST=0
 if [ "$1" == "" ]; then

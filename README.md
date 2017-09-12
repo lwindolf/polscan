@@ -87,6 +87,10 @@ Or just run it from the source directory
     ./polscan                          # To re-scan all hosts
     ./polscan -l 'server1 server2'     # To scan specific hosts
 
+    ./polscan -t systemd-no-failed.sh               # Test scanner on all hosts
+    ./polscan -t systemd-no-failed.sh -l server1    # Test scanner on single host
+    ./polscan -t all -l server1                     # Test results on single host
+
 Access Results
 --------------
 

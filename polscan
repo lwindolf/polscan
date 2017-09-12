@@ -62,7 +62,11 @@ else
 	echo "Host list:" $HOST_LIST
 fi
 
-REMOTE_SCANNER_LIST=$(get_scanners remote)
+if [ "$TEST" == "" -o "$TEST" == "all" ]; then
+	REMOTE_SCANNER_LIST=$(get_scanners remote)
+else
+	REMOTE_SCANNER_LIST=$TEST
+fi
 if [ "$REMOTE_SCANNER_LIST" != "" ]; then
 
 	# 2. Build remote scanner script
@@ -89,9 +93,17 @@ if [ "$REMOTE_SCANNER_LIST" != "" ]; then
 		remotes=$(echo $remotes | xargs -n 1 | sed "s/\$/ ${SUDO_CMD}/")
 	fi
 	
+        if [ "$TEST" == "" ]; then
+		out="${RESULT_DIR}/\${host/ */}"
+		err="${RESULT_DIR}/\${host/ */}.err"
+	else
+		out="&1"
+		err="&2"
+	fi
+
 	echo "$remotes" | xargs -n1 --replace={} -n 1 -P ${SCAN_CONCURRENCY-15} \
 	/bin/bash -c "host='{}';printf '%s\n' \"\${host/ */}\" && \
-	              $SSH_CMD {} \"/bin/bash < <(/bin/cat -)\" <${RSS} >${RESULT_DIR}/\${host/ */} 2>${RESULT_DIR}/\${host/ */}.err || :"
+	              $SSH_CMD {} \"/bin/bash < <(/bin/cat -)\" <${RSS} >$out 2>$err || :"
 
 	# Post process all errors logged
 	for host in $HOST_LIST; do
@@ -108,6 +120,8 @@ if [ "$REMOTE_SCANNER_LIST" != "" ]; then
 	done
 fi
 rm $RSS
+
+[ "$TEST" != "" ] && exit 0
 
 # 4. Run standalone scanner scripts
 STANDALONE_SCANNER_LIST=$(get_scanners standalone)
