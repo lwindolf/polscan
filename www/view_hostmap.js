@@ -113,7 +113,14 @@ views.HostmapView.prototype.addHostsToMap = function(params) {
 		var numeric = 0;
                 var lastElem = view.topFindings[view.topFindings.length-1];
 		var i = 0;
-		Object.keys(view.topFindings).sort().forEach(function(name) {
+		Object.keys(view.topFindings).sort(function(a,b) {
+			if((-1 !== a.indexOf('FAILED')  && -1 !== b.indexOf('FAILED')) || 
+			   (-1 !== a.indexOf('WARNING') && -1 !== b.indexOf('WARNING')))
+				return view.topFindings[b] - view.topFindings[a];
+			if(-1 !== a.indexOf('FAILED'))
+				return -1;
+			return 1;
+		}).forEach(function(name) {
                         var count = view.topFindings[name];
 			var tmp = name.split(/:::/);
 			var colorClass = tmp[0];
