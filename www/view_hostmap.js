@@ -54,13 +54,16 @@ views.HostmapView.prototype.addHostsToMap = function(params) {
 		var findingsByHost = new Array();
 		var filteredHosts = get_hosts_filtered(params, true)
 
+		if(undefined === filteredHosts)
+			filteredHosts = Object.keys(findingsByHost);
+
 		// Instead of complex counting we make strings with the first char
 		// of all findings severities by host e.g. "FFOOOOOOFWOOOO" for
 		// 3 times failed and 1 warning
 		$.each(data.results, function(i, item) {
 			findingsByHost[item.host] += item.severity.substring(0,1);
-			var topKey = item.severity+":::"+(item.group?item.group:data.group)+':::'+item.policy;
-			if('OK' !== item.severity) {
+			if('OK' !== item.severity && -1 !== filteredHosts.indexOf(item.host)) {
+				var topKey = item.severity+":::"+(item.group?item.group:data.group)+':::'+item.policy;
 				if(undefined === view.topFindings[topKey]) {
 					var i = Object.keys(view.topFindings).length;
 					view.legendColorIndex[i] = i;
@@ -69,9 +72,6 @@ views.HostmapView.prototype.addHostsToMap = function(params) {
 				view.topFindings[topKey]++;
 			}
 		});
-
-		if(undefined === filteredHosts)
-			filteredHosts = Object.keys(findingsByHost);
 
 		for(h in filteredHosts) {
 			var host = filteredHosts[h];
