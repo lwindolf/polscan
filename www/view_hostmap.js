@@ -12,6 +12,10 @@ views.HostmapView = function HostmapView(parentDiv) {
 		search: true,
 		copyHosts: true
 	};
+	this.legendColors = {
+		'FAILED': '#F77',
+		'WARNING': '#FF7'
+	};
 };
 
 views.HostmapView.prototype.tooltip = function(container, event) {
@@ -125,7 +129,7 @@ views.HostmapView.prototype.addHostsToMap = function(params) {
 			var tmp = name.split(/:::/);
 			var colorClass = tmp[0];
                         $('#legend').append("<span class='legendItem legendIndex"+i+"' title='"+tmp[1]+" - "+tmp[2]+"'>"+tmp[1]+' - '+tmp[2]+" ("+count+")</span>");
-                        $('.legendIndex'+i).addClass(colorClass);
+                        $('#legend .legendIndex'+i).css("border-left", "16px solid "+view.legendColors[colorClass]);
 			i++;
                 });
 

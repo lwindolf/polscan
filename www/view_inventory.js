@@ -172,15 +172,16 @@ views.InventoryView.prototype.update = function(params) {
 			var lastElem = sortedLegend[sortedLegend.length-1];
 			for(var l in sortedLegend) {
 				var name = legend[l];
+				var shade = 'white';
 				$('#legend').append("<span class='legendItem legendIndex"+view.legendColorIndex[name]+"' title='"+name+"'>"+name+"</span>");
 				if(numeric) {
-						if(0 != name)
-							$('.legendIndex'+view.legendColorIndex[name]).css("background", "rgb("+Math.ceil(153-(153*name/lastElem))+", "+Math.ceil(255-(255*name/lastElem))+", 102)");
-						else
-							$('.legendIndex'+view.legendColorIndex[name]).css("background", "white");
+					if(0 != name)
+						shade = "rgb("+Math.ceil(153-(153*name/lastElem))+", "+Math.ceil(255-(255*name/lastElem))+", 102)";
 				} else {
-					$('.legendIndex'+view.legendColorIndex[name]).css("background", color(view.legendColorIndex[name]));
+					shade = color(view.legendColorIndex[name]);
 				}
+				$('.boxes .legendIndex'+view.legendColorIndex[name]).css("background", shade);
+				$('#legend .legendIndex'+view.legendColorIndex[name]).css("border-left", "16px solid "+shade);
 			}
 
 			$("#inventoryMap").tablesorter({sortList: [[0,0]]});
