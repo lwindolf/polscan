@@ -304,10 +304,18 @@ views.NetmapView.prototype.update = function(params) {
 		return;
 	}
 
-	$('#results').append('<table border="0" cellspacing="0" cellpadding="0" style="width:100%" height="'+$(window).height()+'px"><tr><td valign="top" width="100%"><div id="netmap" style="height:'+$(window).height()+'px;width:100%;margin-bottom:12px;border:1px solid #aaa;background:white;overflow:auto"/></td>' +
-	                     '</td><td valign="top"><table id="inventoryTable" class="resultTable tablesorter" style="width:300px"><thead><tr id="tr_ninv"><th>Network Inventory</th></tr></thead><tbody/></table></td></tr></table>'+
-	                     '<table id="netMapTable" class="resultTable tablesorter"><thead><tr><th>Scope</th><th>Local Name</th><th>Local Transport</th><th>Remote Name</th><th>Remote Transport</th><th>In/Out</th><th>Count</th></tr></thead><tbody/></table>'
-);
+	$('#row2').html('<div style="height:'+$(window).height()+'px;">'+
+					'<div class="split split-horizontal" id="netmap" style="border:1px solid #aaa;background:white;"/>' +
+	                '<div class="split split-horizontal" id="inv"><table id="inventoryTable" class="resultTable tablesorter"><thead><tr id="tr_ninv"><th>Network Inventory</th></tr></thead><tbody/></table></div>'+
+					'</div>'+
+	                '<table id="netMapTable" class="resultTable tablesorter"><thead><tr><th>Scope</th><th>Local Name</th><th>Local Transport</th><th>Remote Name</th><th>Remote Transport</th><th>In/Out</th><th>Count</th></tr></thead><tbody/></table>'
+	);
+
+	Split(['#netmap', '#inv'], {
+		sizes: [75, 25],
+		minSize: [200, 200]
+    });
+
 	this.previousNode = params.pN;
 	this.currentNode = params.h;
 	this.neType = params.nt;
