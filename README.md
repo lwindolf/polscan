@@ -1,3 +1,5 @@
+![build status git master](https://travis-ci.org/lwindolf/polscan.svg?branch=master)
+
 # polscan
 
 *polscan* (short for "Policy Scanner") 
