@@ -18,6 +18,7 @@
 		<script type="text/javascript" src="lib/d3pie.min.js"></script>
 		<script type="text/javascript" src="lib/handlebars.min-latest.js"></script>
 		<script type="text/javascript" src="lib/jquery.sparkline.min.js"></script>
+		<script type="text/javascript" src="lib/split.min.js"></script>
 		<link rel="stylesheet" href="lib/jquery-ui.min.css">
 		<style type="text/css">
 			body.main {
@@ -35,8 +36,7 @@
 				border: 1px solid #ccc;
 				border-radius: 6px;
 				padding:12px 24px;
-				margin-right:12px;
-				margin-bottom:12px;
+				margin:12px 6px;
 			}
 			.overviewBox h3 {
 				margin-top:0;
@@ -222,6 +222,7 @@
 				height:260px;
 			}
 			.badges, .chart {
+				margin:12px 6px;
 				border:1px solid #aaa;
 				border-radius:6px;
 				float:left;
@@ -643,8 +644,38 @@ a.resolve {
 			#page_title {
 				font-weight: bold;
 				font-size:150%;
-				margin:12px 12px;
 			}
+
+  .split, .split-flex {
+    -webkit-box-sizing: border-box;
+       -moz-box-sizing: border-box;
+            box-sizing: border-box;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .gutter {
+    background-color: #eee;
+
+    background-repeat: no-repeat;
+    background-position: 50%;
+  }
+
+  .gutter.gutter-horizontal {
+    background-image: url('img/grips-vertical.png');
+    cursor: ew-resize;
+  }
+
+  .gutter.gutter-vertical {
+    background-image: url('img/grips-horizontal.png');
+    cursor: ns-resize;
+  }
+
+  .split.split-horizontal, .gutter.gutter-horizontal {
+    height: 100%;
+    float: left;
+  }
 		</style>
 	</head>
 	<body class='main'>
