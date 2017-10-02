@@ -1,4 +1,4 @@
-![build status git master](https://travis-ci.org/lwindolf/polscan.svg?branch=master)
+[![Build Status](https://travis-ci.org/lwindolf/polscan.svg?branch=master)](https://travis-ci.org/lwindolf/polscan)
 
 # polscan
 
