@@ -235,22 +235,19 @@ views.ResultsView.prototype.update = function(params) {
 		this.params = params;
 		this.filteredHosts = get_hosts_filtered(params, false);
 
-		$(id).append("<div id='badgeRow'/><div id='tableRow'/>");
+		$(id).append("<div id='histogramRow'/><div id='tableRow'/>");
 
 		if(!params.gI)
 			createResultTable('#tableRow', data.results);
 		else
 			createGroupTable('#tableRow', data.results);
 
-		var badgeTitle;
-		if(params.sT)
-			badgeTitle = "<small>Filter</small><br/> " + params.sT;
-		else if(params.fG)
-			badgeTitle = "<small>Group</small><br/> " + params.fG;
-		else
-			badgeTitle = "Overall";
+		viewInfoReset('Scan Results');
+		viewInfoAddBlock('Hosts', this.hostCount);
+		viewInfoAddBlock('Failed', this.failed);
+		viewInfoAddBlock('Warnings', this.warning);
+		viewInfoAddSwitches(['results', 'hostmap', 'treemap'], 'results');
 
-		createBadges('#badgeRow', this.failed, this.warning, badgeTitle, this.hostCount);
-		createHistogram('#badgeRow', params.fG, params.sT);
+		createHistogram('#histogramRow', params.fG, params.sT);
 	});
 };

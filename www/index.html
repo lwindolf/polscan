@@ -19,15 +19,12 @@
 		<script type="text/javascript" src="lib/handlebars.min-latest.js"></script>
 		<script type="text/javascript" src="lib/jquery.sparkline.min.js"></script>
 		<script type="text/javascript" src="lib/split.min.js"></script>
+		<link rel="stylesheet"
+          href="https://fonts.googleapis.com/css?family=Muli">
+ 
 		<link rel="stylesheet" href="lib/jquery-ui.min.css">
+		<link rel="stylesheet" href="styles.css">
 		<style type="text/css">
-			body.main {
-				font-family: Helvetica;
-				background:#eee;
-				margin:0;
-				padding:0;
-				overflow-y:scroll;
-			}
 			#overviewBoxContainer {
 				clear:both;
 			}
@@ -135,84 +132,8 @@
 			.description {
 				display:none;
 			}
-			#logo {
-				background: #222;
-				padding:6px 12px;
-				font-size:150%;
-				font-weight:bold;
-				float:left;
-				margin-right:12px;
-			}
-			#logo a {
-				text-decoration: none;
-				color: #eee;
-			}
-			#menu {
-				background: #353535;
-				color:silver;
-			}
-			#menuOptions {
-				padding: 12px;
-				z-index:0;
-			}
-			#menuOptions a {
-				color: #ddd;
-				text-decoration:none;
-				border:1px solid #666;
-				border-bottom: 1px solid #000;
-				border-right: 1px solid #000;
-				background: #555;
-				padding-left:12px;
-				padding-right:12px;
-				margin-right:12px;
-				border-radius: 4px;
-			}
-			#menuOptions a:hover {
-				color: white;
-				background: #777;
-			}
-			#menuOptions a.current {
-				color: #444;
-				font-weight:bold;
-				background: #eee;
-			}
 			#viewlist {
 				padding:24px;
-			}
-			.resultTable {
-				border: 1px solid #aaa;
-				font-size:11pt;
-				border-collapse: collapse;
-			}
-			.resultTable th {
-				background: #ddd;
-				border: 1px solid #aaa;
-				word-wrap: none;
-			}
-			.resultTable td {
-				padding: 6px 12px;
-				border: 1px solid #aaa;
-				word-wrap: break-word;
-				vertical-align: top;
-			}
-			.resultTable .policy {
-				font-size:110%;
-			}
-			tr:nth-child(even) {
-				background:#eee;
-			}
-			tr:nth-child(odd) {
-				background:white;
-			}
-			th.headerSortUp:after {
-				content: "\00a0↑";
-			}
-			th.headerSortDown:after {
-				content: "\00a0↓";
-			}
-			td.groupByValue, td.message {
-				word-break: break-all;
-				min-width:50%;
 			}
 			.search {
 				clear:both;
@@ -283,57 +204,6 @@
 			#tableRow {
 				float: left;
 			}
-			#filter {
-				background: #ddd;
-				padding:6px 12px;
-			}
-			#filter hr {
-				display:none;
-			}
-		@media (max-width: 1023px) {
-			#filter select {
-				max-width:20%;
-			}
-			#filter.sidebar #calendar {
-				display:none;
-			}
-		}
-		@media (min-width: 1024px) {
-			#results.sidebar {
-				margin-left:332px;
-			}
-			#filter.sidebar {
-				margin:0;
-				position:absolute;
-				top:0;
-				left:0;
-				margin-top:46px;
-				height:100%;
-			}
-			#filter.sidebar #datepicker, #filter.sidebar .datepicker {
-				display:none;
-			}
-			#filter.sidebar .label {
-				font-weight:bold;
-				margin-top:12px;
-			}
-			#filter.sidebar hr {
-				display:block;
-			}
-			#filter.sidebar select {
-				display:block;
-				width:300px;
-				margin-bottom:6px;
-			}
-			#filter.sidebar input[type='text'] {
-				display:block;
-				width:292px;
-				margin-bottom:6px;
-			}
-			#filter.sidebar textarea#copyHostList {
-				height:250px;
-			}
-		}
 			.ui-datepicker .ui-datepicker-header {
 				background:#555;
 				border:0;
@@ -684,26 +554,19 @@ a.resolve {
 			<a href='https://github.com/lwindolf/polscan'>Polscan</a>
 			</div>
 			<div id='menuOptions'>
-			<a href="#">Overview</a>
-			Maps:
-			<a href="#view=hostmap">Findings</a>
-			<a href="#view=inventory">Inventory</a>
-			<a href="#view=netmenu">Net</a>
-			<a href="#view=vulnerabilities">Vulnerabilities</a>
-
-			Findings: 
-			<a href="#view=results&fG=all">All</a>
-			<a href="#view=results&fG=new">New</a>
-			<a href="#view=results&fG=solved">Solved</a>
-
-			&#9881;
-			<a href="#view=policies">Policies</a>
+			<a href="#">                    <img src='img/home_icon.png'/><span class='menuText'>Dashboard</span></a>
+			<a href="#view=hostmap">        <img src='img/zoom_icon.png'/><span class='menuText'>Findings</span></a>
+			<a href="#view=inventory">      <img src='img/server_icon.png'/><span class='menuText'>Inventory</span></a>
+			<a href="#view=netmenu">        <img src='img/net_comp_icon.png'/><span class='menuText'>Network</span></a>
+			<a href="#view=vulnerabilities"><img src='img/lightning_icon.png'/><span class='menuText'>Vulnerabilities</span></a>
+			<a href="#view=policies">       <img src='img/cog_icon.png'/><span class='menuText'>Policies</span></a>
 			</div>
 		</div>
-		<div id='page_title'></div>
-
-		<div id='filter' class='sidebar'></div>
-		<div id='results'></div>
+		<div id='content'>
+			<div id='viewinfo'><span class='block name'/></div>
+			<div id='filter'></div>
+			<div id='results'></div>
+		</div> 
 
 		<script>
 			var SCHEMA_VERSION = 1;
@@ -721,7 +584,7 @@ a.resolve {
 			var loading = 0;
 			var warning = 0;
 			var failed = 0;
-			var color = d3.scale.category20();
+			var color = d3.scaleOrdinal(d3.schemeCategory20);
 
 			function error(text) {
 				$('#errors').html('<div class="errorbox"><b>Error:</b> '+text+'</div>');
@@ -876,7 +739,38 @@ a.resolve {
 				return false;
 			}
 
+			function viewInfoAddBlock(name, value) {
+				var color = "";
+				if('Failed' === name || 'Vulnerabilities' === name)
+					color = "style='color:#f77'";
+				if('Warnings' === name)
+					color = "style='color:#dd7'";
+				$('#viewinfo').append("<span class='block'><span "+color+" class='count'>"+value+"</span><br/>"+name+"</span>");
+			}
+
+			function viewInfoReset(name) {
+				$('#viewinfo').html('<span class="block name">'+name+'</span><div class="switches"/>');
+			}
+
+			var viewSwitches = {
+				'results': 'grid_icon.png',
+				'hostmap': 'hostmap.png',
+				'treemap': 'treemap.png'
+			};
+			function viewInfoAddSwitches(switches, current) {
+				$.each(switches, function(i, s) {
+					if(s in viewSwitches) {
+						$('#viewinfo .switches').append("<span class='switch"+((current===s)?" current":"")+" switch_"+s+"'><img src='img/"+viewSwitches[s]+"'/></span>");
+						$('.switch_'+s).click(function() {
+							var params = getParams();
+							loadView(s, params);
+						});
+					}						
+				});
+			}
+
 			function loadView(name, params) {
+				viewInfoReset(name);
 				$.getScript("view_"+name+".js")
 				.done(function(s, t) {
 					try {
@@ -884,12 +778,6 @@ a.resolve {
 						currentViewName = name;
 						loadFilterSettings(params);
 						currentView.update(params);
-
-						// Ugly: all view except overview need a sidebar
-						if (name === "overview")
-							$('#results').removeClass('sidebar');
-						else
-							$('#results').addClass('sidebar');
 					} catch(e) {
 						console.log("Failed to load script dependency for view '"+name+"'! ("+e+")");
 					}
@@ -900,7 +788,7 @@ a.resolve {
 				});
 			}
 
-			function onLocationHashChange() {
+			function getParams() {
 				var params = {};
 
 				try {
@@ -916,6 +804,11 @@ a.resolve {
 				} catch(e) {
 					console.log("Invalid parameter encoding! "+e);
 				}
+				return params;
+			}
+
+			function onLocationHashChange() {
+				var params = getParams();
 
 				if(params.fullscreen === "1")
 					$('#menu').hide();

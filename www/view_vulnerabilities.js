@@ -79,8 +79,11 @@ function createVulnGroupTable(id, results) {
 	console.log("Grouping hosts by vulnerability");
 	$('#loadmessage i').html("Grouping by CVE...");
 	var view = this;
+	var cves = {};
+	var packages = {};
+    var hosts = {}
 	var values = new Array(1000);
-	view.hosts = new Array(1000);
+	view.hosts = {};
 	$.each(results.filter(vulnMatches, view), function( i, item ) {
 	        var key = item.cve+"___"+item.pkg;
 		if(values[key] === undefined)
@@ -88,6 +91,9 @@ function createVulnGroupTable(id, results) {
 		if(view.hosts[key] === undefined)
 			view.hosts[key] = new Array();
 		view.hosts[key].push(item.host);
+		packages[item.pkg] = 1;
+		cves[item.cve] = 1;
+		hosts[item.host] = 1;
 	});
 	console.log("Parsing done.");
 
@@ -99,6 +105,10 @@ function createVulnGroupTable(id, results) {
 				'<td>' + view.hosts[key].length + '</td>' +
 				'<td class="hosts"><a href="" id="vuln_'+key+'">Show List</a></td>');
 	}
+	viewInfoAddBlock('Hosts', Object.keys(hosts).length);
+	viewInfoAddBlock('Vulnerabilities', Object.keys(view.hosts).length);
+	viewInfoAddBlock('Packages', Object.keys(packages).length);
+	viewInfoAddBlock('CVEs', Object.keys(cves).length);
 	$('#tableRow').width('100%');
 	addVulnResultRows(rows.sort().reverse(), 0, 250, {sortList: [[0,1]]});
 }
@@ -114,6 +124,8 @@ views.VulnerabilitiesView.prototype.update = function(params) {
 	getData("vulnerabilities", function(data) {
 		this.params = params;
 		this.filteredHosts = get_hosts_filtered(params, false);
+
+		viewInfoReset('Vulnerabilities');
 
 		$(id).append("<div id='tableRow' width='100%'/>");
 

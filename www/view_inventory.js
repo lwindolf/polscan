@@ -113,8 +113,12 @@ views.InventoryView.prototype.update = function(params) {
 	}
 	if(!params.gT)
 		params.gT = "Domain";
-	$(this.parentDiv).append('<div id="legend" title="Click to filter a legend item. Hold Ctrl and click to multi-select."><b>Legend</b></div><table id="inventoryMap" class="resultTable tablesorter"><thead><tr><th>Group</th><th>Results</th></tr></thead></table>');
-
+//	$(this.parentDiv).append('<div id="legend" title="Click to filter a legend item. Hold Ctrl and click to multi-select."><b>Legend</b></div><table id="inventoryMap" class="resultTable tablesorter"><thead><tr><th>Group</th><th>Results</th></tr></thead></table>');
+	$(this.parentDiv).append('<table border="0" cellspacing="0" cellpadding="0" style="width:100%" height="'+$(window).height()+'px"><tr><td valign="top" width="100%">' +
+	                         '<table id="inventoryMap" class="resultTable tablesorter"><thead><tr><th>Group</th><th>Results</th></tr></thead></table>'+
+	                         '</td><td valign="top"><table id="inventoryTable" class="resultTable tablesorter" style="width:300px"><thead><tr id="tr_ninv"><th>Legend</th></tr></thead><tbody/></table></td></tr></table>'+
+	                         '<table id="netMapTable" class="resultTable tablesorter"><thead><tr><th>Scope</th><th>Local Name</th><th>Local Transport</th><th>Remote Name</th><th>Remote Transport</th><th>In/Out</th><th>Count</th></tr></thead><tbody/></table>'
+    );
 	var filteredHosts = get_hosts_filtered(params, true)
 	var view = this;
 	this.legendColorIndex = {};
@@ -172,7 +176,7 @@ views.InventoryView.prototype.update = function(params) {
 			var lastElem = sortedLegend[sortedLegend.length-1];
 			for(var l in sortedLegend) {
 				var name = legend[l];
-				$('#legend').append("<span class='legendItem legendIndex"+view.legendColorIndex[name]+"' title='"+name+"'>"+name+"</span>");
+				$('#inventoryTable').append("<span class='legendItem legendIndex"+view.legendColorIndex[name]+"' title='"+name+"'>"+name+"</span>");
 				if(numeric) {
 						if(0 != name)
 							$('.legendIndex'+view.legendColorIndex[name]).css("background", "rgb("+Math.ceil(153-(153*name/lastElem))+", "+Math.ceil(255-(255*name/lastElem))+", 102)");

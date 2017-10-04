@@ -12,6 +12,8 @@ views.HostmapView = function HostmapView(parentDiv) {
 		search: true,
 		copyHosts: true
 	};
+    this.failed = 0;
+    this.warning = 0;
 };
 
 views.HostmapView.prototype.tooltip = function(container, event) {
@@ -70,8 +72,17 @@ views.HostmapView.prototype.addHostsToMap = function(params) {
 					view.topFindings[topKey] = 0;
 				}
 				view.topFindings[topKey]++;
+				if('FAILED' === item.severity)
+					view.failed += 1;
+				if('WARNING' === item.severity)
+					view.warning += 1;
 			}
 		});
+		viewInfoReset('Scan Results');
+		viewInfoAddBlock('Hosts', filteredHosts.length);
+		viewInfoAddBlock('Failed', view.failed);
+		viewInfoAddBlock('Warnings', view.warning);
+		viewInfoAddSwitches(['results', 'hostmap', 'treemap'], 'hostmap');
 
 		for(h in filteredHosts) {
 			var host = filteredHosts[h];

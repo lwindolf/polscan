@@ -225,8 +225,6 @@ function loadFilterSettings(params) {
 	if(o.copyHosts)
 		fbox.append('<input type="button" value="Host List" title="Get list of problem hosts" onclick="onCopyHosts()"/><div id="hostlist"/>');
 
-	addCalendar("#calendar", params.d);
-
 	$("#filter *").attr('disabled', true);
 	$("#datepicker").datepicker({
 		dateFormat: "yy/mm/dd"
