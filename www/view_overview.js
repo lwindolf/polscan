@@ -34,7 +34,6 @@ views.OverviewView.prototype.update = function(params) {
 	getData("overview", function(data) {
 			$("#row1").append("<div class='chart'><span id='overviewCalendar'/></div>");
 			addCalendar("#overviewCalendar", data.date);
-			createBadges('#row1', data.FAILED, data.WARNING, 'Overview', data.hostCount);
 			$("#loadmessage").hide();
 
 			var groupFailed = new Array();
@@ -74,17 +73,21 @@ views.OverviewView.prototype.update = function(params) {
 				}
 			});
 
-			$("<div id='findingsPies' class='overviewBox dark'>").appendTo("#row1");
+			viewInfoReset('Scan Overview');
+			viewInfoAddBlock('Hosts', data.hostCount);
+			viewInfoAddBlock('Failed', data.FAILED);
+			viewInfoAddBlock('Warnings', data.WARNING);
+
+/*			$("<div id='findingsPies' class='overviewBox dark'>").appendTo("#row1");
 			$("<div id='pieChartFailed' class='pie'>").appendTo("#findingsPies");
 			$("<div id='pieChartWarning' class='pie'>").appendTo("#findingsPies");
 			addPieChart('pieChartFailed', 'Problems', 260, '#fff', groupFailed);
 			addPieChart('pieChartWarning', 'Warnings', 260, '#777' ,groupWarning);
-			// FIXME: addPieChart('pieChartHosts', 'Warnings', 260, pieGroupHosts);
-
-			$( "<div id='topChangesBox' class='overviewBox'>" ).appendTo( "#row2" )
+*/
+			$( "<div id='topChangesBox'>" ).appendTo( "#row2" )
 			$( "<h3>Top Changes</h3><div id='topChanges'></div>").appendTo("#topChangesBox")
 
-			$( "<div id='policies' class='overviewBox'>" ).appendTo( "#row2" )
+			$( "<div id='policies'>" ).appendTo( "#row2" )
 			$( "<h3>Findings / Changes per Policy</h3><table class='resultTable tablesorter' id='findingsPerPolicy'><thead><tr><th>Group</th><th>Policy</th><th>Problems</th><th>Change</th><th>Warnings</th><th>Change</th><th colspan='2'>Trend</th></tr></thead><tbody></tbody></table>").appendTo("#policies")
 
 			getData("histogram", function(data) {
