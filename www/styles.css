@@ -30,7 +30,6 @@ body.main {
 #menuOptions {
 	margin-top: 24px;
 	margin-left: 12px;
-	margin-right: 6px;
 	z-index:0;
 }
 #menuOptions a {
@@ -145,6 +144,7 @@ body.main {
 }
 
 .resultTable {
+	width:100%;
 	font-size:11pt;
 	border-collapse: collapse;
 	color: #444;
