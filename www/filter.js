@@ -175,8 +175,7 @@ function applyFilterSettings(date) {
 	setLocationHash(params, true);
 }
 
-function loadFilterSettings(params) {
-	var o = currentView.filterOptions;
+function loadFilterSettings(params, o) {
 	var fbox = $('#filter');
 
 	if(o === undefined) {

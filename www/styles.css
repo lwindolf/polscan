@@ -1,3 +1,16 @@
+@font-face {
+	font-family: 'Muli';
+	src: url("fonts/Muli-Bold.ttf");
+}
+@font-face {
+	font-family: 'Muli';
+	src: url("fonts/Muli-Regular.ttf");
+}
+@font-face {
+	font-family: 'Muli';
+	src: url("fonts/Muli-SemiBold.ttf");
+}
+
 body.main {
 	font-family: 'Muli', sans-serif;
 	background:white;
