@@ -554,7 +554,7 @@ a.resolve {
 			<a href="#view=ScanResults">    <img src='img/zoom_icon.png'/><span class='menuText'>Findings</span></a>
 			<a href="#view=inventory">      <img src='img/server_icon.png'/><span class='menuText'>Inventory</span></a>
 			<a href="#view=netmenu">        <img src='img/net_comp_icon.png'/><span class='menuText'>Network</span></a>
-			<a href="#view=vulnerabilities"><img src='img/lightning_icon.png'/><span class='menuText'>Vulnerabilities</span></a>
+			<a href="#view=Vulnerabilities"><img src='img/lightning_icon.png'/><span class='menuText'>Vulnerabilities</span></a>
 			<a href="#view=policies">       <img src='img/cog_icon.png'/><span class='menuText'>Policies</span></a>
 			</div>
 		</div>
@@ -566,7 +566,9 @@ a.resolve {
 
 		<script>
 			var SCHEMA_VERSION = 1;
+			var view = new PolscanView();
 			var views = {};
+			var renderers = {};
 			var currentDay;
 			var resultCache = new Array();
 			var hostGroupNamespaces = new Array();
@@ -784,14 +786,11 @@ a.resolve {
 					$("#menu a.current").removeClass("current");
 
 					if(params.view) {
-						loadView(params.view, params);
+						view.load(params.view, params);
 						$("#menu a[href='#view="+params.view+"']").addClass("current");
-					} else if(!params.fG) {
-						loadView("overview", params);
-						$("#menu a[href='#']").addClass("current");
 					} else {
-						loadView("results", params);
-						$("#menu a[href='#view=results&fG="+params.fG+"']").addClass("current");
+						view.load("overview", params);
+						$("#menu a[href='#']").addClass("current");
 					}
 				});
 				});
@@ -801,7 +800,7 @@ a.resolve {
 				if(!params.d)
 					params.d = $('#datepicker').val();
 				if(!params.view)
-					params.view = PolscanView.getName();
+					params.view = view.getName();
 				window.location.hash = "#" + $.param(params);
 			}
 

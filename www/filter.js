@@ -143,7 +143,7 @@ function addCalendar(id, initialDate) {
 }
 
 function applyFilterSettings(date) {
-	var o = currentView.filterOptions;
+	var o = view.current.filterOptions;
 	var params = {};
 	if(!o)
 		o = {};

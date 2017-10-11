@@ -1,0 +1,116 @@
+// vim: set ts=4 sw=4: 
+// Polscan view base object
+//
+// A polscan view presents one type of data (e.g. scan results or inventories)
+// and allows to filter by data type specific filter options and to switch 
+// between different data type specific renderers
+//
+// PolscanView is both a view singleton and factory for views and renderers
+
+function PolscanView(div) {
+	this.current = undefined;
+	this.viewName = undefined;				// Name of active view impl.
+	this.defaultRendererName = undefined;   // Name of default renderer impl.
+	this.parentDiv = div;
+	this.filterOptions = { };
+}
+
+// Info blocks are basically numbers with a name to be found at the
+// top of the screen to the right of the view name
+PolscanView.prototype.addInfoBlock = function(name, value) {
+	var color = "";
+	if('Failed' === name || 'Vulnerabilities' === name)
+		color = "style='color:#f77'";
+	if('Warnings' === name)
+		color = "style='color:#dd7'";
+	$('#viewinfo').append("<span class='block'><span "+color+" class='count'>"+value+"</span><br/>"+name+"</span>");
+}
+
+// Reset the view info header. To be called on view changes
+PolscanView.prototype.resetInfo = function() {
+	$('#viewinfo').html('<span class="block name">'+this.name+'</span><div class="switches"/>');
+}
+
+// Add renderer switches to the view info header. These are icons
+// floating to the right of the info header
+PolscanView.prototype.addRenderers = function(rendererList, defaultRendererName) {
+	var view = this;
+	var params = getParams();
+	this.defaultRendererName = defaultRendererName;
+
+	$.each(rendererList, function(i, r) {
+		$('#viewinfo .switches').append("<span class='switch switch_"+r+"'><img src='img/"+r+"_icon.png'/></span>");
+		if(params.r === r)
+			$('.switch_'+r).addClass("current");
+
+		$('.switch_'+r).click(function() {
+			var params = getParams();
+			view.setRenderer(r, params);
+		});
+	});
+}
+
+PolscanView.prototype.setRenderer = function(name) {
+	setLocationHash({r: name});
+}
+
+// Render data using a named renderer into an element given by id
+// and passes the given params along
+PolscanView.prototype.render = function(id, data, params) {
+	var view = this;
+	var rName = params.r;
+	if(undefined === rName)
+		rName = view.defaultRendererName;
+
+	if(undefined !== renderers[rName]) {
+		var renderer = new renderers[rName]();
+		renderer.render(id, data, params);
+		return;
+    }
+
+	// We need to load the renderer first...
+	$.getScript("renderers/"+rName+".js")
+	.done(function(s, t) {
+		// Call ourselves again to run the renderer
+		view.render(id, data, params);
+	})
+	.fail(function(jxqhr, x, e) {
+		console.log("Failed to load script dependency for renderer '"+rName+"'! ("+e+")");
+		error("Failed to load script dependency for renderer '"+rName+"'! ("+e+")");
+	});
+}
+
+PolscanView.prototype.getName = function() {
+	return this.viewName;
+}
+
+PolscanView.prototype.setContainer = function(div) {
+	this.parentDiv = div;
+}
+
+PolscanView.prototype.load = function(name, params) {
+	var view = this;
+
+	$.getScript("views/"+name+".js")
+	.done(function(s, t) {
+		try {
+			view.current = new window[name]();
+			view.viewName = name;
+			$('#results').html('<div id="errors"/><div id="row1"></div><div id="loadmessage"><i>Loading ...</i></div><div id="row2"/>');
+			$('#errors').hide();
+			$('#loadmessage').hide();
+
+			view.current.setContainer('#results');
+			view.current.resetInfo();
+			loadFilterSettings(params, view.current.filterOptions);
+			view.current.update(params);
+		} catch(e) {
+			console.log("Failed to load script dependency for view '"+name+"'! ("+e+")");
+		}
+	})
+	.fail(function(jxqhr, x, e) {
+		console.log("Failed to load script dependency for view '"+name+"'! ("+e+")");
+		error("Failed to load script dependency for view '"+name+"'! ("+e+")");
+	});
+}
+
