@@ -82,26 +82,40 @@ renderers.treemap.prototype.hovered = function(hover) {
         .classed("node--hover", hover);
   };
 }
+
+renderers.treemap.prototype.isNumeric = function(n) {
+  return !isNaN(parseFloat(n)) && isFinite(n);
+}
         
 renderers.treemap.prototype.render = function(id, results, params) {
+	var r = this;
 	var sizes = [];
     var grps = {};
 	var nr = 0;
 
 	$(id).html('<div id="treemapContainer"><div id="treemap"/></div>');
 
+	var filteredHosts = get_hosts_filtered(params, true);
 	var findingsByHost = new Array();
 
 	// Instead of complex counting we make strings with the first char
 	// of all findings severities by host e.g. "FFOOOOOOFWOOOO" for
 	// 3 times failed and 1 warning
 	$.each(results, function(i, item) {
-		findingsByHost[item.host] += item.severity.substring(0,1);
+		// For policy findings
+		if(undefined !== item.severity) 
+			findingsByHost[item.host] += item.severity.substring(0,1);
+		if(undefined !== item.cve) {
+			if(undefined === findingsByHost[item.host])
+				findingsByHost[item.host] = 0;
+			findingsByHost[item.host] ++;
+		}
 	});
 
-    Object.keys(findingsByHost).forEach(function(h) {
+    Object.keys(filteredHosts).forEach(function(i) {
 		// right now we support only subdomain prefix as 1st criteria
 		// and params.gT as 2nd...
+		var h = filteredHosts[i];
 		var parent = h.split(/\./)[1];
 		var group = getGroupByHost(params.gT, h);
 		var key = parent +'.'+ group.replace(/\./g, "_");
@@ -111,13 +125,18 @@ renderers.treemap.prototype.render = function(id, results, params) {
         if(undefined === grps[key])
 			grps[key] = { id: 'all.'+key, name: group, value: 0, cl: 0 };
 
-		if(-1 !== findingsByHost[h].indexOf('F'))
-			grps[key].cl |= 2;
-		if(-1 !== findingsByHost[h].indexOf('W'))
-			grps[key].cl |= 1;
-		if(-1 !== findingsByHost[h].indexOf('O'))
-			grps[key].cl |= 4;
-
+		if(undefined !== findingsByHost[h]) {
+			if(r.isNumeric(findingsByHost[h])) {
+					grps[key].cl |= 2;
+			} else {
+				if(-1 !== findingsByHost[h].indexOf('F'))
+					grps[key].cl |= 2;
+				if(-1 !== findingsByHost[h].indexOf('W'))
+					grps[key].cl |= 1;
+				if(-1 !== findingsByHost[h].indexOf('O'))
+					grps[key].cl |= 4;
+			}
+		}
 		grps[key].value++;
     });
 	$.each(grps, function(k, v) {

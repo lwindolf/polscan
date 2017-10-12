@@ -801,6 +801,8 @@ a.resolve {
 					params.d = $('#datepicker').val();
 				if(!params.view)
 					params.view = view.getName();
+				if(!params.r)
+					params.r = view.getRendererName();
 				window.location.hash = "#" + $.param(params);
 			}
 

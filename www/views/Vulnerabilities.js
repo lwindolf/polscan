@@ -3,6 +3,8 @@
 
 function Vulnerabilities() {
 	this.name = 'Vulnerabilities';
+	this.renderers = ['vtable', 'treemap'];
+	this.defaultRenderer = 'vtable';
 	this.filterOptions = {
 		filterby: true,
 		search: true
@@ -14,6 +16,7 @@ Vulnerabilities.prototype = Object.create(PolscanView.prototype);
 Vulnerabilities.prototype.vulnFilter = function(item) {
 	if(this.params.sT &&
 	  !((undefined !== item.host && item.host.indexOf(this.params.sT) != -1) ||
+	    (undefined !== item.cve  &&  item.cve.indexOf(this.params.sT) != -1) ||
 	    (undefined !== item.pkg  &&  item.pkg.indexOf(this.params.sT) != -1)))
 		return false;
 	if(undefined !== this.filteredHosts &&
@@ -25,6 +28,9 @@ Vulnerabilities.prototype.vulnFilter = function(item) {
 Vulnerabilities.prototype.update = function(params) {
 	var view = this;
 	view.params = params;
+
+	if(!params.gT)
+		params.gT = "Domain";	// This usually does exist
 
 	getData("vulnerabilities", function(data) {
 		view.filteredHosts = get_hosts_filtered(params, false);
@@ -46,8 +52,6 @@ Vulnerabilities.prototype.update = function(params) {
 			cves[item.cve] = 1;
 			hosts[item.host] = 1;
 		});
-
-		view.addRenderers(['vtable', 'treemap'], 'vtable');
 
 		view.addInfoBlock('Hosts', Object.keys(hosts).length);
 		view.addInfoBlock('Vulnerabilities', Object.keys(view.hosts).length);

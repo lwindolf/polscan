@@ -9,8 +9,8 @@
 
 function PolscanView(div) {
 	this.current = undefined;
-	this.viewName = undefined;				// Name of active view impl.
-	this.defaultRendererName = undefined;   // Name of default renderer impl.
+	this.viewName = undefined;		// Name of active view impl.
+	this.rendererName = undefined;  // Name of active renderer impl.
 	this.parentDiv = div;
 	this.filterOptions = { };
 }
@@ -33,25 +33,20 @@ PolscanView.prototype.resetInfo = function() {
 
 // Add renderer switches to the view info header. These are icons
 // floating to the right of the info header
-PolscanView.prototype.addRenderers = function(rendererList, defaultRendererName) {
-	var view = this;
+PolscanView.prototype.addRenderers = function() {
 	var params = getParams();
-	this.defaultRendererName = defaultRendererName;
-
-	$.each(rendererList, function(i, r) {
+console.log(view.rendererName);
+	$.each(this.current.renderers, function(i, r) {
 		$('#viewinfo .switches').append("<span class='switch switch_"+r+"'><img src='img/"+r+"_icon.png'/></span>");
-		if(params.r === r)
+		if(view.rendererName === r)
 			$('.switch_'+r).addClass("current");
 
 		$('.switch_'+r).click(function() {
 			var params = getParams();
-			view.setRenderer(r, params);
+			params.r = r;
+			setLocationHash(params);
 		});
 	});
-}
-
-PolscanView.prototype.setRenderer = function(name) {
-	setLocationHash({r: name});
 }
 
 // Render data using a named renderer into an element given by id
@@ -59,8 +54,8 @@ PolscanView.prototype.setRenderer = function(name) {
 PolscanView.prototype.render = function(id, data, params) {
 	var view = this;
 	var rName = params.r;
-	if(undefined === rName)
-		rName = view.defaultRendererName;
+	if(undefined === rName || '' === rName)
+		rName = view.defaultRenderer;
 
 	if(undefined !== renderers[rName]) {
 		var renderer = new renderers[rName]();
@@ -81,7 +76,10 @@ PolscanView.prototype.render = function(id, data, params) {
 }
 
 PolscanView.prototype.getName = function() {
-	return this.viewName;
+	return view.viewName;
+}
+PolscanView.prototype.getRendererName = function() {
+	return view.rendererName;
 }
 
 PolscanView.prototype.setContainer = function(div) {
@@ -96,12 +94,19 @@ PolscanView.prototype.load = function(name, params) {
 		try {
 			view.current = new window[name]();
 			view.viewName = name;
+			if(undefined === params.r || '' === params.r)
+				view.rendererName = view.current.defaultRenderer;
+			else
+				view.rendererName = params.r;
+
 			$('#results').html('<div id="errors"/><div id="row1"></div><div id="loadmessage"><i>Loading ...</i></div><div id="row2"/>');
 			$('#errors').hide();
 			$('#loadmessage').hide();
 
 			view.current.setContainer('#results');
 			view.current.resetInfo();
+			view.addRenderers();
+
 			loadFilterSettings(params, view.current.filterOptions);
 			view.current.update(params);
 		} catch(e) {

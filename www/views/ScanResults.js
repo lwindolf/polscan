@@ -3,6 +3,8 @@
 
 function ScanResults() {
 	this.name = 'Scan Results';
+	this.renderers = ['table', 'hostmap', 'treemap'];
+	this.defaultRenderer = 'table';
 	this.filterOptions = {
 		findings:  true,
 		groupbyid: true,
@@ -49,8 +51,6 @@ ScanResults.prototype.update = function(params) {
 		view.filteredHosts = get_hosts_filtered(params, false);
 
 		$(view.parentDiv).append("<div id='histogramRow'/><div id='tableRow'/>");
-
-		view.addRenderers(['table', 'hostmap', 'treemap'], 'table');
 
 		var results = data.results.filter(view.resultsFilter, view)
 		view.render('#tableRow', results, view.params);
