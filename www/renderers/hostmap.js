@@ -37,11 +37,8 @@ renderers.hostmap.prototype.tooltip = function(container, event) {
 
 renderers.hostmap.prototype.render = function(id, results, params) {
 	var r = this;
-	this.topFindings = {};
-	this.legendColorIndex = {};
-    this.legendSelection = [];
 
-	$(id).append('<div id="legend" title="Click to filter a legend item. Hold Ctrl and click to multi-select."><b>Legend</b></div><table id="hostmap" class="resultTable tablesorter"><thead><tr><th>Group</th><th>C</th><th>W</th><th>Nr</th></tr></thead></table><div id="selectedGroup"/>');
+	$(id).append('<table id="hostmap" class="resultTable tablesorter"><thead><tr><th>Group</th><th>C</th><th>W</th><th>Nr</th></tr></thead></table><div id="selectedGroup"/>');
 
 	var findingsByHost = new Array();
 
@@ -50,15 +47,6 @@ renderers.hostmap.prototype.render = function(id, results, params) {
 	// 3 times failed and 1 warning
 	$.each(results, function(i, item) {
 		findingsByHost[item.host] += item.severity.substring(0,1);
-		if('OK' !== item.severity) {
-			var topKey = item.severity+":::"+(item.group?item.group:data.group)+':::'+item.policy;
-			if(undefined === r.topFindings[topKey]) {
-				var i = Object.keys(r.topFindings).length;
-				r.legendColorIndex[i] = i;
-				r.topFindings[topKey] = 0;
-			}
-			r.topFindings[topKey]++;
-		}
 	});
 
 	for(host in findingsByHost) {
@@ -94,28 +82,6 @@ renderers.hostmap.prototype.render = function(id, results, params) {
 		$(this).find('.fcount').html($(this).find('.boxes .hostMapBox.FAILED').length);
 		$(this).find('.wcount').html($(this).find('.boxes .hostMapBox.WARNING').length);
 	});
-
-	//FIXME: legend is a view property and does not belong to the renderer!
-    // Create colors for numeric legend by title
-    // and for non-numeric legends by index
-	var numeric = 0;
-    var lastElem = r.topFindings[r.topFindings.length-1];
-	var i = 0;
-	Object.keys(r.topFindings).sort(function(a,b) {
-		if((-1 !== a.indexOf('FAILED')  && -1 !== b.indexOf('FAILED')) || 
-		   (-1 !== a.indexOf('WARNING') && -1 !== b.indexOf('WARNING')))
-			return r.topFindings[b] - r.topFindings[a];
-		if(-1 !== a.indexOf('FAILED'))
-			return -1;
-		return 1;
-	}).forEach(function(name) {
-        var count = r.topFindings[name];
-		var tmp = name.split(/:::/);
-		var colorClass = tmp[0];
-        $('#legend').append("<span class='legendItem legendIndex"+i+"' title='"+tmp[1]+" - "+tmp[2]+"'>"+tmp[1]+' - '+tmp[2]+" ("+count+")</span>");
-        $('.legendIndex'+i).addClass(colorClass);
-		i++;
-    });
 
 	installTooltip('.hostMapBox', this.tooltip);
     $("#hostmap").tablesorter({sortList: [[1,1],[2,1],[3,1],[0,0]]});

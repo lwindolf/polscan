@@ -35,7 +35,7 @@ PolscanView.prototype.resetInfo = function() {
 // floating to the right of the info header
 PolscanView.prototype.addRenderers = function() {
 	var params = getParams();
-console.log(view.rendererName);
+
 	$.each(this.current.renderers, function(i, r) {
 		$('#viewinfo .switches').append("<span class='switch switch_"+r+"'><img src='img/"+r+"_icon.png'/></span>");
 		if(view.rendererName === r)
@@ -47,6 +47,11 @@ console.log(view.rendererName);
 			setLocationHash(params);
 		});
 	});
+}
+
+PolscanView.prototype.ajaxError = function(j, x, e) {
+	console.log("Failed to load script dependency! ("+e+")");
+	error("Failed to load script dependency! ("+e+")");
 }
 
 // Render data using a named renderer into an element given by id
@@ -69,10 +74,7 @@ PolscanView.prototype.render = function(id, data, params) {
 		// Call ourselves again to run the renderer
 		view.render(id, data, params);
 	})
-	.fail(function(jxqhr, x, e) {
-		console.log("Failed to load script dependency for renderer '"+rName+"'! ("+e+")");
-		error("Failed to load script dependency for renderer '"+rName+"'! ("+e+")");
-	});
+	.fail(this.ajaxError);
 }
 
 PolscanView.prototype.getName = function() {
@@ -110,12 +112,9 @@ PolscanView.prototype.load = function(name, params) {
 			loadFilterSettings(params, view.current.filterOptions);
 			view.current.update(params);
 		} catch(e) {
-			console.log("Failed to load script dependency for view '"+name+"'! ("+e+")");
+			this.ajaxError(undefined, undefined, e);
 		}
 	})
-	.fail(function(jxqhr, x, e) {
-		console.log("Failed to load script dependency for view '"+name+"'! ("+e+")");
-		error("Failed to load script dependency for view '"+name+"'! ("+e+")");
-	});
+	.fail(this.ajaxError);
 }
 
