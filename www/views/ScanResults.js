@@ -12,6 +12,10 @@ function ScanResults() {
 		search:    true,
 		copyHosts: true
 	}
+	this.legendColors = {
+		'FAILED': '#F77',
+		'WARNING': '#FF7'
+	};
 }
 
 ScanResults.prototype = Object.create(PolscanView.prototype);
@@ -36,9 +40,8 @@ ScanResults.prototype.resultsFilter = function(item) {
 }
 
 ScanResults.prototype.addLegend = function(results) {
-	view.topFindings = {};
-	view.legendColorIndex = {};
-	view.legendSelection = [];
+	var view = this;
+	var topFindings = {};
 
 	$.each(results, function(i, item) {
 		if('OK' === item.severity)
@@ -50,32 +53,31 @@ ScanResults.prototype.addLegend = function(results) {
 
 		// Legend counting
 		var topKey = item.severity+":::"+(item.group?item.group:data.group)+':::'+item.policy;
-		if(undefined === view.topFindings[topKey]) {
-			var i = Object.keys(view.topFindings).length;
-			view.legendColorIndex[i] = i;
-			view.topFindings[topKey] = 0;
+		if(undefined === topFindings[topKey]) {
+			var i = Object.keys(topFindings).length;
+			topFindings[topKey] = 0;
 		}
-		view.topFindings[topKey]++;
+		topFindings[topKey]++;
 	});
 
 	// Create colors for numeric legend by title
 	// and for non-numeric legends by index
 	var numeric = 0;
-	var lastElem = view.topFindings[view.topFindings.length-1];
+	var lastElem = topFindings[topFindings.length-1];
 	var i = 0;
-	Object.keys(view.topFindings).sort(function(a,b) {
+	Object.keys(topFindings).sort(function(a,b) {
 		if((-1 !== a.indexOf('FAILED')  && -1 !== b.indexOf('FAILED')) || 
 		   (-1 !== a.indexOf('WARNING') && -1 !== b.indexOf('WARNING')))
-			return view.topFindings[b] - view.topFindings[a];
+			return topFindings[b] - topFindings[a];
 		if(-1 !== a.indexOf('FAILED'))
 			return -1;
 		return 1;
 	}).forEach(function(name) {
-	    var count = view.topFindings[name];
+	    var count = topFindings[name];
 		var tmp = name.split(/:::/);
 		var colorClass = tmp[0];
 	    $('#legend').append("<span class='legendItem legendIndex"+i+"' title='"+tmp[1]+" - "+tmp[2]+"'>"+tmp[1]+' - '+tmp[2]+" ("+count+")</span>");
-	    $('.legendIndex'+i).addClass(colorClass);
+        $('#legend .legendIndex'+i).css("border-left", "16px solid "+view.legendColors[colorClass]);
 		i++;
 	});
 }

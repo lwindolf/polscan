@@ -156,6 +156,29 @@ body.main {
 	width: 100%;
 }
 
+#legend {
+	background:#666;
+	color:white;
+
+	overflow:hidden;
+	border:1px solid #aaa;
+	border-radius:6px; 
+	padding:6px;
+	margin:0;
+	text-align:center;
+}
+.legendItem {
+	color:black;
+        background:white;
+	text-align:left;
+	display:block;
+	padding:0 3px;
+	margin-top:1px;
+	cursor:pointer;
+        overflow:hidden;
+	text-overflow:ellipsis;
+}
+
 .resultTable {
 	width:100%;
 	font-size:11pt;

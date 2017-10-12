@@ -93,7 +93,7 @@ renderers.treemap.prototype.render = function(id, results, params) {
     var grps = {};
 	var nr = 0;
 
-	$(id).html('<div id="treemapContainer"><div id="treemap"/></div>');
+	$(id).append('<div id="treemapContainer"><div id="treemap"/></div>');
 
 	var filteredHosts = get_hosts_filtered(params, true);
 	var findingsByHost = new Array();
@@ -144,5 +144,5 @@ renderers.treemap.prototype.render = function(id, results, params) {
 	});
 
     sizes.push({ id : 'all' });
-    this.createMap(sizes, $(window).width()-$('#menu').width(), $(window).height()-$('#results').offset().top);
+    this.createMap(sizes, $(id).width(), $(window).height()-$('#results').offset().top);
 };
