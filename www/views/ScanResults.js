@@ -52,7 +52,7 @@ ScanResults.prototype.addLegend = function(results) {
 			view.warning++;
 
 		// Legend counting
-		var topKey = item.severity+":::"+(item.group?item.group:data.group)+':::'+item.policy;
+		var topKey = item.severity+":::"+(item.group?item.group:view.params.fG)+':::'+item.policy;
 		if(undefined === topFindings[topKey]) {
 			var i = Object.keys(topFindings).length;
 			topFindings[topKey] = 0;
