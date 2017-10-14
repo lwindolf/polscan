@@ -50,7 +50,7 @@ renderers.vtable.prototype.addResultRows = function(name, rows, offset, count, s
 	}
 }
 
-renderers.vtable.prototype.render = function(id, results, params) {
+renderers.vtable.prototype.render = function(id, data, params) {
 
 	clearTimeout(this.tableLoadTimeout);
 	$('#loadmessage').show();
@@ -68,7 +68,7 @@ renderers.vtable.prototype.render = function(id, results, params) {
     var hosts = {}
 	var values = new Array(1000);
 	view.hosts = {};
-	$.each(results, function( i, item ) {
+	$.each(data.results, function( i, item ) {
 	        var key = item.cve+"___"+item.pkg;
 		if(values[key] === undefined)
 			values[key] = item;

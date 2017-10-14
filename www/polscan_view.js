@@ -74,7 +74,7 @@ PolscanView.prototype.render = function(id, data, params) {
 		// Call ourselves again to run the renderer
 		view.render(id, data, params);
 	})
-	.fail(this.ajaxError);
+	.fail(view.ajaxError);
 }
 
 PolscanView.prototype.getName = function() {
@@ -112,9 +112,9 @@ PolscanView.prototype.load = function(name, params) {
 			loadFilterSettings(params, view.current.filterOptions);
 			view.current.update(params);
 		} catch(e) {
-			this.ajaxError(undefined, undefined, e);
+			view.ajaxError(undefined, undefined, e);
 		}
 	})
-	.fail(this.ajaxError);
+	.fail(view.ajaxError);
 }
 

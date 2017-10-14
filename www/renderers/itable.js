@@ -2,11 +2,11 @@
 // Renderer for displaying finding details in a sortable table
 // Loads row asynchronously to allow for larger tables
 
-renderers.table = function tableRenderer(parentDiv) { 
+renderers.itable = function itableRenderer(parentDiv) { 
 	this.tableLoadTimeout = undefined;
 };
 
-renderers.table.prototype.sortTable = function(id, sortOrder) {
+renderers.itable.prototype.sortTable = function(id, sortOrder) {
 	$('#loadmessage i').html('Sorting results...');
 	console.log("Table setup done.");
 	this.tableLoadTimeout = setTimeout(function() {
@@ -19,7 +19,7 @@ renderers.table.prototype.sortTable = function(id, sortOrder) {
 	}, 100);
 }
 
-renderers.table.prototype.addResultRows = function(name, rows, offset, count, sortOrder) {
+renderers.itable.prototype.addResultRows = function(name, rows, offset, count, sortOrder) {
 	var r = "";
 	for(var i = offset; i < offset+count; i++) {
 		if(rows[i])
@@ -49,7 +49,7 @@ renderers.table.prototype.addResultRows = function(name, rows, offset, count, so
 	}
 }
 
-renderers.table.prototype.createGroupTable = function(id, data, params) {
+renderers.itable.prototype.createGroupTable = function(id, data, params) {
 
 	clearTimeout(this.tableLoadTimeout);
 	$('#loadmessage').show();
@@ -116,7 +116,7 @@ renderers.table.prototype.createGroupTable = function(id, data, params) {
 	this.sortTable("#resultTable"+params.fG, {sortList: [[1,1]]});
 }
 
-renderers.table.prototype.createResultTable = function(id, data, params) {
+renderers.itable.prototype.createResultTable = function(id, data, params) {
 	var group = '';
 	var name = params.fG;
 
@@ -185,7 +185,7 @@ renderers.table.prototype.createResultTable = function(id, data, params) {
 	}
 }
 
-renderers.table.prototype.render = function(id, data, params) {
+renderers.itable.prototype.render = function(id, data, params) {
 	if(!params.gI)
 		this.createResultTable(id, data, params);
 	else

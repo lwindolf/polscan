@@ -189,7 +189,8 @@ body.main {
 	background: #f5f5f5;
 	border-bottom: 1px solid #e0e0e0;
 	word-wrap: none;
-	padding: 12px 24px;
+	padding: 12px 12px;
+	text-align:left;
 }
 .resultTable td {
 	padding: 12px 12px;

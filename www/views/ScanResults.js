@@ -88,7 +88,7 @@ ScanResults.prototype.update = function(params) {
 	if(!params.fG)
         params.fG = 'new';
 	if(!params.gT)
-		params.gT = "Domain";	// This usually does exist
+		params.gT = "Domain";
 
 	getData(params.fG, function(data) {
 		view.failed = 0;
@@ -104,10 +104,9 @@ ScanResults.prototype.update = function(params) {
 			minSize: [200, 200]
 		});
 
-		var results = data.results.filter(view.resultsFilter, view)
-		view.render('#tableRow', results, view.params);
+		var results = data.results.filter(view.resultsFilter, view);
+		view.render('#tableRow', { results: results, legend: { type: 'policy' }}, view.params);
 		view.addLegend(results);
-
 		view.addInfoBlock('Hosts',    view.filteredHosts.length);
 		view.addInfoBlock('Failed',   view.failed);
 		view.addInfoBlock('Warnings', view.warning);

@@ -59,6 +59,6 @@ Vulnerabilities.prototype.update = function(params) {
 		view.addInfoBlock('CVEs', Object.keys(cves).length);
 
 		$(view.parentDiv).append("<div id='tableRow' width='100%'/>");
-		view.render('#tableRow', results, view.params);
+		view.render('#tableRow', data, view.params);
 	});
 };

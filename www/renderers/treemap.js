@@ -87,7 +87,7 @@ renderers.treemap.prototype.isNumeric = function(n) {
   return !isNaN(parseFloat(n)) && isFinite(n);
 }
         
-renderers.treemap.prototype.render = function(id, results, params) {
+renderers.treemap.prototype.render = function(id, data, params) {
 	var r = this;
 	var sizes = [];
     var grps = {};
@@ -101,7 +101,7 @@ renderers.treemap.prototype.render = function(id, results, params) {
 	// Instead of complex counting we make strings with the first char
 	// of all findings severities by host e.g. "FFOOOOOOFWOOOO" for
 	// 3 times failed and 1 warning
-	$.each(results, function(i, item) {
+	$.each(data.results, function(i, item) {
 		// For policy findings
 		if(undefined !== item.severity) 
 			findingsByHost[item.host] += item.severity.substring(0,1);
