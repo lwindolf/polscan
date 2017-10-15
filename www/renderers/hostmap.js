@@ -42,7 +42,6 @@ return;
 
 	// Selectively show stuff
 	$.each(data.legend.selection, function(i, li) {
-console.log("show legendIndex"+li);
 		$('#legend .legendIndex'+li).css("background", color(li));
 		$('#hostmap div.hostMapBox td.legendIndex'+li).show();
 		$('#hostmap div.hostMapBox td.legendIndex'+li).parents().show();
@@ -129,5 +128,9 @@ renderers.hostmap.prototype.render = function(id, data, params) {
 
 	this.changeVisibility(data);
 	installTooltip('.hostMapBox', this.tooltip);
-    $("#hostmap").tablesorter({sortList: [[1,1],[2,1],[3,1],[0,0]]});
+
+	if('color' === data.legend.type)
+	    $("#hostmap").tablesorter({sortList: [[1,1],[0,0]]});
+	else
+	    $("#hostmap").tablesorter({sortList: [[1,1],[2,1],[3,1],[0,0]]});
 };
