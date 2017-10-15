@@ -20,6 +20,7 @@ renderers.table.prototype.sortTable = function(id, sortOrder) {
 }
 
 renderers.table.prototype.addResultRows = function(name, rows, offset, count, sortOrder) {
+	var renderer = this;
 	var r = "";
 	for(var i = offset; i < offset+count; i++) {
 		if(rows[i])
@@ -29,7 +30,7 @@ renderers.table.prototype.addResultRows = function(name, rows, offset, count, so
 	if(offset + count < rows.length) {
 		resultTableLoadTimeout = setTimeout(function() {
 			$('#loadmessage i').html('Loading results ('+Math.ceil(100*offset/rows.length)+'%)...');
-			addResultRows(name, rows, offset+count, count, sortOrder);
+			renderer.addResultRows(name, rows, offset+count, count, sortOrder);
 		}, 100);
 	} else {
 		// Enable table sorting
