@@ -56,11 +56,11 @@ renderers.table.prototype.createGroupTable = function(id, data, params) {
 	$('#loadmessage').show();
 	$('.resultTable').empty();
 	$('.resultTable').remove();
-	$("<table id='resultTable"+this.params.fG+"' class='resultTable tablesorter'>")
-	.html("<thead><tr><th>"+this.params.gI+"</th><th>Count</th><th>Hosts</th></thead><tbody/>")
+	$("<table id='resultTable"+params.fG+"' class='resultTable tablesorter'>")
+	.html("<thead><tr><th>"+params.gI+"</th><th>Count</th><th>Hosts</th></thead><tbody/>")
 	.appendTo(id);
 
-	console.log("Grouping hosts by '"+this.params.gI+"'");
+	console.log("Grouping hosts by '"+params.gI+"'");
 	var hosts = new Array();
 	var values = new Array();
 	$.each(data.results, function( i, item ) {
