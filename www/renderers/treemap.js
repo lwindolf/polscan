@@ -2,7 +2,7 @@
 // 3d.js based renderer for displaying finding details in a tree map
 
 renderers.treemap = function treemapRenderer() {
-	var fader = function(color) { return d3.interpolateRgb(color, "#fff")(0.3); };
+	var fader = function(color) { return d3.interpolateRgb(color, "#fff")(0.8); };
 
 	this.offset = 0;
     this.color = d3.scaleOrdinal(["#a6cee3","#1f78b4","#b2df8a","#33a02c","#fb9a99","#e0e0e0","#fdbf6f","#ff7f00","#cab2d6"].map(fader));
