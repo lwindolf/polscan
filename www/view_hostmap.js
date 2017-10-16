@@ -155,7 +155,7 @@ views.HostmapView.prototype.update = function(params) {
 		$(this.parentDiv).append('<div id="legend" title="Click to filter a legend item. Hold Ctrl and click to multi-select."><b>Legend</b></div><table id="hostmap" class="resultTable tablesorter"><thead><tr><th>Group</th><th>C</th><th>W</th><th>Nr</th></tr></thead></table><div id="selectedGroup"/>');
 		this.addHostsToMap(params);
 	} else {
-		$(this.parentDiv).append('<h2>Findings By Group</h2>');
-		group_list(this.parentDiv, 'hostmap');
+        params.fG = 'new';
+		setLocationHash(params);
 	}
 };

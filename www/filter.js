@@ -143,7 +143,7 @@ function addCalendar(id, initialDate) {
 }
 
 function applyFilterSettings(date) {
-	var o = currentView.filterOptions;
+	var o = view.current.filterOptions;
 	var params = {};
 	if(!o)
 		o = {};
@@ -175,8 +175,7 @@ function applyFilterSettings(date) {
 	setLocationHash(params, true);
 }
 
-function loadFilterSettings(params) {
-	var o = currentView.filterOptions;
+function loadFilterSettings(params, o) {
 	var fbox = $('#filter');
 
 	if(o === undefined) {

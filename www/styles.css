@@ -1,3 +1,16 @@
+@font-face {
+	font-family: 'Muli';
+	src: url("fonts/Muli-Bold.ttf");
+}
+@font-face {
+	font-family: 'Muli';
+	src: url("fonts/Muli-Regular.ttf");
+}
+@font-face {
+	font-family: 'Muli';
+	src: url("fonts/Muli-SemiBold.ttf");
+}
+
 body.main {
 	font-family: 'Muli', sans-serif;
 	background:white;
@@ -143,6 +156,29 @@ body.main {
 	width: 100%;
 }
 
+#legend {
+	background:#666;
+	color:white;
+
+	overflow:hidden;
+	border:1px solid #aaa;
+	border-radius:6px; 
+	padding:6px;
+	margin:0;
+	text-align:center;
+}
+.legendItem {
+	color:black;
+        background:white;
+	text-align:left;
+	display:block;
+	padding:0 3px;
+	margin-top:1px;
+	cursor:pointer;
+        overflow:hidden;
+	text-overflow:ellipsis;
+}
+
 .resultTable {
 	width:100%;
 	font-size:11pt;
@@ -153,7 +189,8 @@ body.main {
 	background: #f5f5f5;
 	border-bottom: 1px solid #e0e0e0;
 	word-wrap: none;
-	padding: 12px 24px;
+	padding: 12px 12px;
+	text-align:left;
 }
 .resultTable td {
 	padding: 12px 12px;
