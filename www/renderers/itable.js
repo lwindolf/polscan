@@ -55,139 +55,52 @@ renderers.itable.prototype.createGroupTable = function(id, data, params) {
 	$('#loadmessage').show();
 	$('.resultTable').empty();
 	$('.resultTable').remove();
-	$("<table id='resultTable"+this.params.fG+"' class='resultTable tablesorter'>")
-	.html("<thead><tr><th>"+this.params.gI+"</th><th>Count</th><th>Hosts</th></thead><tbody/>")
+	$("<table id='resultTable"+params.gT+"' class='resultTable tablesorter'>")
+	.html("<thead><tr><th>"+params.gT+"</th><th>"+params.iT+"</th></thead><tbody/>")
 	.appendTo(id);
 
-	console.log("Grouping hosts by '"+this.params.gI+"'");
-	var hosts = new Array();
-	var values = new Array();
+	console.log("Grouping hosts by '"+params.gT+"'");
+	var groups = {};
+	var groups_host_count = {};
 	$.each(data.results, function( i, item ) {
-			// 3 supported split types and priority:
-			//
-			// 1.) Explicit field separator
-			//     (if first character after : is not a space)
-			//     in this case we split on this character.
-			//
-			// 2.) Fuzzy split on commatas
-			//     (if first character after : is a space and string has commatas)
-			//
-			// 3.) Fuzyy split on white spaces
-			//     (default)
-			var listStr = item.message.substring(params.gI.length + 2);
-			var splitMarker = item.message.substring(params.gI.length + 2)[0];
-			var list;
+			var groupName = getGroupByHost(params.gT, item.host);
+			var groupClassName = groupName.replace(/[\.#\/]/g, "_");
 
-			console.log(">>>"+splitMarker+"<<<");
-			if(splitMarker !== ' ')
-				list = listStr.split(splitMarker);
-			else if(listStr.indexOf(',') != -1)
-				list = listStr.split(/\s*,\s*/);
-			else
-				list = listStr.split(/\s+/);
-
-			for(var key in list) {
-				if(list[key] == "")
-					continue;
-				if(values[list[key]] === undefined)
-					values[list[key]] = 1;
-
-				if(hosts[list[key]] === undefined)
-					hosts[list[key]] = new Array();
-				hosts[list[key]].push(item.host);
+			if(undefined === groups[groupName]) {
+				groups[groupName] = {};
+				groups_host_count[groupName] = 0;
 			}
+			groups_host_count[groupName]++;
+
+			$.each(item.values.split(/ /), function(i, value) {
+				if(value === "")
+					return;
+				if(groups[groupName][value] === undefined)
+					groups[groupName][value] = 0;
+
+				groups[groupName][value]++;
+			});
 	});
 	console.log("Parsing done.");
 
 	var rows = new Array(250);
-	for(var key in values) {
-		var hostlinks = "";
-		for(var h in hosts[key])
-			hostlinks += "<a href='javascript:setLocationHash({ fG: \"all\", sT: \""+hosts[key][h]+"\"}, true);' class='host'>"+hosts[key][h]+"</a> ";
-		rows.push('<td class="groupByValue">' + key + '</td>' +
-				'<td class="count">' + hosts[key].length + '</td>' +
-				'<td class="hosts">' + hostlinks + '</td>');
+	for(var group in groups) {
+		rows.push('<td class="groupByValue">' + group + '</td>' +
+				'<td class="count">' + Object.keys(groups[group]).join(' ') + '</td>');
 		// Avoid OOM
 		if(rows.length >= 250) {
-			this.addResultRows(params.fG, rows, 0, 500, null);
+			this.addResultRows(params.gT, rows, 0, 500, null);
 			rows = new Array(250);
 		}
 	}
-	this.sortTable("#resultTable"+params.fG, {sortList: [[1,1]]});
-}
-
-renderers.itable.prototype.createResultTable = function(id, data, params) {
-	var group = '';
-	var name = params.fG;
-
-	if(!name)
-		name = 'all';
-
-	if (name == 'all' || name == 'new' || name == 'solved')
-		group = '<th>Group</th>';
-
-	clearTimeout(this.tableLoadTimeout);
-	$('#loadmessage').show();
-	$("<table id='resultTable"+name+"' class='resultTable tablesorter'>")
-		.html("<thead><tr><th>Host</th>"+group+"<th>Policy</th><th title='Severity'>&nbsp;</th><th>Details</th></thead>")
-		.appendTo(id);
-	$('<tbody>').appendTo('#resultTable'+name);
-
-	groupBy = new Array();
-	var rows = "";
-	var visibleHosts = new Array();
-	$.each(data.results, function( i, item ) {
-		var severity = 0;
-
-		if(item.severity == 'FAILED') {
-			severity = 2;
-		}
-		if(item.severity == 'WARNING') {
-			severity = 1;
-		}
-		visibleHosts[item.host] = 1;
-
-		rows += '<tr><td class="host">' + item.host + '</td>';
-		if(item.group)
-			rows += '<td class="group">' + item.group + '</td>';
-		rows +=
-			'<td class="policy">' + item.policy + '</td>' +
-			'<td class="severity '+item.severity+'">'+severity+'</td>' +
-			'<td class="message">' + item.message + '</td></tr>';
-
-		// Fill array of possible groupings
-		//
-		// A group is indicated by a colon in the detail message
-		// followed by any whitespace or comma separated list.
-		var pos = item.message.indexOf(':');
-		if(pos != -1) {
-			var groupByStr = item.message.substring(0, pos); 
-			if(groupBy[groupByStr] === undefined) {
-				groupBy[groupByStr] = 1;
-			} else {
-				groupBy[groupByStr]++;
-			}
-		}
-	});
-	console.log("Parsing done.");
-	this.addResultRows(name, rows.split(/<tr>/), 0, 100, {sortList: [[2,1],[0,0]]});
-
-	if(groupBy.length >= 0) {
-		var groupingEnabled = false;
-		for(key in groupBy) {
-			if(groupBy[key] > 3 && key.length > 3) {
-				groupingEnabled = true;
-				$('#groupById').append("<option>"+key+"</option>");
-			}
-		}
-		if(groupingEnabled)
-			$('#groupById').removeAttr('disabled');
-	}
+	this.sortTable("#resultTable"+params.gT, {sortList: [[0,0]]});
 }
 
 renderers.itable.prototype.render = function(id, data, params) {
-	if(!params.gI)
-		this.createResultTable(id, data, params);
-	else
-		this.createGroupTable(id, data, params);
+	if(!params.gT)
+		params.gT = 'Subdomain-Prefix';
+
+	// FIXME: dirty legend avoidance hack
+	$('#legend').hide();
+	this.createGroupTable('#row2', data, params);
 }
