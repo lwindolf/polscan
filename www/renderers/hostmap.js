@@ -5,27 +5,30 @@
 
 renderers.hostmap = function hostmapRenderer() { };
 
-renderers.hostmap.prototype.tooltip = function(container, event) {
+renderers.hostmap.prototype.tooltip = function(container, event, data) {
 	var host = $(container).attr('host');
 	var details = "";
 	var okFound = false;
-	var cache = resultCache[$('#findingsGroup').val().replace('-', '_')];
 
-	if(!cache)
-		console.log("Fatal: no cache for "+$('#findingsGroup').val());
-	else
-		$.each(cache.results, function(i, item) {
-			if(item.host == host) {
-				if(item.severity == "OK") {
-					okFound = true;
-				} else {
-					details += "<tr>";
-				if(item.group)
-					details += "<td class='group'>" + item.group + "</td>";
-					details += "<td class='policy "+item.severity+"'>" + item.policy + "</td><td class='message'>" + ((item.message.length>100)?item.message.substring(0,100)+" [...]":item.message) + "</td></tr>";
+	$.each(data.results, function(i, item) {
+		if(item.host === host) {
+			if(item.severity && item.severity === "OK") {
+				okFound = true;
+			}
+			if(item.group && item.policy) {
+				details += "<tr>";
+				details += "<td class='group'>" + item.group + "</td>";
+				details += "<td class='policy "+item.severity+"'>" + item.policy + "</td><td class='message'>" + ((item.message.length>100)?item.message.substring(0,100)+" [...]":item.message) + "</td>";
+				details += "</tr>";
+			} else {
+				if(item.values) {
+					var tmp = item.values.split(/ /);
+					for(v in tmp)
+						details += "<tr><td>"+tmp[v]+"</td></tr>";
 				}
 			}
-		});
+		}
+	});
 	if(details == "")
 		if(okFound)
 			details = "<br/><br/>No problematic findings here.";
@@ -36,7 +39,7 @@ renderers.hostmap.prototype.tooltip = function(container, event) {
 }
 
 renderers.hostmap.prototype.changeVisibility = function(data) {
-return;
+return; // FIXME
 	// Hide all
 	$('#hostmap div.hostMapBox').hide();
 
@@ -95,14 +98,14 @@ renderers.hostmap.prototype.render = function(id, data, params) {
 			} else {
 				html += "NORESULTS";
 			}
-			html += "' onclick='setLocationHash({ view: \"ScanResults\", r: \"table\", fG: \"all\", sT: \""+host+"\"}, true)'>&nbsp;</div> ";
+			html += "' onclick='setLocationHash({ view: \"ScanResults\", r: \"table\", fG: \"all\", sT: \""+host+"\"}, true)'><span class='legendIndexFIXME'>&nbsp;</span></div> ";
 		}
 		if('color' === data.legend.type) {
 			var values = value.split(/ /).filter(function(i) {
 				return i != '';
 			});
 			if(values.length > 0) {
-				html += "<table class='hostMapBox' style='border:0' cellspacing='0' cellpadding='1px' width='100%'><tr>";
+				html += "<table host='"+host+"' class='hostMapBox' style='border:0' cellspacing='0' cellpadding='1px' width='100%'><tr>";
 				for(var p in values.sort())
 					html += "<td style='background:"+color(data.legend.colors[values[p]])+";border:0;padding:1px;height:10px' class='legendIndex"+data.legend.colors[values[p]]+"'></td>";
 				html += "</tr></table>";
@@ -127,7 +130,7 @@ renderers.hostmap.prototype.render = function(id, data, params) {
 	});
 
 	this.changeVisibility(data);
-	installTooltip('.hostMapBox', this.tooltip);
+	installTooltip('.hostMapBox', this.tooltip, data);
 
 	if('color' === data.legend.type)
 	    $("#hostmap").tablesorter({sortList: [[1,1],[0,0]]});
