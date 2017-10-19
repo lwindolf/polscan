@@ -88,7 +88,7 @@ ScanResults.prototype.update = function(params) {
 	if(!params.fG)
         params.fG = 'new';
 	if(!params.gT)
-		params.gT = "Domain";
+		params.gT = 'Domain';
 
 	getData(params.fG, function(data) {
 		view.failed = 0;
