@@ -125,7 +125,8 @@ Inventory.prototype.addLegend = function(results) {
 Inventory.prototype.update = function(params) {
 	var view = this;
 
-	// FIXME: handle empty params.iT
+	if(!params.iT)
+		params.iT = $('#inventoryType').val();
 	if(!params.gT)
 		params.gT = "Domain";
 
