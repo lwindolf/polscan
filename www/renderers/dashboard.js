@@ -1,11 +1,9 @@
 // vim: set ts=4 sw=4: 
 // The overview...
 
-views.OverviewView = function OverviewView(parentDiv) {
-	this.parentDiv = parentDiv;
-};
+renderers.dashboard = function dashboardRenderer() { };
 
-views.OverviewView.prototype.addTopChanges = function(changes, type) {
+renderers.dashboard.prototype.addTopChanges = function(changes, type) {
 	var results = [];
         var sortbar = [];
 
@@ -22,14 +20,10 @@ views.OverviewView.prototype.addTopChanges = function(changes, type) {
 		$('#topChanges').append("<div class='changeList'><div class='changeItems "+type.toUpperCase()+"'>"+results.join('')+"</div></div>");
 }
 
-views.OverviewView.prototype.update = function(params) {
-	var view = this;
+renderers.dashboard.prototype.render = function(id, data, params) {
+	var r = this;
 
-	clean();
-	$(this.parentDiv).css('margin-left:0;');
-	$("<div id='overviewBoxContainer'>").appendTo(this.parentDiv);
-	$("<div id='col2'>").appendTo("#overviewBoxContainer");
-	$("<div id='col1'>").appendTo("#overviewBoxContainer");
+	$(this.parentDiv).addClass('dashboard');
 
 	getData("overview", function(data) {
 			$("#row1").append("<div class='chart'><span id='overviewCalendar'/></div>");
@@ -73,10 +67,6 @@ views.OverviewView.prototype.update = function(params) {
 				}
 			});
 
-			viewInfoReset('Scan Overview');
-			viewInfoAddBlock('Hosts', data.hostCount);
-			viewInfoAddBlock('Failed', data.FAILED);
-			viewInfoAddBlock('Warnings', data.WARNING);
 
 /*			$("<div id='findingsPies' class='overviewBox dark'>").appendTo("#row1");
 			$("<div id='pieChartFailed' class='pie'>").appendTo("#findingsPies");
@@ -157,9 +147,9 @@ views.OverviewView.prototype.update = function(params) {
 				});
 				$("#findingsPerPolicy").tablesorter({sortList: [[3,1],[2,1],[5,1],[4,1]]});
 
-				view.addTopChanges(changes, 'failed');
-				view.addTopChanges(changes, 'warning');
-				view.addTopChanges(changes, 'ok');
+				r.addTopChanges(changes, 'failed');
+				r.addTopChanges(changes, 'warning');
+				r.addTopChanges(changes, 'ok');
 
 				$("#findingsPerPolicy .group").click(function() {
 					setLocationHash({

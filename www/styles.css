@@ -238,3 +238,29 @@ td.groupByValue, td.message {
   border: solid 1px #000;
 }
 
+.dashboard {
+	clear:both;
+	background:#ccc;
+}
+.overviewBox {
+
+	border: 1px solid #ccc;
+	border-radius: 6px;
+	padding:12px 24px;
+	margin:12px 6px;
+}
+.overviewBox h3 {
+	margin-top:0;
+	margin-bottom:12px;
+}
+.overviewBox.dark {
+	background:#444;
+	float:left;
+}
+
+#overviewCalendar table {
+	height:222px;
+}
+#overviewCalendar td {
+	font-size: 1.2em;
+}
