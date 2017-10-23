@@ -211,12 +211,12 @@ function loadFilterSettings(params, o) {
 	if(o.findings)
 		fbox.append('<span class="label">Findings</span> <select id="findingsGroup"></select> ');
 
-	if(o.groupbyid) {
+	if(o.groupbyid && params.r === 'table') {
 		fbox.append('<span class="label">Group Hosts By</span> <select id="groupById"><option name="none"></option></select> ');
 		if(params.gI && params.gI != '')
 			$('#groupById').append('<option name="'+params.gI+'" selected>'+params.gI+'</option>');
 	}
-	if(o.groupbyhg)
+	if(o.groupbyhg && -1 !== ['hostmap', 'treemap'].indexOf(params.r))
 		fbox.append('<span class="label">Group Hosts by</span> <select id="hostmapGroupType"></select> ');
 
 	if(o.filterby)

@@ -9,6 +9,10 @@ function Vulnerabilities() {
 		filterby: true,
 		search: true
 	};
+	this.legend = {
+		colors      : [ '#F77' ],
+		colorIndex  : { 'FAILED':0 },
+	};
 }
 
 Vulnerabilities.prototype = Object.create(PolscanView.prototype);
@@ -59,6 +63,6 @@ Vulnerabilities.prototype.update = function(params) {
 		view.addInfoBlock('CVEs', Object.keys(cves).length);
 
 		$(view.parentDiv).append("<div id='tableRow' width='100%'/>");
-		view.render('#tableRow', data, view.params);
+		view.render('#tableRow', { results: data.results, legend: view.legend }, view.params);
 	});
 };

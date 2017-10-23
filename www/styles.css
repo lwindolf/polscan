@@ -161,9 +161,6 @@ body.main {
 	color:white;
 
 	overflow:hidden;
-	border:1px solid #aaa;
-	border-radius:6px; 
-	padding:6px;
 	margin:0;
 	text-align:center;
 }

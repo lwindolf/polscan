@@ -43,14 +43,8 @@ renderers.treemap.prototype.createMap = function(data, width, height) {
                 return '#ccc';
             if(1 === d.depth)
                 return '#777';
-            if(undefined !== d.data) {
-				if(2 === (d.data.cl & 2))
-	                return '#f00';
-				if(1 === (d.data.cl & 1))
-	                return '#ff0';
-				if(4 === (d.data.cl & 4))
-	                return '#0f0';
-			}
+            if(undefined !== d.data && undefined !== d.data.color)
+				return d.data.color;
             return renderer.color(d.parent.data.nr);
       })
       .each(function(d) { d.node = this; })
@@ -97,7 +91,8 @@ renderers.treemap.prototype.render = function(id, data, params) {
 
 	var filteredHosts = get_hosts_filtered(params, true);
 	var findingsByHost = new Array();
-
+data.legend.selectedValue = Object.keys(data.legend.colorIndex)[0];
+console.log(data.legend.selectedValue);
 	// Instead of complex counting we make strings with the first char
 	// of all findings severities by host e.g. "FFOOOOOOFWOOOO" for
 	// 3 times failed and 1 warning
@@ -105,10 +100,18 @@ renderers.treemap.prototype.render = function(id, data, params) {
 		// For policy findings
 		if(undefined !== item.severity) 
 			findingsByHost[item.host] += item.severity.substring(0,1);
+		// For vulnerabilities
 		if(undefined !== item.cve) {
 			if(undefined === findingsByHost[item.host])
 				findingsByHost[item.host] = 0;
 			findingsByHost[item.host] ++;
+		}
+		// For inventories
+		if(undefined !== item.values) {
+			if(-1 !== item.values.indexOf(data.legend.selectedValue))
+				findingsByHost[item.host] = "inventory";
+			else
+				findingsByHost[item.host] = undefined;
 		}
 	});
 
@@ -127,19 +130,42 @@ renderers.treemap.prototype.render = function(id, data, params) {
 
 		if(undefined !== findingsByHost[h]) {
 			if(r.isNumeric(findingsByHost[h])) {
-					grps[key].cl |= 2;
+				// Vulnerabilities are always bad -> so set to 2 for FAILED
+				grps[key].cl |= 2;
 			} else {
+				// Scan Results
 				if(-1 !== findingsByHost[h].indexOf('F'))
 					grps[key].cl |= 2;
 				if(-1 !== findingsByHost[h].indexOf('W'))
 					grps[key].cl |= 1;
 				if(-1 !== findingsByHost[h].indexOf('O'))
 					grps[key].cl |= 4;
+
+				// Inventories
+				if("inventory" === findingsByHost[h])
+					grps[key].cl |= 1;
 			}
 		}
 		grps[key].value++;
     });
+
 	$.each(grps, function(k, v) {
+		// Perform color mapping
+		if(undefined === data.legend.colors) {
+			if(1 === v.cl)
+				v.color = color(data.legend.colorIndex[data.legend.selectedValue]);
+		} else {
+			// For policies
+			var cl_to_legend_color_name = {
+				1: 'WARNING',
+				2: 'FAILED',
+				4: 'OK'
+			};
+			$.each([1,4,2], function(nr, i) {
+				if(i === (v.cl & i))
+					v.color = data.legend.colors[data.legend.colorIndex[cl_to_legend_color_name[i]]];
+			});
+		}
 		sizes.push(v);
 	});
 

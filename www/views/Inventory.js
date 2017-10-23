@@ -15,8 +15,11 @@ function Inventory() {
 		search: true,
 		copyHosts: true
 	};
-	this.legendColorIndex;
-	this.legendSelection;
+	this.legend = {
+		colorIndex  : {},
+		selection   : undefined,
+        multiSelect : false
+	};
 };
 
 Inventory.prototype = Object.create(PolscanView.prototype);
@@ -94,12 +97,11 @@ Inventory.prototype.addLegend = function(results) {
 
 				if(-1 !== legend.indexOf(c))
 					return;
-				view.legendColorIndex[c] = legend.length;
+				view.legend.colorIndex[c] = legend.length;
 				legend.push(c);
 			});
 	});
 
-console.log(legendCount);
 	// Determine which palette to use (shaded for numeric values)
 	// and high contrast for non-numeric values
 	var numeric = 1;
@@ -114,14 +116,14 @@ console.log(legendCount);
 	var lastElem = sortedLegend[sortedLegend.length-1];
 	for(var l in sortedLegend) {
 		var name = legend[l];
-		$('#legend').append("<span class='legendItem legendIndex"+view.legendColorIndex[name]+"' title='"+name+"'>"+name+" ("+legendCount[name]+")</span>");
+		$('#legend').append("<span class='legendItem legendIndex"+view.legend.colorIndex[name]+"' title='"+name+"'>"+name+" ("+legendCount[name]+")</span>");
 		if(numeric) {
 				if(0 != name)
-					$('.legendIndex'+view.legendColorIndex[name]).css("background", "rgb("+Math.ceil(153-(153*name/lastElem))+", "+Math.ceil(255-(255*name/lastElem))+", 102)");
+					$('.legendIndex'+view.legend.colorIndex[name]).css("background", "rgb("+Math.ceil(153-(153*name/lastElem))+", "+Math.ceil(255-(255*name/lastElem))+", 102)");
 				else
-					$('.legendIndex'+view.legendColorIndex[name]).css("background", "white");
+					$('.legendIndex'+view.legend.colorIndex[name]).css("background", "white");
 		} else {
-	        $('#legend .legendIndex'+view.legendColorIndex[name]).css("border-left", "16px solid "+color(view.legendColorIndex[name]));
+	        $('#legend .legendIndex'+view.legend.colorIndex[name]).css("border-left", "16px solid "+color(view.legend.colorIndex[name]));
 		}
 	}
 
@@ -142,11 +144,9 @@ Inventory.prototype.update = function(params) {
 
 	getData("inventory "+params.iT, function(data) {
 		view.filteredHosts = get_hosts_filtered(params, true);
-		view.legendColorIndex = {};
-		view.legendSelection = [];
 
-		$(view.parentDiv).append("<div class='split split-horizontal' id='render'/>");
 		$(view.parentDiv).append('<div class="split split-horizontal" id="legend" title="Click to filter a legend item. Hold Ctrl and click to multi-select."><b>Legend</b></div>');
+		$(view.parentDiv).append("<div class='split split-horizontal' id='render'/>");
 		Split(['#render', '#legend'], {
 			sizes: [75, 25],
 			minSize: [200, 200]
@@ -155,12 +155,8 @@ Inventory.prototype.update = function(params) {
 		var results = data.results.filter(view.resultsFilter, view);
 		view.addLegend(results);
 		view.render('#render', {
-			results: results,
-			legend: {
-				type      : 'color',
-				colors    : view.legendColorIndex,
-				selection : view.legendSelection
-			}
+			results : results,
+			legend  : view.legend
 		}, params);
 		view.addInfoBlock('Hosts',    view.filteredHosts.length);
 	});

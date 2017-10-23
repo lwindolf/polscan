@@ -12,10 +12,11 @@ function ScanResults() {
 		filterby:  true,
 		search:    true,
 		copyHosts: true
-	}
-	this.legendColors = {
-		'FAILED': '#F77',
-		'WARNING': '#FF7'
+	};
+	this.legend = {
+		colors      : [ '#F77', '#FF7', '#7F7' ],
+		colorIndex  : { 'FAILED':0, 'WARNING':1, 'OK':2 },
+		multiSelect : true
 	};
 }
 
@@ -76,9 +77,9 @@ ScanResults.prototype.addLegend = function(results) {
 	}).forEach(function(name) {
 	    var count = topFindings[name];
 		var tmp = name.split(/:::/);
-		var colorClass = tmp[0];
+		var colorClass = view.legend.colorIndex[tmp[0]];
 	    $('#legend').append("<span class='legendItem legendIndex"+i+"' title='"+tmp[1]+" - "+tmp[2]+"'>"+tmp[1]+' - '+tmp[2]+" ("+count+")</span>");
-        $('#legend .legendIndex'+i).css("border-left", "16px solid "+view.legendColors[colorClass]);
+        $('#legend .legendIndex'+i).css("border-left", "16px solid "+view.legend.colors[colorClass]);
 		i++;
 	});
 }
@@ -102,15 +103,25 @@ ScanResults.prototype.update = function(params) {
 		view.params = params;
 		view.filteredHosts = get_hosts_filtered(params, false);
 
-		$(view.parentDiv).append("<div class='split split-horizontal' id='render'><div id='histogramRow'/><div id='tableRow'/></div>");
-		$(view.parentDiv).append('<div class="split split-horizontal" id="legend" title="Click to filter a legend item. Hold Ctrl and click to multi-select."><b>Legend</b></div>');
-		Split(['#render', '#legend'], {
-			sizes: [75, 25],
-			minSize: [200, 200]
-		});
+		$(view.parentDiv).append("<div id='legend' title='Click to filter a legend item. Hold Ctrl and click to multi-select.'><b>Legend</b></div>"+
+		                         "<div id='render'><div id='histogramRow'/><div id='tableRow'/></div>");
+
+		if('treemap' === params.r) {
+			// Some hard-coded workaround for the treemap which has absolute
+			// positioning and does not play well with Split.js
+			$('#render').css("width", "80%").css("float","right");
+			$('#legend').css("width", "20%").css("float","left").css("vertical-align","top");
+		} else {
+			$('#render').addClass("split split-horizontal");
+			$('#legend').addClass("split split-horizontal");
+			Split(['#legend', '#render'], {
+				sizes: [20, 80],
+				minSize: [200, 200]
+			});
+		}
 
 		var results = data.results.filter(view.resultsFilter, view);
-		view.render('#tableRow', { results: results, legend: { type: 'policy' }}, view.params);
+		view.render('#tableRow', { results: results, legend: view.legend }, view.params);
 		view.addLegend(results);
 		view.addInfoBlock('Hosts',    view.filteredHosts.length);
 		view.addInfoBlock('Failed',   view.failed);

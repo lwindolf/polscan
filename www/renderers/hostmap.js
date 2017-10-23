@@ -68,13 +68,12 @@ renderers.hostmap.prototype.render = function(id, data, params) {
 	var findingsByHost = new Array();
 
 	$.each(data.results, function(i, item) {
-		if('policy' === data.legend.type)
+		if(undefined !== data.legend.colors)
 			// Instead of complex counting we make strings with the first char
 			// of all findings severities by host e.g. "FFOOOOOOFWOOOO" for
 			// 3 times failed and 1 warning
 			findingsByHost[item.host] += item.severity.substring(0,1);
-
-		if('color' === data.legend.type)
+		else
 			findingsByHost[item.host] = item.values; // Overwrite as inventory should be 1:1
 	});
 
@@ -83,7 +82,7 @@ renderers.hostmap.prototype.render = function(id, data, params) {
 		var html = "";
 		var count;
 
-		if('policy' === data.legend.type) {
+		if(undefined !== data.legend.colors) {
 			html = "<div host='"+host+"' class='hostMapBox ";
 			if(!value)
 				value = "";
@@ -99,15 +98,14 @@ renderers.hostmap.prototype.render = function(id, data, params) {
 				html += "NORESULTS";
 			}
 			html += "' onclick='setLocationHash({ view: \"ScanResults\", r: \"table\", fG: \"all\", sT: \""+host+"\"}, true)'><span class='legendIndexFIXME'>&nbsp;</span></div> ";
-		}
-		if('color' === data.legend.type) {
+		} else {
 			var values = value.split(/ /).filter(function(i) {
 				return i != '';
 			});
 			if(values.length > 0) {
 				html += "<table host='"+host+"' class='hostMapBox' style='border:0' cellspacing='0' cellpadding='1px' width='100%'><tr>";
 				for(var p in values.sort())
-					html += "<td style='background:"+color(data.legend.colors[values[p]])+";border:0;padding:1px;height:10px' class='legendIndex"+data.legend.colors[values[p]]+"'></td>";
+					html += "<td style='background:"+color(data.legend.colorIndex[values[p]])+";border:0;padding:1px;height:10px' class='legendIndex"+data.legend.colorIndex[values[p]]+"'></td>";
 				html += "</tr></table>";
 			}
 
