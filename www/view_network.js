@@ -32,10 +32,9 @@ views.NetworkView.prototype.update = function(params) {
 var diameter = $(window).height(),
     radius = diameter / 2,
     innerRadius = radius - 150;
-var cluster = d3.layout.cluster()
-    .size([360, innerRadius])
-    .sort(null)
-    .value(function(d) { return d.size; });
+var cluster = d3.cluster()
+    .size([360, innerRadius]);
+//    .value(function(d) { return d.size; });
 var bundle = d3.layout.bundle();
 var line = d3.svg.line.radial()
     .interpolate("bundle")

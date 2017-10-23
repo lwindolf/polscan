@@ -1,4 +1,4 @@
-function installTooltip(container, cb) {
+function installTooltip(container, cb, data) {
 	var tooltipShowCb = cb;
 	var changeTooltipPosition = function(event) {
 		var tooltipX = event.pageX + 8;
@@ -18,7 +18,7 @@ function installTooltip(container, cb) {
 		$('div.tooltip').remove();
 	};
 	var showTooltip = function(event) {
-		var content = cb(this, event);
+		var content = cb(this, event, data);
 		$('div.tooltip').remove();
 		$('<div class="tooltip">'+content+'</div>').appendTo('#results');
 		changeTooltipPosition(event);

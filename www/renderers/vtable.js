@@ -1,31 +1,26 @@
 // vim: set ts=4 sw=4: 
-// View for displaying vulnerabilities in a sortable table
+// Renderer for displaying vulnerability details in a sortable table
+// Loads row asynchronously to allow for larger tables
 
-views.VulnerabilitiesView = function VulnerabilitiesView(parentDiv) {
-	this.parentDiv = parentDiv;
-	this.filterOptions = {
-		filterby: true,
-		search: true
-	};
+renderers.vtable = function tableRenderer(parentDiv) { 
+	this.tableLoadTimeout = undefined;
 };
 
-var resultTableLoadTimeout;
-
-function sortTable(id, sortOrder) {
+renderers.vtable.prototype.sortTable = function(id, sortOrder) {
 	$('#loadmessage i').html('Sorting results...');
 	console.log("Table setup done.");
-	resultTableLoadTimeout = setTimeout(function() {
+	this.tableLoadTimeout = setTimeout(function() {
 		try {
 			$(id).tablesorter(sortOrder);
 		} catch(e) {
-			console.log(e);
 		}
 		console.log("Table sorting done.");
 		$('#loadmessage').hide();
 	}, 100);
 }
 
-function addVulnResultRows(rows, offset, count, sortOrder) {
+renderers.vtable.prototype.addResultRows = function(name, rows, offset, count, sortOrder) {
+	var renderer = this;
 	var r = "";
 	for(var i = offset; i < offset+count; i++) {
 		if(rows[i])
@@ -35,12 +30,12 @@ function addVulnResultRows(rows, offset, count, sortOrder) {
 	if(offset + count < rows.length) {
 		resultTableLoadTimeout = setTimeout(function() {
 			$('#loadmessage i').html('Loading results ('+Math.ceil(100*offset/rows.length)+'%)...');
-			addVulnResultRows(rows, offset+count, count, sortOrder);
+			renderer.addResultRows(name, rows, offset+count, count, sortOrder);
 		}, 50);
 	} else {
 		// Enable table sorting
 		if(sortOrder != null)
-			sortTable("#resultTable", sortOrder);
+			this.sortTable("#resultTable", sortOrder);
 		else
 			$('#loadmessage').hide();
 
@@ -55,20 +50,9 @@ function addVulnResultRows(rows, offset, count, sortOrder) {
 	}
 }
 
-function vulnMatches(item) {
-	if(params.sT &&
-	  !((undefined !== item.host && item.host.indexOf(this.params.sT) != -1) ||
-	    (undefined !== item.pkg && item.pkg.indexOf(this.params.sT) != -1)))
-		return false;
-	if(undefined !== filteredHosts &&
-       -1 == this.filteredHosts.indexOf(item.host))
-		return false;
-	return true;
-}
+renderers.vtable.prototype.render = function(id, data, params) {
 
-function createVulnGroupTable(id, results) {
-
-	clearTimeout(resultTableLoadTimeout);
+	clearTimeout(this.tableLoadTimeout);
 	$('#loadmessage').show();
 	$('.resultTable').empty();
 	$('.resultTable').remove();
@@ -84,7 +68,7 @@ function createVulnGroupTable(id, results) {
     var hosts = {}
 	var values = new Array(1000);
 	view.hosts = {};
-	$.each(results.filter(vulnMatches, view), function( i, item ) {
+	$.each(data.results, function( i, item ) {
 	        var key = item.cve+"___"+item.pkg;
 		if(values[key] === undefined)
 			values[key] = item;
@@ -105,30 +89,5 @@ function createVulnGroupTable(id, results) {
 				'<td>' + view.hosts[key].length + '</td>' +
 				'<td class="hosts"><a href="" id="vuln_'+key+'">Show List</a></td>');
 	}
-	viewInfoAddBlock('Hosts', Object.keys(hosts).length);
-	viewInfoAddBlock('Vulnerabilities', Object.keys(view.hosts).length);
-	viewInfoAddBlock('Packages', Object.keys(packages).length);
-	viewInfoAddBlock('CVEs', Object.keys(cves).length);
-	$('#tableRow').width('100%');
-	addVulnResultRows(rows.sort().reverse(), 0, 250, {sortList: [[0,1]]});
+	this.addResultRows(id, rows.sort().reverse(), 0, 250, {sortList: [[0,1]]});
 }
-
-views.VulnerabilitiesView.prototype.update = function(params) {
-	var id = this.parentDiv;
-
-	console.log("Fetching results start (search="+params.sT+")");
-	clean();
-
-	$('#loadmessage').show();
-	$('#loadmessage i').html("Fetching data...");
-	getData("vulnerabilities", function(data) {
-		this.params = params;
-		this.filteredHosts = get_hosts_filtered(params, false);
-
-		viewInfoReset('Vulnerabilities');
-
-		$(id).append("<div id='tableRow' width='100%'/>");
-
-		createVulnGroupTable('#tableRow', data.results);
-	});
-};

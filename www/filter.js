@@ -1,11 +1,28 @@
 // vim: set ts=4 sw=4:
+
+var reverseHostgroups = undefined;	// reverse hash of the hostGroups hash
+
 function getGroupByHost(groupType, host) {
-	if(groupType in hostGroupNamespaces) {
+	if(undefined === reverseHostgroups) {
+		// initialize reverse lookup hash
+		reverseHostgroups = {};
 		for(name in hostGroups) {
-			if(name.indexOf(groupType) == 0 &&
-					hostGroups[name].indexOf(host) != -1)
-				return name.split(/::/)[1];
+			$.each(hostGroups[name], function(i, h) {
+				if(undefined === reverseHostgroups[h])
+					reverseHostgroups[h] = {};
+
+				reverseHostgroups[h][name] = 1;
+			});
 		}
+	}
+
+	if(!groupType in hostGroupNamespaces ||
+	   undefined === reverseHostgroups[host])
+		return 'Ungrouped';
+
+	for(name in reverseHostgroups[host]) {
+		if(name.indexOf(groupType) == 0)
+			return name.split(/::/)[1];
 	}
 	return 'Ungrouped';
 }
@@ -143,7 +160,7 @@ function addCalendar(id, initialDate) {
 }
 
 function applyFilterSettings(date) {
-	var o = currentView.filterOptions;
+	var o = view.current.filterOptions;
 	var params = {};
 	if(!o)
 		o = {};
@@ -175,8 +192,7 @@ function applyFilterSettings(date) {
 	setLocationHash(params, true);
 }
 
-function loadFilterSettings(params) {
-	var o = currentView.filterOptions;
+function loadFilterSettings(params, o) {
 	var fbox = $('#filter');
 
 	if(o === undefined) {
@@ -224,8 +240,6 @@ function loadFilterSettings(params) {
 
 	if(o.copyHosts)
 		fbox.append('<input type="button" value="Host List" title="Get list of problem hosts" onclick="onCopyHosts()"/><div id="hostlist"/>');
-
-	addCalendar("#calendar", params.d);
 
 	$("#filter *").attr('disabled', true);
 	$("#datepicker").datepicker({
