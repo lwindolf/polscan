@@ -125,10 +125,14 @@ Inventory.prototype.addLegend = function(results) {
 Inventory.prototype.update = function(params) {
 	var view = this;
 
-	if(!params.iT)
+	if(!params.iT) {
 		params.iT = $('#inventoryType').val();
-	if(!params.gT)
+		setLocationHash(params);
+	}
+	if(!params.gT) {
 		params.gT = "Domain";
+		setLocationHash(params);
+	}
 
 	getData("inventory "+params.iT, function(data) {
 		view.filteredHosts = get_hosts_filtered(params, true);

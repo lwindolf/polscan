@@ -7,6 +7,7 @@ function ScanResults() {
 	this.defaultRenderer = 'table';
 	this.filterOptions = {
 		findings:  true,
+		groupbyhg: true,
 		groupbyid: true,
 		filterby:  true,
 		search:    true,
@@ -85,10 +86,14 @@ ScanResults.prototype.addLegend = function(results) {
 ScanResults.prototype.update = function(params) {
 	var view = this;
 
-	if(!params.fG)
+	if(!params.fG) {
         params.fG = 'new';
-	if(!params.gT)
+		setLocationHash(params);
+	}
+	if(!params.gT) {
 		params.gT = 'Domain';
+		setLocationHash(params);
+	}
 
 	getData(params.fG, function(data) {
 		view.failed = 0;
