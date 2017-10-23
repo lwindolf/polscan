@@ -77,6 +77,7 @@ Inventory.prototype.inventory_list = function() {
 
 Inventory.prototype.addLegend = function(results) {
 	var view = this;
+	var legendCount = {};
 	var legend = [];
 	var pcolor = [];
 
@@ -87,6 +88,10 @@ Inventory.prototype.addLegend = function(results) {
 
 			// Update legend
 			$.each(values, function(i, c) {
+				if(undefined === legendCount[c])
+					legendCount[c] = 0;
+				legendCount[c]++;
+
 				if(-1 !== legend.indexOf(c))
 					return;
 				view.legendColorIndex[c] = legend.length;
@@ -94,6 +99,7 @@ Inventory.prototype.addLegend = function(results) {
 			});
 	});
 
+console.log(legendCount);
 	// Determine which palette to use (shaded for numeric values)
 	// and high contrast for non-numeric values
 	var numeric = 1;
@@ -108,7 +114,7 @@ Inventory.prototype.addLegend = function(results) {
 	var lastElem = sortedLegend[sortedLegend.length-1];
 	for(var l in sortedLegend) {
 		var name = legend[l];
-		$('#legend').append("<span class='legendItem legendIndex"+view.legendColorIndex[name]+"' title='"+name+"'>"+name+"</span>");
+		$('#legend').append("<span class='legendItem legendIndex"+view.legendColorIndex[name]+"' title='"+name+"'>"+name+" ("+legendCount[name]+")</span>");
 		if(numeric) {
 				if(0 != name)
 					$('.legendIndex'+view.legendColorIndex[name]).css("background", "rgb("+Math.ceil(153-(153*name/lastElem))+", "+Math.ceil(255-(255*name/lastElem))+", 102)");
