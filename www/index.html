@@ -547,34 +547,6 @@ a.resolve {
 				$('#errors').show();
 			}
 
-/*
-			function onCopyHosts() {
-				$('#hostlist').html('<textarea id="copyHostList">');
-				var hosts;
-				if(currentViewName === 'results' || currentViewName === 'vulnerabilities')
-					hosts = $('.host:visible').map(function() {
-						return $(this).html();
-					}).get();
-				if(currentViewName === 'hostmap' || currentViewName === 'inventory')
-					hosts = $('div.hostMapBox:visible').map(function() {
-						if($(this).hasClass('UNKNOWN'))
-							return;
-						if($(this).hasClass('OK'))
-							return;
-						return $(this).attr('host')
-					}).get();
-
-				var tmp = new Array();
-				var result = "";
-				for(var i = 0; i < hosts.length; i++) {
-					if(!tmp[hosts[i]])
-						result += hosts[i] + "\n";
-					tmp[hosts[i]] = 1;
-				}	
-				$('#hostlist textarea').html(result);
-				$('#hostlist').show();
-			}
-*/
 			function overlayMonitoring(host, alertTableId, append, cb) {
 				// FIXME: do not be icinga specific here
 				getAPI("icinga2", function(data) {

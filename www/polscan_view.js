@@ -15,6 +15,31 @@ function PolscanView(div) {
 	this.filterOptions = { };
 }
 
+// Generic host list method extracts name of filtered hosts from the column
+// of a result table (which needs to have a column with class 'host' set) or
+// a host map (which needs to have div's with class 'hostMapBox'
+PolscanView.prototype.onCopyHosts = function() {
+	$('#hostlist').html('<textarea id="copyHostList">');
+
+	// Variant 1: result table
+	var hosts = $('.host:visible').map(function() {
+		return $(this).html();
+	}).get();
+
+	// Variant 2: a host map
+	if(0 === hosts.length)
+		hosts = $('div.hostMapBox:visible').map(function() {
+			if($(this).hasClass('UNKNOWN'))
+				return;
+			if($(this).hasClass('OK'))
+				return;
+			return $(this).attr('host')
+		}).get();
+
+	$('#hostlist textarea').html(Array.from(new Set(hosts)).join('\n'));
+	$('#hostlist').show();
+}
+
 // Info blocks are basically numbers with a name to be found at the
 // top of the screen to the right of the view name
 PolscanView.prototype.addInfoBlock = function(name, value) {

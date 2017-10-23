@@ -239,7 +239,7 @@ function loadFilterSettings(params, o) {
 	fbox.append('<input class="filterGo" type="button" value="Apply"/> ');
 
 	if(o.copyHosts)
-		fbox.append('<input type="button" value="Host List" title="Get list of problem hosts" onclick="onCopyHosts()"/><div id="hostlist"/>');
+		fbox.append('<input type="button" value="Host List" title="Get list of problem hosts" onclick="view.onCopyHosts()"/><div id="hostlist"/>');
 
 	$("#filter *").attr('disabled', true);
 	$("#datepicker").datepicker({
