@@ -61,6 +61,10 @@ PolscanView.prototype.resetInfo = function() {
 PolscanView.prototype.addRenderers = function() {
 	var params = getParams();
 
+	// Do not show switches if there is only one renderer
+	if(this.current.renderers.length <= 1)
+		return;
+
 	$.each(this.current.renderers, function(i, r) {
 		$('#viewinfo .switches').append("<span class='switch switch_"+r+"'><img src='img/"+r+"_icon.png'/></span>");
 		if(view.rendererName === r)
