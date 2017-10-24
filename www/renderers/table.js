@@ -17,7 +17,7 @@ renderers.table.prototype.sortTable = function(id, sortOrder) {
 		console.log("Table sorting done.");
 		$('#loadmessage').hide();
 	}, 100);
-}
+};
 
 renderers.table.prototype.addResultRows = function(name, rows, offset, count, sortOrder) {
 	var renderer = this;
@@ -48,7 +48,7 @@ renderers.table.prototype.addResultRows = function(name, rows, offset, count, so
 			setLocationHash({ fG: name, sT: $(this).html()}, true);
 		});
 	}
-}
+};
 
 renderers.table.prototype.createGroupTable = function(id, data, params) {
 
@@ -61,8 +61,8 @@ renderers.table.prototype.createGroupTable = function(id, data, params) {
 	.appendTo(id);
 
 	console.log("Grouping hosts by '"+params.gI+"'");
-	var hosts = new Array();
-	var values = new Array();
+	var hosts = [];
+	var values = [];
 	$.each(data.results, function( i, item ) {
 			// 3 supported split types and priority:
 			//
@@ -94,7 +94,7 @@ renderers.table.prototype.createGroupTable = function(id, data, params) {
 					values[list[key]] = 1;
 
 				if(hosts[list[key]] === undefined)
-					hosts[list[key]] = new Array();
+					hosts[list[key]] = [];
 				hosts[list[key]].push(item.host);
 			}
 	});
@@ -115,7 +115,7 @@ renderers.table.prototype.createGroupTable = function(id, data, params) {
 		}
 	}
 	this.sortTable("#resultTable"+params.fG, {sortList: [[1,1]]});
-}
+};
 
 renderers.table.prototype.createResultTable = function(id, data, params) {
 	var group = '';
@@ -134,9 +134,9 @@ renderers.table.prototype.createResultTable = function(id, data, params) {
 		.appendTo(id);
 	$('<tbody>').appendTo('#resultTable'+name);
 
-	groupBy = new Array();
+	groupBy = [];
 	var rows = "";
-	var visibleHosts = new Array();
+	var visibleHosts = [];
 	$.each(data.results, function( i, item ) {
 		var severity = 0;
 
@@ -175,7 +175,7 @@ renderers.table.prototype.createResultTable = function(id, data, params) {
 
 	if(groupBy.length >= 0) {
 		var groupingEnabled = false;
-		for(key in groupBy) {
+		for(var key in groupBy) {
 			if(groupBy[key] > 3 && key.length > 3) {
 				groupingEnabled = true;
 				$('#groupById').append("<option>"+key+"</option>");
@@ -184,11 +184,11 @@ renderers.table.prototype.createResultTable = function(id, data, params) {
 		if(groupingEnabled)
 			$('#groupById').removeAttr('disabled');
 	}
-}
+};
 
 renderers.table.prototype.render = function(id, data, params) {
 	if(!params.gI)
 		this.createResultTable(id, data, params);
 	else
 		this.createGroupTable(id, data, params);
-}
+};

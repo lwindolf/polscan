@@ -20,7 +20,7 @@ function Inventory() {
 		selection   : undefined,
         multiSelect : false
 	};
-};
+}
 
 Inventory.prototype = Object.create(PolscanView.prototype);
 
@@ -30,7 +30,7 @@ Inventory.prototype.resultsFilter = function(item) {
            -1 == this.filteredHosts.indexOf(item.host))
 		return false;
 	return true;
-}
+};
 
 /* Smart legend sorting by trying to extract leading float
    numbers (e.g. versions) from legend string. Falls back
@@ -43,7 +43,7 @@ Inventory.prototype.legendSort = function(a, b) {
 		return a>b;
 
 	return aNr[1] - bNr[1];
-}
+};
 
 Inventory.prototype.selectLegendItem = function(e) {
 	var view = e.data;
@@ -60,7 +60,7 @@ Inventory.prototype.selectLegendItem = function(e) {
 	if (!e.ctrlKey)
 		view.legendSelection = [];
 	view.legendSelection.push(li);
-}
+};
 
 // Provide a menu of all inventories
 Inventory.prototype.inventory_list = function() {
@@ -76,7 +76,7 @@ Inventory.prototype.inventory_list = function() {
 			$('#group_list').append(render('inventory_list_item', d));
 		});
 	});
-}
+};
 
 Inventory.prototype.addLegend = function(results) {
 	var view = this;
@@ -114,7 +114,7 @@ Inventory.prototype.addLegend = function(results) {
 	// and for non-numeric legends by index
 	var sortedLegend = legend.sort(view.legendSort);
 	var lastElem = sortedLegend[sortedLegend.length-1];
-	for(var l in sortedLegend) {
+	for(l in sortedLegend) {
 		var name = legend[l];
 		$('#legend').append("<span class='legendItem legendIndex"+view.legend.colorIndex[name]+"' title='"+name+"'>"+name+" ("+legendCount[name]+")</span>");
 		if(numeric) {
@@ -128,7 +128,7 @@ Inventory.prototype.addLegend = function(results) {
 	}
 
 	$("#legend .legendItem").on("click", view, view.selectLegendItem);
-}
+};
 
 Inventory.prototype.update = function(params) {
 	var view = this;

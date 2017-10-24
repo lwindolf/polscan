@@ -51,7 +51,7 @@ renderers.treemap.prototype.createMap = function(data, width, height) {
       .on("mouseover", renderer.hovered(true))
       .on("mouseout", renderer.hovered(false))
       .text(function(d) { return d.id.substring(d.id.lastIndexOf(".") + 1).split(/(?=[A-Z][^A-Z])/g).join("\u200b"); });
-}
+};
 
 renderers.treemap.prototype.cascade = function(root) {
   var r = this;
@@ -68,18 +68,18 @@ renderers.treemap.prototype.cascade = function(root) {
     d.x1 -= 2 * r.offset * d.heightRight;
     d.y1 -= 2 * r.offset * d.heightBottom;
   });
-}
+};
 
 renderers.treemap.prototype.hovered = function(hover) {
   return function(d) {
     d3.selectAll(d.ancestors().map(function(d) { return d.node; }))
         .classed("node--hover", hover);
   };
-}
+};
 
 renderers.treemap.prototype.isNumeric = function(n) {
   return !isNaN(parseFloat(n)) && isFinite(n);
-}
+};
         
 renderers.treemap.prototype.render = function(id, data, params) {
 	var r = this;
@@ -90,7 +90,8 @@ renderers.treemap.prototype.render = function(id, data, params) {
 	$(id).append('<div id="treemapContainer"><div id="treemap"/></div>');
 
 	var filteredHosts = get_hosts_filtered(params, true);
-	var findingsByHost = new Array();
+	var findingsByHost = [];
+// FIXME
 data.legend.selectedValue = Object.keys(data.legend.colorIndex)[0];
 console.log(data.legend.selectedValue);
 	// Instead of complex counting we make strings with the first char

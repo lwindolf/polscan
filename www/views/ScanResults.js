@@ -39,7 +39,7 @@ ScanResults.prototype.resultsFilter = function(item) {
            -1 == this.filteredHosts.indexOf(item.host))
 		return false;
 	return true;
-}
+};
 
 ScanResults.prototype.addLegend = function(results) {
 	var view = this;
@@ -55,10 +55,8 @@ ScanResults.prototype.addLegend = function(results) {
 
 		// Legend counting
 		var topKey = item.severity+":::"+(item.group?item.group:view.params.fG)+':::'+item.policy;
-		if(undefined === topFindings[topKey]) {
-			var i = Object.keys(topFindings).length;
+		if(undefined === topFindings[topKey])
 			topFindings[topKey] = 0;
-		}
 		topFindings[topKey]++;
 	});
 
@@ -82,7 +80,7 @@ ScanResults.prototype.addLegend = function(results) {
         $('#legend .legendIndex'+i).css("border-left", "16px solid "+view.legend.colors[colorClass]);
 		i++;
 	});
-}
+};
 
 ScanResults.prototype.update = function(params) {
 	var view = this;

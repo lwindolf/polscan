@@ -23,7 +23,7 @@ renderers.hostmap.prototype.tooltip = function(container, event, data) {
 			} else {
 				if(item.values) {
 					var tmp = item.values.split(/ /);
-					for(v in tmp)
+					for(var v in tmp)
 						details += "<tr><td>"+tmp[v]+"</td></tr>";
 				}
 			}
@@ -36,7 +36,7 @@ renderers.hostmap.prototype.tooltip = function(container, event, data) {
 			details = "<br/><br/>No findings at all. This usually means the policies of this group don't apply to this host.";
 
 	return '<b>'+host+'</b><table class="resultTable">'+details+'</table>';
-}
+};
 
 renderers.hostmap.prototype.changeVisibility = function(data) {
 return; // FIXME
@@ -55,7 +55,7 @@ return; // FIXME
 		else
 			$(this).children().show();
 	});
-}
+};
 
 renderers.hostmap.prototype.render = function(id, data, params) {
 	var r = this;
@@ -65,7 +65,7 @@ renderers.hostmap.prototype.render = function(id, data, params) {
 				 ('color' !== data.legend.type?'<th>C</th><th>W</th>':'')+
 				 '<th>Nr</th></tr></thead></table><div id="selectedGroup"/>');
 
-	var findingsByHost = new Array();
+	var findingsByHost = [];
 
 	$.each(data.results, function(i, item) {
 		if(undefined !== data.legend.colors)
@@ -77,7 +77,7 @@ renderers.hostmap.prototype.render = function(id, data, params) {
 			findingsByHost[item.host] = item.values; // Overwrite as inventory should be 1:1
 	});
 
-	for(host in findingsByHost) {
+	for(var host in findingsByHost) {
 		var value = findingsByHost[host];
 		var html = "";
 		var count;

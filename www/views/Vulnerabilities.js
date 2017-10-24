@@ -27,7 +27,7 @@ Vulnerabilities.prototype.vulnFilter = function(item) {
        -1 == this.filteredHosts.indexOf(item.host))
 		return false;
 	return true;
-}
+};
 
 Vulnerabilities.prototype.update = function(params) {
 	var view = this;
@@ -40,17 +40,17 @@ Vulnerabilities.prototype.update = function(params) {
 		view.filteredHosts = get_hosts_filtered(params, false);
 		var cves = {};
 		var packages = {};
-		var hosts = {}
+		var hosts = {};
 		var values = new Array(1000);
 		view.hosts = {};
 
-		var results = data.results.filter(view.vulnFilter, view)
+		var results = data.results.filter(view.vulnFilter, view);
 		$.each(results, function(i, item) {
 	        var key = item.cve+"___"+item.pkg;
 			if(values[key] === undefined)
 				values[key] = item;
 			if(view.hosts[key] === undefined)
-				view.hosts[key] = new Array();
+				view.hosts[key] = [];
 			view.hosts[key].push(item.host);
 			packages[item.pkg] = 1;
 			cves[item.cve] = 1;

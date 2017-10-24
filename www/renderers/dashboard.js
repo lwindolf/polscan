@@ -11,14 +11,14 @@ renderers.dashboard.prototype.addTopChanges = function(changes, type) {
 		sortbar.push({ "name": name, "count": count });
         });
 	$.each(sortbar.sort(function(a,b) {
-		return b["count"]-a["count"];
+		return b.count-a.count;
 	}), function(i,item) {
 		if(results.length < 3)
-			results.push("<div>"+item["name"] + " <b>(+"+item["count"]+")</b></div>");
+			results.push("<div>"+item.name+" <b>(+"+item.count+")</b></div>");
 	});
 	if(results.length != -1)
 		$('#topChanges').append("<div class='changeList'><div class='changeItems "+type.toUpperCase()+"'>"+results.join('')+"</div></div>");
-}
+};
 
 renderers.dashboard.prototype.render = function(id, data, params) {
 	var r = this;
@@ -30,9 +30,9 @@ renderers.dashboard.prototype.render = function(id, data, params) {
 			addCalendar("#overviewCalendar", data.date);
 			$("#loadmessage").hide();
 
-			var groupFailed = new Array();
-			var groupWarning = new Array();
-			var pieGroupHosts = new Array();
+			var groupFailed = [];
+			var groupWarning = [];
+			var pieGroupHosts = [];
 			$.each(data.overview, function(i, item) {
 				if(item.group) {
 					var compliant = 1;
@@ -59,7 +59,7 @@ renderers.dashboard.prototype.render = function(id, data, params) {
 						compliant = 0;
 						tmp += ' <span class="WARNING problems" title="Total warnings seen">' +
 						item.WARNING +
-						'</span>'
+						'</span>';
 					}
 					if(compliant) {
 						tmp += ' <span class="compliant problems" title="100% compliance for this group">compliant</span>';
@@ -74,11 +74,11 @@ renderers.dashboard.prototype.render = function(id, data, params) {
 			addPieChart('pieChartFailed', 'Problems', 260, '#fff', groupFailed);
 			addPieChart('pieChartWarning', 'Warnings', 260, '#777' ,groupWarning);
 */
-			$( "<div id='topChangesBox'>" ).appendTo( "#row2" )
-			$( "<h3>Top Changes</h3><div id='topChanges'></div>").appendTo("#topChangesBox")
+			$( "<div id='topChangesBox'>" ).appendTo("#row2");
+			$( "<h3>Top Changes</h3><div id='topChanges'></div>").appendTo("#topChangesBox");
 
-			$( "<div id='policies'>" ).appendTo( "#row2" )
-			$( "<h3>Findings / Changes per Policy</h3><table class='resultTable tablesorter' id='findingsPerPolicy'><thead><tr><th>Group</th><th>Policy</th><th>Problems</th><th>Change</th><th>Warnings</th><th>Change</th><th colspan='2'>Trend</th></tr></thead><tbody></tbody></table>").appendTo("#policies")
+			$( "<div id='policies'>" ).appendTo("#row2");
+			$( "<h3>Findings / Changes per Policy</h3><table class='resultTable tablesorter' id='findingsPerPolicy'><thead><tr><th>Group</th><th>Policy</th><th>Problems</th><th>Change</th><th>Warnings</th><th>Change</th><th colspan='2'>Trend</th></tr></thead><tbody></tbody></table>").appendTo("#policies");
 
 			getData("histogram", function(data) {
 				var changes = { 'ok': {}, 'failed': {}, 'warning': {}};
@@ -108,9 +108,9 @@ renderers.dashboard.prototype.render = function(id, data, params) {
 						if(diff != 0) {
 							tmp += '<span class="'+(diff>0?"FAILED":"compliant")+' changes" filter="'+(diff>0?'new':'solved')+'---' + policy + '" title="Total change problems">+' + Math.abs(diff) + '</span>';
 							if(diff > 0) {
-								changes['failed'][group+'---'+policy] = Math.abs(diff);
+								changes.failed[group+'---'+policy] = Math.abs(diff);
 							} else {
-								changes['ok'][group+'---'+policy] = Math.abs(diff);
+								changes.ok[group+'---'+policy] = Math.abs(diff);
 							}
 						}
 						tmp += '</td><td class="policy" '+pf+'>';
@@ -123,9 +123,9 @@ renderers.dashboard.prototype.render = function(id, data, params) {
 						if(diff != 0) {
 							tmp += '<span class="'+(diff>0?"WARNING":"compliant")+' changes" filter="'+(diff>0?'new':'solved')+'---' + policy + '" title="Total change warnings">+' + Math.abs(diff) + '</span>';
 							if(diff > 0) {
-								changes['warning'][group+'---'+policy] = Math.abs(diff);
+								changes.warning[group+'---'+policy] = Math.abs(diff);
 							} else {
-								changes['ok'][group+'---'+policy] = Math.abs(diff);
+								changes.ok[group+'---'+policy] = Math.abs(diff);
 							}
 						}
 						tmp += '</td>';

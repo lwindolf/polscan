@@ -17,7 +17,7 @@ renderers.vtable.prototype.sortTable = function(id, sortOrder) {
 		console.log("Table sorting done.");
 		$('#loadmessage').hide();
 	}, 100);
-}
+};
 
 renderers.vtable.prototype.addResultRows = function(name, rows, offset, count, sortOrder) {
 	var renderer = this;
@@ -48,7 +48,7 @@ renderers.vtable.prototype.addResultRows = function(name, rows, offset, count, s
 			return false;
 		});
 	}
-}
+};
 
 renderers.vtable.prototype.render = function(id, data, params) {
 
@@ -65,7 +65,7 @@ renderers.vtable.prototype.render = function(id, data, params) {
 	var view = this;
 	var cves = {};
 	var packages = {};
-    var hosts = {}
+    var hosts = {};
 	var values = new Array(1000);
 	view.hosts = {};
 	$.each(data.results, function( i, item ) {
@@ -73,7 +73,7 @@ renderers.vtable.prototype.render = function(id, data, params) {
 		if(values[key] === undefined)
 			values[key] = item;
 		if(view.hosts[key] === undefined)
-			view.hosts[key] = new Array();
+			view.hosts[key] = [];
 		view.hosts[key].push(item.host);
 		packages[item.pkg] = 1;
 		cves[item.cve] = 1;
@@ -90,4 +90,4 @@ renderers.vtable.prototype.render = function(id, data, params) {
 				'<td class="hosts"><a href="" id="vuln_'+key+'">Show List</a></td>');
 	}
 	this.addResultRows(id, rows.sort().reverse(), 0, 250, {sortList: [[0,1]]});
-}
+};

@@ -17,7 +17,7 @@ renderers.itable.prototype.sortTable = function(id, sortOrder) {
 		console.log("Table sorting done.");
 		$('#loadmessage').hide();
 	}, 100);
-}
+};
 
 renderers.itable.prototype.addResultRows = function(name, rows, offset, count, sortOrder) {
 	var r = "";
@@ -47,7 +47,7 @@ renderers.itable.prototype.addResultRows = function(name, rows, offset, count, s
 			setLocationHash({ fG: name, sT: $(this).html()}, true);
 		});
 	}
-}
+};
 
 renderers.itable.prototype.createGroupTable = function(id, data, params) {
 
@@ -94,7 +94,7 @@ renderers.itable.prototype.createGroupTable = function(id, data, params) {
 		}
 	}
 	this.sortTable("#resultTable"+params.gT, {sortList: [[0,0]]});
-}
+};
 
 renderers.itable.prototype.render = function(id, data, params) {
 	if(!params.gT)
@@ -103,4 +103,4 @@ renderers.itable.prototype.render = function(id, data, params) {
 	// FIXME: dirty legend avoidance hack
 	$('#legend').hide();
 	this.createGroupTable('#row2', data, params);
-}
+};

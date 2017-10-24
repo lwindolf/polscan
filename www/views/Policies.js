@@ -26,7 +26,7 @@ Policies.prototype.update = function(params) {
 				if(item.enabled)
 					enabledCount++;
 			}
-		})
+		});
 
 		view.addInfoBlock('Policies', totalCount);
 		view.addInfoBlock('Enabled', enabledCount);
