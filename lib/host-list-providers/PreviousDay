@@ -1,12 +1,10 @@
 #!/bin/bash
 
 # name: PreviousDay
-# description: Result directory base host list provider. Provides resolvable hosts of that were in the previous result set. Using this provider along with a primary CM based source helps to track hosts that are somehow lost to the CM
+# description: Result directory base host list provider. Provides all still resolvable hosts that were in the previous result set. Using this provider along with a primary CM based source helps to track hosts that are somehow lost to the CM
 
-# Resolve "latest" link into directory name
-if [ -d "$RESULT_BASE_DIR/latest" ]; then
-	dir=$(readlink -e "$RESULT_BASE_DIR/latest")
-	cd $dir || exit
+if [ -d "$RESULT_BASE_DIR/$ONE_DAY_AGO" ]; then
+	cd "$RESULT_BASE_DIR/$ONE_DAY_AGO" || exit
 	ls | while read name; do
 		if [ "$(dig +short $name)" != "" ]; then
 			echo $name
