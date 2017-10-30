@@ -105,7 +105,7 @@ if [ "$REMOTE_SCANNER_LIST" != "" ]; then
 
 	echo "$remotes" | xargs -n1 --replace={} -n 1 -P ${SCAN_CONCURRENCY-15} \
 	/bin/bash -c "host='{}';printf '%s\n' \"\${host/ */}\" && \
-	              $SSH_CMD {} \"/bin/bash < <(/bin/cat -)\" <${RSS} >$out 2>$err || :"
+	              $SSH_CMD {} \"/bin/bash < <(/bin/cat -)\" <${RSS} >$out 2>$err || printf 'SSH to host failed!\n' >$err"
 
 	# Post process all errors logged and mark incomplete scans
 	for host in $HOST_LIST; do
@@ -114,7 +114,7 @@ if [ "$REMOTE_SCANNER_LIST" != "" ]; then
 			# we have a scripting/connectivity issue that we want
 			# to track under name "polscan"
 			(
-				errors=$(grep -v "$REMOTE_STDERR_WHITELIST" "${RESULT_DIR}/${host}.err" | sort -u 2>/dev/null)
+				errors=$(grep -v "$REMOTE_STDERR_WHITELIST" "${RESULT_DIR}/${host}.err" 2>/dev/null | sort -u)
 				printf "%s\n" "$errors" | grep -v '^$' | sed "s/^/Polscan FAILED |||Polscan remote scan||| /"
 			) >>"${RESULT_DIR}/$host"
 			rm "${RESULT_DIR}/${host}.err"
