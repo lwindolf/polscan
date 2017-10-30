@@ -118,7 +118,7 @@ if [ "$REMOTE_SCANNER_LIST" != "" ]; then
 				printf "%s\n" "$errors" | grep -v '^$' | sed "s/^/Polscan FAILED |||Polscan remote scan||| /"
 			) >>"${RESULT_DIR}/$host"
 			rm "${RESULT_DIR}/${host}.err"
-			if ! grep 'OK |||Polscan remote scan|||' "${RESULT_DIR}/${host}"; then
+			if ! grep -q 'OK |||Polscan remote scan|||' "${RESULT_DIR}/${host}"; then
 				printf "Polscan FAILED |||Polscan remote scan||| Scan was not completed successfully!\n" >>"${RESULT_DIR}/$host"
 			fi
 		fi
