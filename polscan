@@ -84,6 +84,8 @@ if [ "$REMOTE_SCANNER_LIST" != "" ]; then
 			cat "$file" >>$RSS
 		fi
 	done
+	# Add marker result for completed scan
+	printf "policy_name='Polscan remote scan' policy_group=Polscan result_ok\n" >>$RSS
 
 	echo "Running remote scans..."
 
@@ -105,7 +107,7 @@ if [ "$REMOTE_SCANNER_LIST" != "" ]; then
 	/bin/bash -c "host='{}';printf '%s\n' \"\${host/ */}\" && \
 	              $SSH_CMD {} \"/bin/bash < <(/bin/cat -)\" <${RSS} >$out 2>$err || :"
 
-	# Post process all errors logged
+	# Post process all errors logged and mark incomplete scans
 	for host in $HOST_LIST; do
 		if [ -f ${RESULT_DIR}/${host}.err ]; then
 			# Scanner should never set return code, if we get one
@@ -116,6 +118,9 @@ if [ "$REMOTE_SCANNER_LIST" != "" ]; then
 				printf "%s\n" "$errors" | grep -v '^$' | sed "s/^/Polscan FAILED |||Polscan remote scan||| /"
 			) >>"${RESULT_DIR}/$host"
 			rm "${RESULT_DIR}/${host}.err"
+			if ! grep 'OK |||Polscan remote scan|||' "${RESULT_DIR}/${host}"; then
+				printf "Polscan FAILED |||Polscan remote scan||| Scan was not completed successfully!\n" >>"${RESULT_DIR}/$host"
+			fi
 		fi
 	done
 fi
