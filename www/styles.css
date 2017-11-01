@@ -225,14 +225,15 @@ td.groupByValue, td.message {
   box-sizing: border-box;
 }
 
-#treemap .node--internal {
-  font-weight: bold;
-  color:white;
+#treemap .foreignObject {
+  font: 9px sans-serif;
+  text-overflow: ellipsis;
+  text-align: left;
+  word-wrap: break-word;
 }
-
-#treemap .node--hover {
-  padding: 2px;
-  border: solid 1px #000;
+#treemap rect {
+  fill:none;
+  stroke: #444;
 }
 
 .dashboard {

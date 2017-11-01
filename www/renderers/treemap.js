@@ -5,69 +5,102 @@ renderers.treemap = function treemapRenderer() {
 	var fader = function(color) { return d3.interpolateRgb(color, "#fff")(0.8); };
 
 	this.offset = 0;
-    this.color = d3.scaleOrdinal(["#a6cee3","#1f78b4","#b2df8a","#33a02c","#fb9a99","#e0e0e0","#fdbf6f","#ff7f00","#cab2d6"].map(fader));
-    this.format = d3.format(",d");
-
-	this.stratify = d3.stratify().parentId(function(d) {
-		return d.id.substring(0, d.id.lastIndexOf("."));
-	});
+    this.color = d3.scale.ordinal(["#a6cee3","#1f78b4","#b2df8a","#33a02c","#fb9a99","#e0e0e0","#fdbf6f","#ff7f00","#cab2d6"].map(fader));
 };
 
 renderers.treemap.prototype.createMap = function(data, width, height) {
 	var renderer = this;
-	var treemap = d3.treemap()
-		.size([width, height])
-		.paddingInner(1)
-		.paddingOuter(renderer.offset)
-		.paddingTop(function(d) { return d.depth < 3 ? 19 : renderer.offset; })
-		.round(true);
-    
-	var root = this.stratify(data)
-	  .sum(function(d) { return d.value; })
-	  .sort(function(a, b) { return b.height - a.height || b.value - a.value; });
+	    var paddingAllowance = 1;
+	var treemap = d3.layout.treemap()
+        .size([width, height])
+        .padding([18, 0, 0, 0])
+        .value(function(d) {
+            return d.value;
+        });
 
-	this.cascade(treemap(root));
+    var svg = d3.select("#treemap").append("svg")
+        .style("position", "relative")
+        .style("width", width + "px")
+        .style("height", height + "px")
+        .append("g")
+        .attr("transform", "translate(-.5,-.5)");
 
-	d3.select("#treemap")
-    .selectAll(".node")
-    .data(root.descendants())
-    .enter().append("div")
-      .attr("class", function(d) { return "node" + (d.children ? " node--internal" : " node--left"); })
-      .attr("title", function(d) { return d.data.name + "\n" + renderer.format(d.value)+' Hosts'; })
-      .style("left", function(d) { return d.x0 + "px"; })
-      .style("top", function(d) { return d.y0 + "px"; })
-      .style("width", function(d) { return d.x1 - d.x0 + "px"; })
-      .style("height", function(d) { return d.y1 - d.y0 + "px"; })
-      .style("background", function(d) {
-            if(null === d.parent)
-                return '#ccc';
-            if(1 === d.depth)
-                return '#777';
-            if(undefined !== d.data && undefined !== d.data.color)
-				return d.data.color;
-            return renderer.color(d.parent.data.nr);
-      })
-      .each(function(d) { d.node = this; })
+	      var cell = svg.data([data]).selectAll("g")
+            .data(treemap)
+            .enter().append("g")
+            .attr("class", "cell")
+            .attr("transform", function(d) {
+                return "translate(" + d.x + "," + d.y + ")";
+            });
+
+        cell.append("rect")
+            .attr("width", function(d) {
+                return d.dx;
+            })
+            .attr("height", function(d) {
+                return d.dy;
+            })
+            .style("fill", function(d) {
+                if('all' === d.name)
+                   return '#aaa';
+                if(1 === d.depth)
+                   return '#ccc';
+            if(undefined !== d.color)
+			return d.color;
+		return d3.interpolateRgb(color(d.parent.name), "#fff")(0.7);
+            });
+
+        if (window['isIE']) { // IE sucks so you have to manually truncate the labels here
+            cell.append("text")
+                .attr("class", "foreignObject")
+                .attr("transform", "translate(3, 13)")
+                .text(function(d) {
+                    return (d.dy < 16 ? "" : d.name);
+                })
+                .filter(function(d) {
+                    d.tw = this.getComputedTextLength();
+                    return d.dx < d.tw;
+                })
+                .each(function(d) { // ridiculous routine where we test to see if label is short enough to fit
+                    var proposedLabel = d.name;
+                    var proposedLabelArray = proposedLabel.split('');
+                    while (d.tw > d.dx && proposedLabelArray.length) {
+                        // pull out 3 chars at a time to speed things up (one at a time is too slow)
+                        proposedLabelArray.pop(); proposedLabelArray.pop(); proposedLabelArray.pop();
+                        if (proposedLabelArray.length===0) {
+                            proposedLabel = "";
+                        } else {
+                            proposedLabel = proposedLabelArray.join('') + "..."; // manually truncate with ellipsis
+                        }
+                        d3.select(this).text(proposedLabel);
+                        d.tw = this.getComputedTextLength();
+                    }
+                });
+        } else {
+            // normal browsers use these labels; using foreignObject inside SVG allows use of wrapping text inside
+            // divs rather than less-flexible svg-text labels
+            cell.append("foreignObject")
+                .attr("class", "foreignObject")
+                .attr("width", function(d) {
+                    return d.dx - paddingAllowance;
+                })
+                .attr("height", function(d) {
+                    return Math.max(d.dy - paddingAllowance, 0);
+                })
+                .append("xhtml:body")
+                .attr("class", "labelbody")
+                .append("div")
+                .attr("class", "label")
+                .text(function(d) {
+                    return d.name;
+                })
+                .attr("text-anchor", "middle")
+        }
+      /*.each(function(d) { d.node = this; })
       .on("mouseover", renderer.hovered(true))
       .on("mouseout", renderer.hovered(false))
       .text(function(d) { return d.id.substring(d.id.lastIndexOf(".") + 1).split(/(?=[A-Z][^A-Z])/g).join("\u200b"); });
-};
-
-renderers.treemap.prototype.cascade = function(root) {
-  var r = this;
-
-  return root.eachAfter(function(d) {
-    if (d.children) {
-      d.heightRight = 1 + d3.max(d.children, function(c) { return c.x1 === d.x1 - r.offset ? c.heightRight : NaN; });
-      d.heightBottom = 1 + d3.max(d.children, function(c) { return c.y1 === d.y1 - r.offset  ? c.heightBottom : NaN; });
-    } else {
-      d.heightRight =
-      d.heightBottom = 0;
-    }
-  }).eachBefore(function(d) {
-    d.x1 -= 2 * r.offset * d.heightRight;
-    d.y1 -= 2 * r.offset * d.heightBottom;
-  });
+	*/
 };
 
 renderers.treemap.prototype.hovered = function(hover) {
@@ -116,41 +149,50 @@ console.log(data.legend.selectedValue);
 		}
 	});
 
-    Object.keys(filteredHosts).forEach(function(i) {
+	var nodeByName = {};
+	var tree = {
+		name: "all",
+		children: []
+	};
+	Object.keys(filteredHosts).forEach(function(i) {
 		// right now we support only subdomain prefix as 1st criteria
 		// and params.gT as 2nd...
 		var h = filteredHosts[i];
-		var parent = h.split(/\./)[1];
+		var parent = h.split(/\./)[1].replace(/[0-9]+/g, "");
 		var group = getGroupByHost(params.gT, h);
-		var key = parent +'.'+ group.replace(/\./g, "_");
+		var key = parent+':::'+group;
 
-		if(undefined === grps[parent])
-			grps[parent] = { id: 'all.'+parent, name: parent, value: 0, cl: 0, nr:nr++ };
-        if(undefined === grps[key])
-			grps[key] = { id: 'all.'+key, name: group, value: 0, cl: 0 };
+		if(undefined === nodeByName[parent]) {
+			nodeByName[parent] = { name: parent, children: [], value: 0, cl: 0, nr:nr++ };
+			tree.children.push(nodeByName[parent]);
+		}
+		if(undefined === nodeByName[key]) {
+			nodeByName[key] = { name: group.replace(new RegExp("^"+parent+"_"), ''), value: 0, cl: 0, parent: nodeByName[parent] };
+			nodeByName[parent].children.push(nodeByName[key]);
+		}
 
 		if(undefined !== findingsByHost[h]) {
 			if(r.isNumeric(findingsByHost[h])) {
 				// Vulnerabilities are always bad -> so set to 2 for FAILED
-				grps[key].cl |= 2;
+				nodeByName[key].cl |= 2;
 			} else {
 				// Scan Results
 				if(-1 !== findingsByHost[h].indexOf('F'))
-					grps[key].cl |= 2;
+					nodeByName[key].cl |= 2;
 				if(-1 !== findingsByHost[h].indexOf('W'))
-					grps[key].cl |= 1;
+					nodeByName[key].cl |= 1;
 				if(-1 !== findingsByHost[h].indexOf('O'))
-					grps[key].cl |= 4;
+					nodeByName[key].cl |= 4;
 
 				// Inventories
 				if("inventory" === findingsByHost[h])
-					grps[key].cl |= 1;
+					nodeByName[key].cl |= 1;
 			}
 		}
-		grps[key].value++;
+		nodeByName[key].value++;
     });
 
-	$.each(grps, function(k, v) {
+	$.each(nodeByName, function(name, v) {
 		// Perform color mapping
 		if(undefined === data.legend.colors) {
 			if(1 === v.cl)
@@ -167,9 +209,8 @@ console.log(data.legend.selectedValue);
 					v.color = data.legend.colors[data.legend.colorIndex[cl_to_legend_color_name[i]]];
 			});
 		}
-		sizes.push(v);
+		console.log(v);
 	});
 
-    sizes.push({ id : 'all' });
-    this.createMap(sizes, $(id).width(), $(window).height()-$('#results').offset().top);
+    this.createMap(tree, $(id).width(), $(window).height()-$('#results').offset().top);
 };
