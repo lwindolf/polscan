@@ -540,7 +540,8 @@ a.resolve {
 			var loading = 0;
 			var warning = 0;
 			var failed = 0;
-			var color = d3.scaleOrdinal(d3.schemeCategory20);
+			//var color = d3.scaleOrdinal(d3.schemeCategory20);
+			var color = d3.scale.category20();
 
 			function error(text) {
 				$('#errors').html('<div class="errorbox"><b>Error:</b> '+text+'</div>');
