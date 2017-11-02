@@ -104,19 +104,12 @@ ScanResults.prototype.update = function(params) {
 		$(view.parentDiv).append("<div id='legend' title='Click to filter a legend item. Hold Ctrl and click to multi-select.'><b>Legend</b></div>"+
 		                         "<div id='render'><div id='histogramRow'/><div id='tableRow'/></div>");
 
-		if('treemap' === params.r) {
-			// Some hard-coded workaround for the treemap which has absolute
-			// positioning and does not play well with Split.js
-			$('#render').css("width", "80%").css("float","right");
-			$('#legend').css("width", "20%").css("float","left").css("vertical-align","top");
-		} else {
-			$('#render').addClass("split split-horizontal");
-			$('#legend').addClass("split split-horizontal");
-			Split(['#legend', '#render'], {
-				sizes: [20, 80],
-				minSize: [200, 200]
-			});
-		}
+		$('#render').addClass("split split-horizontal");
+		$('#legend').addClass("split split-horizontal");
+		Split(['#legend', '#render'], {
+			sizes: [20, 80],
+			minSize: [200, 200]
+		});
 
 		var results = data.results.filter(view.resultsFilter, view);
 		view.render('#tableRow', { results: results, legend: view.legend }, view.params);

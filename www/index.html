@@ -4,6 +4,7 @@
 	<head>
 		<meta charset="utf-8">
 		<script type="text/javascript" src="filter.js"></script>
+		<script type="text/javascript" src="renderer_settings.js"></script>
 		<script type="text/javascript" src="tooltip.js"></script>
 		<script type="text/javascript" src="pie_chart.js"></script>
 		<script type="text/javascript" src="polscan_view.js"></script>
@@ -509,7 +510,7 @@ a.resolve {
 			<a href="#view=Inventory" title="Inventory">
 				<img src='img/server_icon.png'/><span class='menuText'>Inventory</span></a>
 
-			<a href="#view=netmenu" title="Network">
+			<a href="#view=Network" title="Network">
 				<img src='img/net_comp_icon.png'/><span class='menuText'>Network</span></a>
 
 			<a href="#view=Vulnerabilities" title="Vulnerabilities">
@@ -632,6 +633,17 @@ a.resolve {
 				}).promise();
 			}
 
+			/* Generic from cache fetcher. Returns data synchronously 
+			   or raises error */
+			function getCachedData(name) {
+				var cacheName = name.replace('-', '_');
+			
+				if(undefined !== resultCache[cacheName])
+					return resultCache[cacheName];
+				else
+					error('Data set "'+name+'" is not in cache!');
+			}
+
 			/* Generic JSON fetcher. Returns already loaded stuff from
 			   result cache array.
 			 */
@@ -713,6 +725,7 @@ a.resolve {
 					delete params.gI;
 
 				// FIXME: Update generic filter model
+				getData('overview', function(data) {
 				getData('host_groups', function(data) {
 				getData('hosts', function(data) {
 					hosts = data.results;
@@ -726,6 +739,7 @@ a.resolve {
 						view.load("Dashboard", params);
 						$("#menu a[href='#']").addClass("current");
 					}
+				});
 				});
 				});
 			}

@@ -134,7 +134,7 @@ Inventory.prototype.update = function(params) {
 	var view = this;
 
 	if(!params.iT) {
-		params.iT = $('#inventoryType').val();
+		params.iT = getInventoryTypes()[0];
 		setLocationHash(params);
 	}
 	if(!params.gT) {

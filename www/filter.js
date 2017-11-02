@@ -44,52 +44,6 @@ function get_hosts_filtered(params, searchNames) {
 	return results;
 }
 
-// Add all inventory type names to a <select>
-function loadInventoryTypes(id, selected) {
-	var options = [];
-	getData("overview", function(data) {
-		$.each(data.overview, function(i, item) {
-			if(item.inventory) {
-				options.push('<option value="'+item.inventory+'">'+item.inventory+'</option>');
-			}
-		});
-		$('#'+id).append(options.sort().join(''));
-		$('#'+id+" option[value='"+selected+"']").attr('selected', true);
-	});
-}
-
-// Add all netedge type names to a <select>
-function loadNetedgeTypes(id, selected) {
-	var options = [];
-	getData("overview", function(data) {
-		$.each(data.overview, function(i, item) {
-			if(item.netedge) {
-				options.push('<option value="'+item.netedge+'">'+item.netedge+'</option>');
-			}
-		});
-		$('#'+id).append(options.sort().join(''));
-		$('#'+id+" option[value='"+selected+"']").attr('selected', true);
-	});
-}
-
-// Add all findings group names to a <select>
-function loadFindingGroups(id, selected) {
-	var options = [
-		'<option value="all">&lt;All></option>',
-		'<option value="new">&lt;New></option>',
-		'<option value="solved">&lt;Solved></option>'
-	];
-	getData("overview", function(data) {
-		$.each(data.overview, function(i, item) {
-			if(item.group) {
-				options.push('<option value="'+item.group+'">'+item.group+'</option>');
-			}
-		});
-		$('#'+id).append(options.sort().join(''));
-		$('#'+id+" option[value='"+selected+"']").attr('selected', true);
-	});
-}
-
 // Add all host group types to a <select>
 function loadHostGroupTypes(data, id, groupType, noneAllowed) {
 	var options = [];
@@ -204,21 +158,6 @@ function loadFilterSettings(params, o) {
 	fbox.html("<span class='label datepicker'>Date</span> <input type='text' id='datepicker' size='10'/> "+
 			"<span id='calendar'></span>");
 
-	if(o.inventory)
-		fbox.append('<span class="label">Type</span> <select id="inventoryType"></select> ');
-	if(o.nt)
-		fbox.append('<span class="label">Type</span> <select id="netedgeType"></select> ');
-	if(o.findings)
-		fbox.append('<span class="label">Findings</span> <select id="findingsGroup"></select> ');
-
-	if(o.groupbyid && params.r === 'table') {
-		fbox.append('<span class="label">Group Hosts By</span> <select id="groupById"><option name="none"></option></select> ');
-		if(params.gI && params.gI != '')
-			$('#groupById').append('<option name="'+params.gI+'" selected>'+params.gI+'</option>');
-	}
-	if(o.groupbyhg && -1 !== ['hostmap', 'treemap'].indexOf(params.r))
-		fbox.append('<span class="label">Group Hosts by</span> <select id="hostmapGroupType"></select> ');
-
 	if(o.filterby)
 		fbox.append('<span class="label">Filter by</span> <select id="hostmapFilterType"></select><select id="hostmapFilterValue"/></select> ');
 
@@ -227,7 +166,7 @@ function loadFilterSettings(params, o) {
 			$("#search").val(params.sT);
 	}
 	if(o.host) {
-		fbox.append('<hr/>Host <input type="text" value="'+(params.h !== undefined?params.h:'')+'" list="availableHosts" id="selectedHost"/>' +	
+		fbox.append('Host <input type="text" value="'+(params.h !== undefined?params.h:'')+'" list="availableHosts" id="selectedHost"/>' +	
 				' <datalist id="availableHosts"/>');
 		getData("hosts", function(data) {
 			$.each(data.results, function(host) {
@@ -247,14 +186,6 @@ function loadFilterSettings(params, o) {
 	});
 	getData('host_groups', function(data) {
 		try {
-			if(o.inventory)
-				loadInventoryTypes('inventoryType', params.iT);
-			if(o.nt)
-				loadNetedgeTypes('netedgeType', params.nt);
-			if(o.findings)
-				loadFindingGroups('findingsGroup', params.fG);
-			if(o.groupbyhg)
-				loadHostGroupTypes(resultCache['host_groups'].results, 'hostmapGroupType', params.gT, true);
 			if(o.filterby) {
 				loadHostGroupTypes(resultCache['host_groups'].results, 'hostmapFilterType', params.fT, true);
 				loadHostGroupValues(resultCache['host_groups'].results, 'hostmapFilterValue', params.fT, params.fV, true);

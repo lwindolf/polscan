@@ -94,8 +94,9 @@ PolscanView.prototype.render = function(id, data, params) {
 	if(undefined !== renderers[rName]) {
 		var renderer = new renderers[rName]();
 		renderer.render(id, data, params);
+		loadRendererSettings('#legend', params, view.filterOptions);
 		return;
-    }
+	}
 
 	// We need to load the renderer first...
 	$.getScript("renderers/"+rName+".js")

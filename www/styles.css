@@ -1,3 +1,4 @@
+// vim: set ts=4 sw=4: 
 @font-face {
 	font-family: 'Muli';
 	src: url("fonts/Muli-Bold.ttf");
@@ -157,11 +158,11 @@ body.main {
 }
 
 #legend {
-	background:#666;
-	color:white;
+	background:#eee;
+	color:#444;
 
 	overflow:hidden;
-	margin:0;
+	padding:6px;
 	text-align:center;
 }
 .legendItem {
@@ -175,10 +176,12 @@ body.main {
         overflow:hidden;
 	text-overflow:ellipsis;
 }
+#legend select {
+	width:100%;
+}
 
 .resultTable {
 	width:100%;
-	font-size:11pt;
 	border-collapse: collapse;
 	color: #444;
 }
@@ -213,27 +216,35 @@ td.groupByValue, td.message {
 	position:absolute;
 }
 #treemap {
-  position:relative;
-  font: 10px sans-serif;
+	position:relative;
+	font: 10px sans-serif;
 }
 
 #treemap .node {
-  position: absolute;
-  overflow: hidden;
-  padding: 3px;
-  box-shadow: 0 2px 3px rgba(0,0,0,0.4);
-  box-sizing: border-box;
+	position: absolute;
+	overflow: hidden;
+	padding: 3px;
+	box-shadow: 0 2px 3px rgba(0,0,0,0.4);
+	box-sizing: border-box;
 }
 
 #treemap .foreignObject {
-  font: 9px sans-serif;
-  text-overflow: ellipsis;
-  text-align: left;
-  word-wrap: break-word;
+	font: 10px sans-serif;
+	text-overflow: ellipsis;
+	text-align: left;
+	word-wrap: break-word;
+}
+#treemap .foreignObject body {
+	margin:3px;
+}
+#treemap .foreignObject.depth1 * {
+	color: white;
+	font-weight: bold;
+	padding:0;
 }
 #treemap rect {
-  fill:none;
-  stroke: #444;
+	fill: none;
+	stroke: #aaa;
 }
 
 .dashboard {
