@@ -88,10 +88,12 @@ ScanResults.prototype.update = function(params) {
 	if(!params.fG) {
         params.fG = 'new';
 		setLocationHash(params);
+		return;
 	}
 	if(!params.gT) {
 		params.gT = 'Domain';
 		setLocationHash(params);
+		return;
 	}
 
 	getData(params.fG, function(data) {

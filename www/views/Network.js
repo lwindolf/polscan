@@ -63,7 +63,7 @@ Network.prototype.update = function(params) {
 
 		$(view.parentDiv).append("<div id='render'></div>");
 		view.render('#render', { results: results }, view.params);
-		view.addInfoBlock('Hosts', view.filteredHosts.length);
+		//view.addInfoBlock('Hosts', view.filteredHosts.length);
 		// Maybe add connections info block
 	});
 };

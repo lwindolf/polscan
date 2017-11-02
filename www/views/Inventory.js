@@ -136,10 +136,12 @@ Inventory.prototype.update = function(params) {
 	if(!params.iT) {
 		params.iT = getInventoryTypes()[0];
 		setLocationHash(params);
+		return;
 	}
 	if(!params.gT) {
 		params.gT = "Domain";
 		setLocationHash(params);
+		return;
 	}
 
 	getData("inventory "+params.iT, function(data) {

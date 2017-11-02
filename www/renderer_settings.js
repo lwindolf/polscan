@@ -55,6 +55,7 @@ function loadFindingGroups(id, selected) {
 	});
 }
 
+// FIXME: change to renderer only and connect as onChange
 function applyRendererSettings(date) {
 	var o = view.current.filterOptions;
 	var params = {};
@@ -78,7 +79,7 @@ function applyRendererSettings(date) {
 	if(o.nt)
 		params.nt = $('#netedgeType').val();
 
-	setLocationHash(params, true);
+	changeLocationHash(params);
 }
 
 function loadRendererSettings(id, params, o) {
@@ -123,10 +124,6 @@ function loadRendererSettings(id, params, o) {
 				loadFindingGroups('findingsGroup', params.fG);
 			if(o.groupbyhg)
 				loadHostGroupTypes(resultCache['host_groups'].results, 'hostmapGroupType', params.gT, true);
-			if(o.filterby) {
-				loadHostGroupTypes(resultCache['host_groups'].results, 'hostmapFilterType', params.fT, true);
-				loadHostGroupValues(resultCache['host_groups'].results, 'hostmapFilterValue', params.fT, params.fV, true);
-			}
 		} catch(e) {
 			error("Loading some host group definitions failed! ("+e+")");
 		}
