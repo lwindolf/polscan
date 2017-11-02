@@ -157,6 +157,10 @@ body.main {
 	width: 100%;
 }
 
+#results h3 {
+	margin-left:6px;
+}
+
 #legend {
 	background:#eee;
 	color:#444;

@@ -107,7 +107,7 @@ renderers.netmap.prototype.addGraphNode = function(service, direction) {
 						console.log("prev="+name);
 					if(name == view.previousNode)
 						tmp += "class='previousNode' ";
-					tmp += "class='host_"+name.replace(/[.\-]/g,'_')+"' href='javascript:setLocationHash({pN:\""+view.currentNode+"\",h:\""+name+"\"});'>"+name+"</a><br/> ";
+					tmp += "class='host_"+name.replace(/[.\-]/g,'_')+"' href='javascript:changeLocationHash({pN:\""+view.currentNode+"\",h:\""+name+"\"});'>"+name+"</a><br/> ";
 				}
 			}
 			if (i == 6)
@@ -146,9 +146,6 @@ renderers.netmap.prototype.addHost = function() {
 		$.each(data.results, function(i, item) {
 			if(item.host == host) {
 				found = true;
-
-				if(item.ln === '' || item.ltn === '' || item.rn === '' || item.rtn === '')
-					return;
 
 				// Resolve program for close-wait, time-wait listings
 				if(item.scope !== "-" && !(item.ltn in portToProgram))
@@ -251,19 +248,6 @@ renderers.netmap.prototype.addHost = function() {
 }
 
 renderers.netmap.prototype.render = function(id, data, params) {
-
-	if(!("h" in params) || (params.h === "")) {
-		// FIXME:
-		params.h="s500.ipx"
-	}
-
-	if(!("nt" in params) || (params.nt === "")) {
-		setLocationHash({
-			h: params.h?params.h:Object.keys(hosts)[0],
-			nt: params.nt?params.nt:'TCP connection'
-		});
-		return;
-	}
 
 	$('#row2').html('<div style="height:'+$(window).height()+'px;">'+
 					'<div class="split split-horizontal" id="netmap" style="border:1px solid #aaa;background:white;"/>' +

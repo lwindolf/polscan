@@ -9,6 +9,7 @@ function Network() {
 		host: true,
 		nt: true
 	};
+	this.firstHost = undefined;
 }
 
 Network.prototype = Object.create(PolscanView.prototype);
@@ -18,6 +19,9 @@ Network.prototype.resultsFilter = function(item) {
 	// Validate input
 	if(item.ln === '' || item.ltn === '' || item.rn === '' || item.rtn === '')
 		return false;
+
+	if(undefined === this.firstHost)
+		this.firstHost = item.host;
 
 	if(this.params.gI !== undefined && item.message.indexOf(this.params.gI) == -1)
 		return false;
@@ -38,20 +42,28 @@ Network.prototype.resultsFilter = function(item) {
 
 Network.prototype.update = function(params) {
 	var view = this;
-	view.neType = 'TCP connection'
+	view.neType = 'TCP connection';
+
+	if(!("nt" in params) || (params.nt === "")) {
+		setLocationHash({
+			nt: params.nt?params.nt:'TCP connection'
+		});
+		return;
+	}
 
 	getData("netedge "+this.neType, function(data) {
-		view.failed = 0;
-		view.warning = 0;
-		view.hostCount = 0;
 		view.params = params;
 		view.filteredHosts = get_hosts_filtered(params, false);
 
-		$(view.parentDiv).append("<div id='render'></div>");
-
 		var results = data.results.filter(view.resultsFilter, view);
+		if(undefined === view.params.h) {
+			setLocationHash({h:view.firstHost, nt: params.nt});
+			return;
+		}
+
+		$(view.parentDiv).append("<div id='render'></div>");
 		view.render('#render', { results: results }, view.params);
-		view.addInfoBlock('Hosts',    view.filteredHosts.length);
+		view.addInfoBlock('Hosts', view.filteredHosts.length);
 		// Maybe add connections info block
 	});
 };

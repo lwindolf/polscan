@@ -611,7 +611,6 @@ a.resolve {
 				var cacheName = name.replace('-', '_');
 
 				if(resultCache[cacheName]) {
-					console.log("Using "+name+".json from cache");
 					callback(resultCache[cacheName]);
 					return;
 				}
@@ -744,6 +743,16 @@ a.resolve {
 				});
 			}
 
+			// merges changedParams into location
+			function changeLocationHash(changedParams) {
+				var params = getParams();
+				$.each(changedParams, function(n, value) {
+					params[n] = value;
+				});
+				setLocationHash(params);
+			}
+
+			// overwrites location with params
 			function setLocationHash(params) {
 				if(!params.d)
 					params.d = $('#datepicker').val();
