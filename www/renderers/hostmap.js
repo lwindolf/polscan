@@ -62,7 +62,7 @@ renderers.hostmap.prototype.render = function(id, data, params) {
 
 	$(id).append('<table id="hostmap" class="resultTable tablesorter"><thead>'+
 				 '<tr><th>Group</th>'+
-				 ('color' !== data.legend.type?'<th>C</th><th>W</th>':'')+
+				 ('color' !== data.legend.type?'<th class="fcount">C</th><th class="wcount">W</th>':'')+
 				 '<th>Nr</th></tr></thead></table><div id="selectedGroup"/>');
 
 	var findingsByHost = [];
@@ -114,7 +114,7 @@ renderers.hostmap.prototype.render = function(id, data, params) {
 		var groupClassName = groupName.replace(/[\.#\/]/g, "_");
 		if($('#hostmap').find('#'+groupClassName).length == 0)
 			$('#hostmap').append('<tr class="hostMapGroup" id="'+groupClassName+'"><td class="boxesBox"><span class="groupName">'+groupName+'</span><span class="boxes"/></td>'+
-								 ('color' !== data.legend.type?'<td class="fcount"/><td class="wcount"/>':'')+
+								 '<td class="fcount"/><td class="wcount"/>'+
 								 '<td class="count"/></tr>');
 		$('#' + groupClassName + ' .boxes').append(html);
 	}
@@ -130,8 +130,10 @@ renderers.hostmap.prototype.render = function(id, data, params) {
 	this.changeVisibility(data);
 	installTooltip('.hostMapBox', this.tooltip, data);
 
-	if('color' === data.legend.type)
-	    $("#hostmap").tablesorter({sortList: [[1,1],[0,0]]});
-	else
-	    $("#hostmap").tablesorter({sortList: [[1,1],[2,1],[3,1],[0,0]]});
+	if(undefined === data.legend.colors) {
+	    $('.fcount').hide();
+	    $('.wcount').hide();
+	}
+	        
+	$("#hostmap").tablesorter({sortList: [[1,1],[2,1],[3,1],[0,0]]});
 };
