@@ -17,8 +17,7 @@ function Inventory() {
 	};
 	this.legend = {
 		colorIndex  : {},
-		selection   : undefined,
-        multiSelect : false
+        multiSelect : false     // maybe this should be true for heatmaps
 	};
 }
 
@@ -43,39 +42,6 @@ Inventory.prototype.legendSort = function(a, b) {
 		return a>b;
 
 	return aNr[1] - bNr[1];
-};
-
-Inventory.prototype.selectLegendItem = function(e) {
-	var view = e.data;
-    var li;
-	$.each(e.target.className.split(/\s+/), function(i, item) {
-			if(item.indexOf("legendIndex") == 0)
-				li = item.substring(11);
-	});
-	if(!li) {
-		console.log("Error: could not find legend index!");
-		return;
-	}
-
-	if (!e.ctrlKey)
-		view.legendSelection = [];
-	view.legendSelection.push(li);
-};
-
-// Provide a menu of all inventories
-Inventory.prototype.inventory_list = function() {
-	$(this.parentDiv).append('<div id="group_list"/>');
-	getData("overview", function(data) {
-		$.each(data.overview.sort(function(a,b) {
-			if(!a.inventory || !b.inventory)
-				return 0;
-			return a.inventory.localeCompare(b.inventory);
-		}), function(i, d) {
-			if(!d.inventory)
-				return;
-			$('#group_list').append(render('inventory_list_item', d));
-		});
-	});
 };
 
 Inventory.prototype.addLegend = function(results) {
@@ -109,6 +75,9 @@ Inventory.prototype.addLegend = function(results) {
 		if(!legend[l].match(/^[0-9]+$/))
 			numeric = 0;
 	}
+	
+	if(numeric)
+	    view.legend.colors = [];
 
 	// Create colors for numeric legend by title
 	// and for non-numeric legends by index
@@ -116,15 +85,18 @@ Inventory.prototype.addLegend = function(results) {
 	var lastElem = sortedLegend[sortedLegend.length-1];
 	for(l in sortedLegend) {
 		var name = legend[l];
-		$('#legend').append("<span class='legendItem legendIndex"+view.legend.colorIndex[name]+"' title='"+name+"'>"+name+" ("+legendCount[name]+")</span>");
+		var colorIndex;
 		if(numeric) {
-				if(0 != name)
-					$('.legendIndex'+view.legend.colorIndex[name]).css("background", "rgb("+Math.ceil(153-(153*name/lastElem))+", "+Math.ceil(255-(255*name/lastElem))+", 102)");
-				else
-					$('.legendIndex'+view.legend.colorIndex[name]).css("background", "white");
+	        // Create ad-hoc gradient
+			if(0 != name)
+		        view.legend.colors[colorIndex] = "rgb("+Math.ceil(153-(153*name/lastElem))+", "+Math.ceil(255-(255*name/lastElem))+", 102)";
+			else
+				view.legend.colors[colorIndex] = "white";
+	        colorIndex = view.legend.colorIndex[name];
 		} else {
-	        $('#legend .legendIndex'+view.legend.colorIndex[name]).css("border-left", "16px solid "+color(view.legend.colorIndex[name]));
+	        colorIndex = view.legend.colorIndex[name];
 		}
+		view.addLegendItem(name, legendCount[name], colorIndex);
 	}
 
 	$("#legend .legendItem").on("click", view, view.selectLegendItem);

@@ -40,6 +40,60 @@ PolscanView.prototype.onCopyHosts = function() {
 	$('#hostlist').show();
 }
 
+PolscanView.prototype.getLegendColor = function(i) {
+    if(this.legend.colors)
+        return this.legend.colors[i];
+        
+    return color(i);
+}
+
+PolscanView.prototype.addLegendItem = function(title, count, colorIndex) {
+    var view = this;
+
+    if(!view.legend.items)
+        view.legend.items = [];
+
+    var i = view.legend.items.length;
+    view.legend.items.push(colorIndex);
+    $('#legend').append("<span class='legendItem legendIndex"+i+"' title='"+title+"'>"+title+" ("+count+")</span>");
+    $('#legend .legendIndex'+i).css("border-left", "16px solid "+view.getLegendColor(colorIndex));
+}
+
+PolscanView.prototype.filterByLegend = function() {
+    //alert("Sorry, legend based filtering not implemented in this view!");
+}
+
+// Common selection handler for legends
+PolscanView.prototype.selectLegendItem = function(e) {
+	var view = e.data;
+    var li;
+	$.each(e.target.className.split(/\s+/), function(i, item) {
+			if(item.indexOf("legendIndex") == 0)
+				li = item.substring(11);
+	});
+	if(!li) {
+		console.log("Error: could not find legend index!");
+		return;
+	}
+
+	if (!e.ctrlKey)
+		view.legend.selection = [];
+    if (-1 === view.legend.selection.indexOf(li))
+	    view.legend.selection.push(li);
+
+	// Highlight selected items
+	$.each(view.legend.items, function(i, index) {
+	    if(-1 !== view.legend.selection.indexOf(""+i))
+	        console.log(i+" i s selected");
+	    if(-1 === view.legend.selection.indexOf(""+i))
+	        $('#legend .legendIndex'+i).css('background', 'white');
+	    else
+    	    $('#legend .legendIndex'+i).css('background', view.getLegendColor(view.legend.items[i]));
+	});
+	    
+	view.filterByLegend();
+};
+
 // Info blocks are basically numbers with a name to be found at the
 // top of the screen to the right of the view name
 PolscanView.prototype.addInfoBlock = function(name, value) {

@@ -64,7 +64,6 @@ ScanResults.prototype.addLegend = function(results) {
 	// and for non-numeric legends by index
 	var numeric = 0;
 	var lastElem = topFindings[topFindings.length-1];
-	var i = 0;
 	Object.keys(topFindings).sort(function(a,b) {
 		if((-1 !== a.indexOf('FAILED')  && -1 !== b.indexOf('FAILED')) || 
 		   (-1 !== a.indexOf('WARNING') && -1 !== b.indexOf('WARNING')))
@@ -75,11 +74,9 @@ ScanResults.prototype.addLegend = function(results) {
 	}).forEach(function(name) {
 	    var count = topFindings[name];
 		var tmp = name.split(/:::/);
-		var colorClass = view.legend.colorIndex[tmp[0]];
-	    $('#legend').append("<span class='legendItem legendIndex"+i+"' title='"+tmp[1]+" - "+tmp[2]+"'>"+tmp[1]+' - '+tmp[2]+" ("+count+")</span>");
-        $('#legend .legendIndex'+i).css("border-left", "16px solid "+view.legend.colors[colorClass]);
-		i++;
+		view.addLegendItem(tmp[1]+" - "+tmp[2], count, view.legend.colorIndex[tmp[0]]);
 	});
+	$("#legend .legendItem").on("click", view, view.selectLegendItem);
 };
 
 ScanResults.prototype.update = function(params) {
