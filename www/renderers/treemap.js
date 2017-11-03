@@ -42,12 +42,13 @@ renderers.treemap.prototype.createMap = function(data, width, height) {
             })
             .style("fill", function(d) {
                 if('all' === d.name)
-                   return '#aaa';
+        			return '#aaa';
                 if(1 === d.depth)
-                   return '#ccc';
-            if(undefined !== d.color)
-			return d.color;
-		return d3.interpolateRgb(color(d.parent.name), "#fff")(0.7);
+        			return '#777';
+				if(undefined !== d.color)
+					return d.color;
+				return 'white';
+				//return d3.interpolateRgb(color(d.parent.name), "#fff")(0.8);
             });
 
         if (window['isIE']) { // IE sucks so you have to manually truncate the labels here
@@ -80,7 +81,9 @@ renderers.treemap.prototype.createMap = function(data, width, height) {
             // normal browsers use these labels; using foreignObject inside SVG allows use of wrapping text inside
             // divs rather than less-flexible svg-text labels
             cell.append("foreignObject")
-                .attr("class", "foreignObject")
+				.attr("class", function(d) {
+					return "foreignObject depth"+d.depth;
+				})
                 .attr("width", function(d) {
                     return d.dx - paddingAllowance;
                 })
@@ -209,7 +212,6 @@ console.log(data.legend.selectedValue);
 					v.color = data.legend.colors[data.legend.colorIndex[cl_to_legend_color_name[i]]];
 			});
 		}
-		console.log(v);
 	});
 
     this.createMap(tree, $(id).width(), $(window).height()-$('#results').offset().top);

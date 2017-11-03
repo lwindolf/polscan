@@ -154,7 +154,8 @@ renderers.dashboard.prototype.render = function(id, data, params) {
 				$("#findingsPerPolicy .group").click(function() {
 					setLocationHash({
 					    fG: $(this).attr('filter'),
-   						view: 'results'
+   						view: 'ScanResults',
+						r: 'table'
 					});
 				});
 				$("#findingsPerPolicy .policy").click(function() {
@@ -162,7 +163,8 @@ renderers.dashboard.prototype.render = function(id, data, params) {
 					setLocationHash({
 						fG: fields[0],
 						sT: fields[1],
-						view: 'results'
+						view: 'ScanResults',
+						r: 'table'
 					});
 				});
 				$("#findingsPerPolicy .change").click(function() {
@@ -170,7 +172,8 @@ renderers.dashboard.prototype.render = function(id, data, params) {
 					setLocationHash({
 						fG: fields[0],
 						sT: fields[1],
-						view: 'results'
+						view: 'ScanResults',
+						r: 'table'
 					});
 				});
 			});
