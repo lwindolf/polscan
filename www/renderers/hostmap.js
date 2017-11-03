@@ -131,8 +131,9 @@ renderers.hostmap.prototype.render = function(id, data, params) {
 	installTooltip('.hostMapBox', this.tooltip, data);
 
 	if(undefined === data.legend.colors) {
-	    $('.fcount').hide();
-	    $('.wcount').hide();
+	    $('#hostmap .fcount').hide();
+	    $('#hostmap .wcount').hide();
+	    $('#hostmap .boxes:empty').parent().parent().hide();
 	}
 	        
 	$("#hostmap").tablesorter({sortList: [[1,1],[2,1],[3,1],[0,0]]});
