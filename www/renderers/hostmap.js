@@ -39,6 +39,34 @@ renderers.hostmap.prototype.tooltip = function(container, event, data) {
 	return '<b>'+host+'</b><table class="resultTable">'+details+'</table>';
 };
 
+renderers.hostmap.prototype.hideUnusedTableElements = function(legend) {
+
+	// Hide empty host groups rows
+	$('#hostmap tr.hostMapGroup').each(function() {
+		if(($(this).find('table:visible').length == 0) &&
+		   ($(this).find('.boxes:visible').length == 0))
+			$(this).hide();
+		else
+			$(this).children().show();
+	});
+
+	// Update counters
+	$('#hostmap tbody tr').each(function(t) {
+		var count;
+
+		$(this).find('.count').html($(this).find('.boxes .hostMapBox:visible').length);
+		$(this).find('.fcount').html($(this).find('.boxes .hostMapBox.FAILED:visible').length);
+		$(this).find('.wcount').html($(this).find('.boxes .hostMapBox.WARNING:visible').length);
+	});
+
+	// Hide columns not matching the data source
+	if(undefined === legend.colors) {
+	    $('#hostmap .fcount').hide();
+	    $('#hostmap .wcount').hide();
+	    $('#hostmap .boxes:empty').parent().parent().hide();
+	}
+}
+
 renderers.hostmap.prototype.filterByLegend = function(legend) {
 
 	if(legend.selection && legend.selection.length) {
@@ -52,17 +80,11 @@ renderers.hostmap.prototype.filterByLegend = function(legend) {
 			$('#hostmap .legendIndex'+li).parents().show();
 		});
 	} else {
-console.log("show all")
 		// Show all
 		$('#hostmap tr.hostMapGroup').show();
 	}
-return;
-	$('#hostmap tr.hostMapGroup').each(function() {
-		if($(this).find('table:visible').length == 0)
-			$(this).hide();
-		else
-			$(this).children().show();
-	});
+
+	this.hideUnusedTableElements(legend);
 };
 
 renderers.hostmap.prototype.render = function(id, data, params) {
@@ -127,22 +149,8 @@ renderers.hostmap.prototype.render = function(id, data, params) {
 		$('#' + groupClassName + ' .boxes').append(html);
 	}
 
-	$('#hostmap tbody tr').each(function(t) {
-		var count;
-
-		$(this).find('.count').html($(this).find('.boxes .hostMapBox').length);
-		$(this).find('.fcount').html($(this).find('.boxes .hostMapBox.FAILED').length);
-		$(this).find('.wcount').html($(this).find('.boxes .hostMapBox.WARNING').length);
-	});
-
 	this.filterByLegend(data.legend);
 	installTooltip('.hostMapBox', this.tooltip, data);
-
-	if(undefined === data.legend.colors) {
-	    $('#hostmap .fcount').hide();
-	    $('#hostmap .wcount').hide();
-	    $('#hostmap .boxes:empty').parent().parent().hide();
-	}
 	        
 	$("#hostmap").tablesorter({sortList: [[1,1],[2,1],[3,1],[0,0]]});
 };
