@@ -39,6 +39,7 @@ fi
 
 # 1. If none given determine host list automatically
 if [ "$HOST_LIST" == "" ]; then 
+	export RESULT_BASE_DIR ONE_DAY_AGO  # Some host list providers might want to use it
         for h in $HOST_LIST_PROVIDER; do
                 echo "Fetching host list (provider '$h')..."
                 HLP="$LIB_DIR/host-list-providers/$h"
@@ -105,7 +106,7 @@ if [ "$REMOTE_SCANNER_LIST" != "" ]; then
 
 	echo "$remotes" | xargs -n1 --replace={} -n 1 -P ${SCAN_CONCURRENCY-15} \
 	/bin/bash -c "host='{}';printf '%s\n' \"\${host/ */}\" && \
-	              $SSH_CMD {} \"/bin/bash < <(/bin/cat -)\" <${RSS} >$out 2>$err || :"
+	              $SSH_CMD {} \"/bin/bash < <(/bin/cat -)\" <${RSS} >$out 2>$err || printf 'SSH to host failed!\n' >$err"
 
 	# Post process all errors logged and mark incomplete scans
 	for host in $HOST_LIST; do
@@ -114,11 +115,11 @@ if [ "$REMOTE_SCANNER_LIST" != "" ]; then
 			# we have a scripting/connectivity issue that we want
 			# to track under name "polscan"
 			(
-				errors=$(grep -v "$REMOTE_STDERR_WHITELIST" "${RESULT_DIR}/${host}.err" 2>/dev/null)
+				errors=$(grep -v "$REMOTE_STDERR_WHITELIST" "${RESULT_DIR}/${host}.err" 2>/dev/null | sort -u)
 				printf "%s\n" "$errors" | grep -v '^$' | sed "s/^/Polscan FAILED |||Polscan remote scan||| /"
 			) >>"${RESULT_DIR}/$host"
 			rm "${RESULT_DIR}/${host}.err"
-			if ! grep 'OK |||Polscan remote scan|||' "${RESULT_DIR}/${host}"; then
+			if ! grep -q 'OK |||Polscan remote scan|||' "${RESULT_DIR}/${host}"; then
 				printf "Polscan FAILED |||Polscan remote scan||| Scan was not completed successfully!\n" >>"${RESULT_DIR}/$host"
 			fi
 		fi
