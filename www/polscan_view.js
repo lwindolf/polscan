@@ -8,7 +8,8 @@
 // PolscanView is both a view singleton and factory for views and renderers
 
 function PolscanView(div) {
-	this.current = undefined;
+	this.current = undefined;		// Active view impl.
+	this.renderer = undefined;		// Active renderer impl.
 	this.viewName = undefined;		// Name of active view impl.
 	this.rendererName = undefined;  // Name of active renderer impl.
 	this.parentDiv = div;
@@ -47,20 +48,20 @@ PolscanView.prototype.getLegendColor = function(i) {
     return color(i);
 }
 
+PolscanView.prototype.getLegendColorByValue = function(v) {
+	return this.getLegendColor(this.legend.colorIndex[v]);
+}
+
 PolscanView.prototype.addLegendItem = function(title, count, colorIndex) {
     var view = this;
 
-    if(!view.legend.items)
-        view.legend.items = [];
+    if(!view.legend.order)
+        view.legend.order = [];
 
-    var i = view.legend.items.length;
-    view.legend.items.push(colorIndex);
+    var i = view.legend.order.length;
+    view.legend.order.push(colorIndex);
     $('#legend').append("<span class='legendItem legendIndex"+i+"' title='"+title+"'>"+title+" ("+count+")</span>");
     $('#legend .legendIndex'+i).css("border-left", "16px solid "+view.getLegendColor(colorIndex));
-}
-
-PolscanView.prototype.filterByLegend = function() {
-    //alert("Sorry, legend based filtering not implemented in this view!");
 }
 
 // Common selection handler for legends
@@ -82,16 +83,18 @@ PolscanView.prototype.selectLegendItem = function(e) {
 	    view.legend.selection.push(li);
 
 	// Highlight selected items
-	$.each(view.legend.items, function(i, index) {
-	    if(-1 !== view.legend.selection.indexOf(""+i))
-	        console.log(i+" i s selected");
+	$.each(view.legend.order, function(i, index) {
 	    if(-1 === view.legend.selection.indexOf(""+i))
 	        $('#legend .legendIndex'+i).css('background', 'white');
 	    else
-    	    $('#legend .legendIndex'+i).css('background', view.getLegendColor(view.legend.items[i]));
+    	    $('#legend .legendIndex'+i).css('background', view.getLegendColor(view.legend.order[i]));
 	});
-	    
-	view.filterByLegend();
+	
+	try {
+		view.renderer.filterByLegend(view.legend);
+	} catch(e) {
+		alert("Failed to apply legend filter ("+e+")")
+	}
 };
 
 // Info blocks are basically numbers with a name to be found at the
@@ -146,8 +149,8 @@ PolscanView.prototype.render = function(id, data, params) {
 		rName = view.defaultRenderer;
 
 	if(undefined !== renderers[rName]) {
-		var renderer = new renderers[rName]();
-		renderer.render(id, data, params);
+		view.renderer = new renderers[rName]();
+		view.renderer.render(id, data, params);
 		loadRendererSettings('#legend', params, view.filterOptions);
 		return;
 	}

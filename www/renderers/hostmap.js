@@ -24,7 +24,8 @@ renderers.hostmap.prototype.tooltip = function(container, event, data) {
 				if(item.values) {
 					var tmp = item.values.split(/ /);
 					for(var v in tmp)
-						details += "<tr><td>"+tmp[v]+"</td></tr>";
+						if(tmp[v] !== '')
+							details += "<tr><td style='border-left: 24px solid "+view.current.getLegendColorByValue(tmp[v])+"'>"+tmp[v]+"</td></tr>";
 				}
 			}
 		}
@@ -38,17 +39,24 @@ renderers.hostmap.prototype.tooltip = function(container, event, data) {
 	return '<b>'+host+'</b><table class="resultTable">'+details+'</table>';
 };
 
-renderers.hostmap.prototype.changeVisibility = function(data) {
-return; // FIXME
-	// Hide all
-	$('#hostmap div.hostMapBox').hide();
+renderers.hostmap.prototype.filterByLegend = function(legend) {
 
-	// Selectively show stuff
-	$.each(data.legend.selection, function(i, li) {
-		$('#legend .legendIndex'+li).css("background", color(li));
-		$('#hostmap div.hostMapBox td.legendIndex'+li).show();
-		$('#hostmap div.hostMapBox td.legendIndex'+li).parents().show();
-	});
+	if(legend.selection && legend.selection.length) {
+		// Hide all
+		$('#hostmap .hostMapBox').hide();
+
+		// Selectively show stuff
+		$.each(legend.selection, function(i, index) {
+			var li = legend.order[index];
+			$('#hostmap .legendIndex'+li).show();
+			$('#hostmap .legendIndex'+li).parents().show();
+		});
+	} else {
+console.log("show all")
+		// Show all
+		$('#hostmap tr.hostMapGroup').show();
+	}
+return;
 	$('#hostmap tr.hostMapGroup').each(function() {
 		if($(this).find('table:visible').length == 0)
 			$(this).hide();
@@ -105,7 +113,7 @@ renderers.hostmap.prototype.render = function(id, data, params) {
 			if(values.length > 0) {
 				html += "<table host='"+host+"' class='hostMapBox' style='border:0' cellspacing='0' cellpadding='1px' width='100%'><tr>";
 				for(var p in values.sort())
-					html += "<td style='background:"+color(data.legend.colorIndex[values[p]])+";border:0;padding:1px;height:10px' class='legendIndex"+data.legend.colorIndex[values[p]]+"'></td>";
+					html += "<td style='background:"+view.current.getLegendColorByValue(values[p])+";border:0;padding:1px;height:10px' class='legendIndex"+data.legend.colorIndex[values[p]]+"'></td>";
 				html += "</tr></table>";
 			}
 
@@ -127,7 +135,7 @@ renderers.hostmap.prototype.render = function(id, data, params) {
 		$(this).find('.wcount').html($(this).find('.boxes .hostMapBox.WARNING').length);
 	});
 
-	this.changeVisibility(data);
+	this.filterByLegend(data.legend);
 	installTooltip('.hostMapBox', this.tooltip, data);
 
 	if(undefined === data.legend.colors) {
