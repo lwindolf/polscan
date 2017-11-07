@@ -127,7 +127,7 @@ renderers.hostmap.prototype.render = function(id, data, params) {
 		$('#' + groupClassName + ' .boxes').append(html);
 	}
 
-	$('#hostmap tr').each(function(t) {
+	$('#hostmap tbody tr').each(function(t) {
 		var count;
 
 		$(this).find('.count').html($(this).find('.boxes .hostMapBox').length);

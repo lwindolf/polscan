@@ -4,12 +4,23 @@
 function Network() {
 	this.name = 'Network';
 	this.renderers = ['netrad', 'netmap'];
-	this.defaultRenderer = 'netmap';
-	this.filterOptions = {
-		host: true,
-		nt: true
-	};
+	this.defaultRenderer = 'netrad';
 	this.firstHost = undefined;
+
+	var params = getParams();
+	if('netmap' === params.r) {
+		this.filterOptions = {
+			host: true,
+			nt: true
+		};
+	}
+	if('netrad' === params.r) {
+		this.filterOptions = {
+			filterby: true,
+			search: true,
+			nt: true
+		};
+	}
 }
 
 Network.prototype = Object.create(PolscanView.prototype);
@@ -23,15 +34,7 @@ Network.prototype.resultsFilter = function(item) {
 	if(undefined === this.firstHost)
 		this.firstHost = item.host;
 
-	if(this.params.gI !== undefined && item.message.indexOf(this.params.gI) == -1)
-		return false;
-	if(this.params.sT !== undefined && item.severity == 'OK')
-		return false;
-
-	if(this.params.sT &&
-	  !((   item.host.indexOf(this.params.sT) != -1) ||
-	    ( item.policy.indexOf(this.params.sT) != -1) ||
-	    (item.message.indexOf(this.params.sT) != -1)))
+	if(this.params.sT && !(item.host.indexOf(this.params.sT) != -1))
 		return false;
 
 	if(this.filteredHosts !== undefined &&
@@ -45,7 +48,7 @@ Network.prototype.update = function(params) {
 	view.neType = 'TCP connection';
 
 	if(!("nt" in params) || (params.nt === "")) {
-		setLocationHash({
+		changeLocationHash({
 			nt: params.nt?params.nt:'TCP connection'
 		});
 		return;
@@ -63,7 +66,8 @@ Network.prototype.update = function(params) {
 
 		$(view.parentDiv).append("<div id='render'></div>");
 		view.render('#render', { results: results }, view.params);
-		//view.addInfoBlock('Hosts', view.filteredHosts.length);
+		if('netrad' === params.r)
+			view.addInfoBlock('Hosts', view.filteredHosts.length);
 		// Maybe add connections info block
 	});
 };
