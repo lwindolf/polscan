@@ -36,6 +36,11 @@ for dir in /etc/apache2 /usr/local/apache2/conf /usr/local/apache/conf; do
 					result_warning "$c has public key size '$key_size' which is insufficient (should be >=4096)."
 				fi
 			fi
+
+			# Check for expired/expiring certs (1 week)
+			if ! openssl x509 -checkend 604800 -noout -in "$c"; then
+				result_failed "$c expired/expire soon ($(openssl x509 -enddate -noout -in "$c"))."
+			fi
 		done < <(
 			grep -h "^[^#]*SSLCertificateFile" "$dir/"*-enabled/* 2>/dev/null |\
 			sed 's/^.*SSLCertificateFile *//'
