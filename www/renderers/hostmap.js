@@ -30,7 +30,7 @@ renderers.hostmap.prototype.tooltip = function(container, event, data) {
 			}
 		}
 	});
-	if(details == "")
+	if(details === "")
 		if(okFound)
 			details = "<br/><br/>No problematic findings here.";
 		else
@@ -43,8 +43,8 @@ renderers.hostmap.prototype.hideUnusedTableElements = function(legend) {
 
 	// Hide empty host groups rows
 	$('#hostmap tr.hostMapGroup').each(function() {
-		if(($(this).find('table:visible').length == 0) &&
-		   ($(this).find('.boxes:visible').length == 0))
+		if(($(this).find('table:visible').length === 0) &&
+		   ($(this).find('.boxes:visible').length === 0))
 			$(this).hide();
 		else
 			$(this).children().show();
@@ -52,8 +52,6 @@ renderers.hostmap.prototype.hideUnusedTableElements = function(legend) {
 
 	// Update counters
 	$('#hostmap tbody tr').each(function(t) {
-		var count;
-
 		$(this).find('.count').html($(this).find('.boxes .hostMapBox:visible').length);
 		$(this).find('.fcount').html($(this).find('.boxes .hostMapBox.FAILED:visible').length);
 		$(this).find('.wcount').html($(this).find('.boxes .hostMapBox.WARNING:visible').length);
@@ -65,7 +63,7 @@ renderers.hostmap.prototype.hideUnusedTableElements = function(legend) {
 	    $('#hostmap .wcount').hide();
 	    $('#hostmap .boxes:empty').parent().parent().hide();
 	}
-}
+};
 
 renderers.hostmap.prototype.filterByLegend = function(legend) {
 
@@ -88,8 +86,6 @@ renderers.hostmap.prototype.filterByLegend = function(legend) {
 };
 
 renderers.hostmap.prototype.render = function(id, data, params) {
-	var r = this;
-
 	$(id).append('<table id="hostmap" class="resultTable tablesorter"><thead>'+
 				 '<tr><th>Group</th>'+
 				 ('color' !== data.legend.type?'<th class="fcount">C</th><th class="wcount">W</th>':'')+
@@ -130,7 +126,7 @@ renderers.hostmap.prototype.render = function(id, data, params) {
 			html += "' onclick='setLocationHash({ view: \"ScanResults\", r: \"table\", fG: \"all\", sT: \""+host+"\"}, true)'><span class='legendIndexFIXME'>&nbsp;</span></div> ";
 		} else {
 			var values = value.split(/ /).filter(function(i) {
-				return i != '';
+				return i !== '';
 			});
 			if(values.length > 0) {
 				html += "<table host='"+host+"' class='hostMapBox' style='border:0' cellspacing='0' cellpadding='1px' width='100%'><tr>";
@@ -142,7 +138,7 @@ renderers.hostmap.prototype.render = function(id, data, params) {
 		}
 		var groupName = getGroupByHost(params.gT, host);
 		var groupClassName = groupName.replace(/[\.#\/]/g, "_");
-		if($('#hostmap').find('#'+groupClassName).length == 0)
+		if($('#hostmap').find('#'+groupClassName).length === 0)
 			$('#hostmap').append('<tr class="hostMapGroup" id="'+groupClassName+'"><td class="boxesBox"><span class="groupName">'+groupName+'</span><span class="boxes"/></td>'+
 								 '<td class="fcount"/><td class="wcount"/>'+
 								 '<td class="count"/></tr>');
