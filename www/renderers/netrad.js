@@ -12,7 +12,7 @@ renderers.netrad.prototype.render = function(id, data, params) {
 	$(id).append('<div id="networkSelectedName"><i>Hover over names to view FQDNs and click to see connection details.</i></div><div id="netgraph"/>');
 
 	// http://mbostock.github.io/d3/talk/20111116/#17
-	var diameter = ($(window).width()>$(window).height()?$(window).width():$(window).height()),
+	var diameter = ($(window).width()<$(window).height()?$(window).width():$(window).height()),
 		radius = diameter / 2,
 		innerRadius = radius - 150;
 	var cluster = d3.layout.cluster()
