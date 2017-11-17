@@ -1,11 +1,9 @@
 // vim: set ts=4 sw=4: 
 // The overview...
 
-views.OverviewView = function OverviewView(parentDiv) {
-	this.parentDiv = parentDiv;
-};
+renderers.dashboard = function dashboardRenderer() { };
 
-views.OverviewView.prototype.addTopChanges = function(changes, type) {
+renderers.dashboard.prototype.addTopChanges = function(changes, type) {
 	var results = [];
         var sortbar = [];
 
@@ -13,33 +11,28 @@ views.OverviewView.prototype.addTopChanges = function(changes, type) {
 		sortbar.push({ "name": name, "count": count });
         });
 	$.each(sortbar.sort(function(a,b) {
-		return b["count"]-a["count"];
+		return b.count-a.count;
 	}), function(i,item) {
 		if(results.length < 3)
-			results.push("<div>"+item["name"] + " <b>(+"+item["count"]+")</b></div>");
+			results.push("<div>"+item.name+" <b>(+"+item.count+")</b></div>");
 	});
 	if(results.length != -1)
 		$('#topChanges').append("<div class='changeList'><div class='changeItems "+type.toUpperCase()+"'>"+results.join('')+"</div></div>");
-}
+};
 
-views.OverviewView.prototype.update = function(params) {
-	var view = this;
+renderers.dashboard.prototype.render = function(id, data, params) {
+	var r = this;
 
-	clean();
-	$(this.parentDiv).css('margin-left:0;');
-	$("<div id='overviewBoxContainer'>").appendTo(this.parentDiv);
-	$("<div id='col2'>").appendTo("#overviewBoxContainer");
-	$("<div id='col1'>").appendTo("#overviewBoxContainer");
+	$(this.parentDiv).addClass('dashboard');
 
 	getData("overview", function(data) {
 			$("#row1").append("<div class='chart'><span id='overviewCalendar'/></div>");
 			addCalendar("#overviewCalendar", data.date);
-			createBadges('#row1', data.FAILED, data.WARNING, 'Overview', data.hostCount);
 			$("#loadmessage").hide();
 
-			var groupFailed = new Array();
-			var groupWarning = new Array();
-			var pieGroupHosts = new Array();
+			var groupFailed = [];
+			var groupWarning = [];
+			var pieGroupHosts = [];
 			$.each(data.overview, function(i, item) {
 				if(item.group) {
 					var compliant = 1;
@@ -66,7 +59,7 @@ views.OverviewView.prototype.update = function(params) {
 						compliant = 0;
 						tmp += ' <span class="WARNING problems" title="Total warnings seen">' +
 						item.WARNING +
-						'</span>'
+						'</span>';
 					}
 					if(compliant) {
 						tmp += ' <span class="compliant problems" title="100% compliance for this group">compliant</span>';
@@ -74,18 +67,18 @@ views.OverviewView.prototype.update = function(params) {
 				}
 			});
 
-			$("<div id='findingsPies' class='overviewBox dark'>").appendTo("#row1");
+
+/*			$("<div id='findingsPies' class='overviewBox dark'>").appendTo("#row1");
 			$("<div id='pieChartFailed' class='pie'>").appendTo("#findingsPies");
 			$("<div id='pieChartWarning' class='pie'>").appendTo("#findingsPies");
 			addPieChart('pieChartFailed', 'Problems', 260, '#fff', groupFailed);
 			addPieChart('pieChartWarning', 'Warnings', 260, '#777' ,groupWarning);
-			// FIXME: addPieChart('pieChartHosts', 'Warnings', 260, pieGroupHosts);
+*/
+			$( "<div id='topChangesBox'>" ).appendTo("#row2");
+			$( "<h3>Top Changes</h3><div id='topChanges'></div>").appendTo("#topChangesBox");
 
-			$( "<div id='topChangesBox' class='overviewBox'>" ).appendTo( "#row2" )
-			$( "<h3>Top Changes</h3><div id='topChanges'></div>").appendTo("#topChangesBox")
-
-			$( "<div id='policies' class='overviewBox'>" ).appendTo( "#row2" )
-			$( "<h3>Findings / Changes per Policy</h3><table class='resultTable tablesorter' id='findingsPerPolicy'><thead><tr><th>Group</th><th>Policy</th><th>Problems</th><th>Change</th><th>Warnings</th><th>Change</th><th colspan='2'>Trend</th></tr></thead><tbody></tbody></table>").appendTo("#policies")
+			$( "<div id='policies'>" ).appendTo("#row2");
+			$( "<h3>Findings / Changes per Policy</h3><table class='resultTable tablesorter' id='findingsPerPolicy'><thead><tr><th>Group</th><th>Policy</th><th>Problems</th><th>Change</th><th>Warnings</th><th>Change</th><th colspan='2'>Trend</th></tr></thead><tbody></tbody></table>").appendTo("#policies");
 
 			getData("histogram", function(data) {
 				var changes = { 'ok': {}, 'failed': {}, 'warning': {}};
@@ -115,9 +108,9 @@ views.OverviewView.prototype.update = function(params) {
 						if(diff != 0) {
 							tmp += '<span class="'+(diff>0?"FAILED":"compliant")+' changes" filter="'+(diff>0?'new':'solved')+'---' + policy + '" title="Total change problems">+' + Math.abs(diff) + '</span>';
 							if(diff > 0) {
-								changes['failed'][group+'---'+policy] = Math.abs(diff);
+								changes.failed[group+'---'+policy] = Math.abs(diff);
 							} else {
-								changes['ok'][group+'---'+policy] = Math.abs(diff);
+								changes.ok[group+'---'+policy] = Math.abs(diff);
 							}
 						}
 						tmp += '</td><td class="policy" '+pf+'>';
@@ -130,9 +123,9 @@ views.OverviewView.prototype.update = function(params) {
 						if(diff != 0) {
 							tmp += '<span class="'+(diff>0?"WARNING":"compliant")+' changes" filter="'+(diff>0?'new':'solved')+'---' + policy + '" title="Total change warnings">+' + Math.abs(diff) + '</span>';
 							if(diff > 0) {
-								changes['warning'][group+'---'+policy] = Math.abs(diff);
+								changes.warning[group+'---'+policy] = Math.abs(diff);
 							} else {
-								changes['ok'][group+'---'+policy] = Math.abs(diff);
+								changes.ok[group+'---'+policy] = Math.abs(diff);
 							}
 						}
 						tmp += '</td>';
@@ -154,14 +147,15 @@ views.OverviewView.prototype.update = function(params) {
 				});
 				$("#findingsPerPolicy").tablesorter({sortList: [[3,1],[2,1],[5,1],[4,1]]});
 
-				view.addTopChanges(changes, 'failed');
-				view.addTopChanges(changes, 'warning');
-				view.addTopChanges(changes, 'ok');
+				r.addTopChanges(changes, 'failed');
+				r.addTopChanges(changes, 'warning');
+				r.addTopChanges(changes, 'ok');
 
 				$("#findingsPerPolicy .group").click(function() {
 					setLocationHash({
 					    fG: $(this).attr('filter'),
-   						view: 'results'
+   						view: 'ScanResults',
+						r: 'table'
 					});
 				});
 				$("#findingsPerPolicy .policy").click(function() {
@@ -169,7 +163,8 @@ views.OverviewView.prototype.update = function(params) {
 					setLocationHash({
 						fG: fields[0],
 						sT: fields[1],
-						view: 'results'
+						view: 'ScanResults',
+						r: 'table'
 					});
 				});
 				$("#findingsPerPolicy .change").click(function() {
@@ -177,7 +172,8 @@ views.OverviewView.prototype.update = function(params) {
 					setLocationHash({
 						fG: fields[0],
 						sT: fields[1],
-						view: 'results'
+						view: 'ScanResults',
+						r: 'table'
 					});
 				});
 			});

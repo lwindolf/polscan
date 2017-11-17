@@ -38,6 +38,10 @@ for dir in /etc/nginx /usr/local/nginx/conf; do
 				fi
 			fi
 				
+			# Check for expired/expiring certs (1 week)
+			if ! openssl x509 -checkend 604800 -noout -in "$c"; then
+				result_failed "$c expired/expire soon ($(openssl x509 -enddate -noout -in "$c"))."
+			fi
 		done < <(
 			grep -h "^[^#]*ssl_certificate[^_]" "$dir/"*-enabled/* 2>/dev/null |\
 			sed 's/^.*ssl_certificate *//;s/;//'

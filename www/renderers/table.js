@@ -1,23 +1,15 @@
 // vim: set ts=4 sw=4: 
-// View for displaying finding details in a sortable table
+// Renderer for displaying finding details in a sortable table
+// Loads row asynchronously to allow for larger tables
 
-views.ResultsView = function ResultsView(parentDiv) {
-	this.parentDiv = parentDiv;
-	this.filterOptions = {
-		findings: true,
-		groupbyid: true,
-		filterby: true,
-		search: true,
-		copyHosts: true
-	};
+renderers.table = function tableRenderer(parentDiv) { 
+	this.tableLoadTimeout = undefined;
 };
 
-var resultTableLoadTimeout;
-
-function sortTable(id, sortOrder) {
+renderers.table.prototype.sortTable = function(id, sortOrder) {
 	$('#loadmessage i').html('Sorting results...');
 	console.log("Table setup done.");
-	resultTableLoadTimeout = setTimeout(function() {
+	this.tableLoadTimeout = setTimeout(function() {
 		try {
 			$(id).tablesorter(sortOrder);
 		} catch(e) {
@@ -25,9 +17,10 @@ function sortTable(id, sortOrder) {
 		console.log("Table sorting done.");
 		$('#loadmessage').hide();
 	}, 100);
-}
+};
 
-function addResultRows(name, rows, offset, count, sortOrder) {
+renderers.table.prototype.addResultRows = function(name, rows, offset, count, sortOrder) {
+	var renderer = this;
 	var r = "";
 	for(var i = offset; i < offset+count; i++) {
 		if(rows[i])
@@ -37,12 +30,12 @@ function addResultRows(name, rows, offset, count, sortOrder) {
 	if(offset + count < rows.length) {
 		resultTableLoadTimeout = setTimeout(function() {
 			$('#loadmessage i').html('Loading results ('+Math.ceil(100*offset/rows.length)+'%)...');
-			addResultRows(name, rows, offset+count, count, sortOrder);
+			renderer.addResultRows(name, rows, offset+count, count, sortOrder);
 		}, 100);
 	} else {
 		// Enable table sorting
 		if(sortOrder != null)
-			sortTable("#resultTable"+name, sortOrder);
+			this.sortTable("#resultTable"+name, sortOrder);
 
 		// Enable clicking
 		$("#resultTable"+name+" .group").click(function() {
@@ -55,46 +48,22 @@ function addResultRows(name, rows, offset, count, sortOrder) {
 			setLocationHash({ fG: name, sT: $(this).html()}, true);
 		});
 	}
-}
+};
 
-function itemMatches(item) {
-	if(this.params.gI !== undefined && item.message.indexOf(this.params.gI) == -1)
-		return false;
-	if(this.params.sT !== undefined && item.severity == 'OK')
-		return false;
+renderers.table.prototype.createGroupTable = function(id, data, params) {
 
-	if(params.sT &&
-	  !((item.host.indexOf(this.params.sT) != -1) ||
-	    (item.policy.indexOf(this.params.sT) != -1) ||
-	    (item.message.indexOf(this.params.sT) != -1)))
-		return false;
-
-	if(this.filteredHosts !== undefined &&
-           -1 == this.filteredHosts.indexOf(item.host))
-		return false;
-	return true;
-}
-
-function createGroupTable(id, results) {
-
-	clearTimeout(resultTableLoadTimeout);
+	clearTimeout(this.tableLoadTimeout);
 	$('#loadmessage').show();
 	$('.resultTable').empty();
 	$('.resultTable').remove();
-	$("<table id='resultTable"+this.params.fG+"' class='resultTable tablesorter'>")
-	.html("<thead><tr><th>"+this.params.gI+"</th><th>Count</th><th>Hosts</th></thead><tbody/>")
+	$("<table id='resultTable"+params.fG+"' class='resultTable tablesorter'>")
+	.html("<thead><tr><th>"+params.gI+"</th><th>Count</th><th>Hosts</th></thead><tbody/>")
 	.appendTo(id);
 
-	console.log("Grouping hosts by '"+this.params.gI+"'");
-	var hosts = new Array();
-	var values = new Array();
-	var view = this;
-	$.each(results.filter(itemMatches, view), function( i, item ) {
-			if(item.severity == 'FAILED')
-				view.failed++;
-			else if(item.severity == 'WARNING')
-				view.warning++;
-
+	console.log("Grouping hosts by '"+params.gI+"'");
+	var hosts = [];
+	var values = [];
+	$.each(data.results, function( i, item ) {
 			// 3 supported split types and priority:
 			//
 			// 1.) Explicit field separator
@@ -125,12 +94,11 @@ function createGroupTable(id, results) {
 					values[list[key]] = 1;
 
 				if(hosts[list[key]] === undefined)
-					hosts[list[key]] = new Array();
+					hosts[list[key]] = [];
 				hosts[list[key]].push(item.host);
 			}
 	});
-	view.hostCount = Object.keys(hosts).length;
-	console.log("Parsing done ("+view.hostCount+" hosts).");
+	console.log("Parsing done.");
 
 	var rows = new Array(250);
 	for(var key in values) {
@@ -142,14 +110,14 @@ function createGroupTable(id, results) {
 				'<td class="hosts">' + hostlinks + '</td>');
 		// Avoid OOM
 		if(rows.length >= 250) {
-			addResultRows(params.fG, rows, 0, 500, null);
+			this.addResultRows(params.fG, rows, 0, 500, null);
 			rows = new Array(250);
 		}
 	}
-	sortTable("#resultTable"+params.fG, {sortList: [[1,1]]});
-}
+	this.sortTable("#resultTable"+params.fG, {sortList: [[1,1]]});
+};
 
-function createResultTable(id, data) {
+renderers.table.prototype.createResultTable = function(id, data, params) {
 	var group = '';
 	var name = params.fG;
 
@@ -159,26 +127,23 @@ function createResultTable(id, data) {
 	if (name == 'all' || name == 'new' || name == 'solved')
 		group = '<th>Group</th>';
 
-	clearTimeout(resultTableLoadTimeout);
+	clearTimeout(this.tableLoadTimeout);
 	$('#loadmessage').show();
 	$("<table id='resultTable"+name+"' class='resultTable tablesorter'>")
 		.html("<thead><tr><th>Host</th>"+group+"<th>Policy</th><th title='Severity'>&nbsp;</th><th>Details</th></thead>")
 		.appendTo(id);
 	$('<tbody>').appendTo('#resultTable'+name);
 
-	groupBy = new Array();
+	groupBy = [];
 	var rows = "";
-	var view = this;
-	var visibleHosts = new Array();
-	$.each(data.filter(itemMatches, view), function( i, item ) {
+	var visibleHosts = [];
+	$.each(data.results, function( i, item ) {
 		var severity = 0;
 
 		if(item.severity == 'FAILED') {
-			view.failed++;
 			severity = 2;
 		}
 		if(item.severity == 'WARNING') {
-			view.warning++;
 			severity = 1;
 		}
 		visibleHosts[item.host] = 1;
@@ -205,13 +170,12 @@ function createResultTable(id, data) {
 			}
 		}
 	});
-	view.hostCount = Object.keys(visibleHosts).length;
-	console.log("Parsing done ("+view.hostCount+" hosts).");
-	addResultRows(name, rows.split(/<tr>/), 0, 100, {sortList: [[2,1],[0,0]]});
+	console.log("Parsing done.");
+	this.addResultRows(name, rows.split(/<tr>/), 0, 100, {sortList: [[2,1],[0,0]]});
 
 	if(groupBy.length >= 0) {
 		var groupingEnabled = false;
-		for(key in groupBy) {
+		for(var key in groupBy) {
 			if(groupBy[key] > 3 && key.length > 3) {
 				groupingEnabled = true;
 				$('#groupById').append("<option>"+key+"</option>");
@@ -220,34 +184,11 @@ function createResultTable(id, data) {
 		if(groupingEnabled)
 			$('#groupById').removeAttr('disabled');
 	}
-}
+};
 
-views.ResultsView.prototype.update = function(params) {
-	var id = this.parentDiv;
-
-	console.log("Loading results start (group="+params.fG+" search="+params.sT+")");
-	clean();
-
-	getData(params.fG, function(data) {
-		this.failed = 0;
-		this.warning = 0;
-		this.hostCount = 0;
-		this.params = params;
-		this.filteredHosts = get_hosts_filtered(params, false);
-
-		$(id).append("<div id='histogramRow'/><div id='tableRow'/>");
-
-		if(!params.gI)
-			createResultTable('#tableRow', data.results);
-		else
-			createGroupTable('#tableRow', data.results);
-
-		viewInfoReset('Scan Results');
-		viewInfoAddBlock('Hosts', this.hostCount);
-		viewInfoAddBlock('Failed', this.failed);
-		viewInfoAddBlock('Warnings', this.warning);
-		viewInfoAddSwitches(['results', 'hostmap', 'treemap'], 'results');
-
-		createHistogram('#histogramRow', params.fG, params.sT);
-	});
+renderers.table.prototype.render = function(id, data, params) {
+	if(!params.gI)
+		this.createResultTable(id, data, params);
+	else
+		this.createGroupTable(id, data, params);
 };

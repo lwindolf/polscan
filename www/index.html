@@ -4,8 +4,10 @@
 	<head>
 		<meta charset="utf-8">
 		<script type="text/javascript" src="filter.js"></script>
+		<script type="text/javascript" src="renderer_settings.js"></script>
 		<script type="text/javascript" src="tooltip.js"></script>
 		<script type="text/javascript" src="pie_chart.js"></script>
+		<script type="text/javascript" src="polscan_view.js"></script>
 		<script type="text/javascript" src="templates.js"></script>
 		<script type="text/javascript" src="group_list.js"></script>
 		<script type="text/javascript" src="lib/d3.min.js"></script>
@@ -15,37 +17,13 @@
 		<script type="text/javascript" src="lib/jquery.tablesorter.min.js"></script>
 		<script type="text/javascript" src="lib/Chart.min.js"></script>
 		<script type="text/javascript" src="lib/jquery-ui.min.js"></script>
-		<script type="text/javascript" src="lib/d3pie.min.js"></script>
 		<script type="text/javascript" src="lib/handlebars.min-latest.js"></script>
 		<script type="text/javascript" src="lib/jquery.sparkline.min.js"></script>
 		<script type="text/javascript" src="lib/split.min.js"></script>
+ 
 		<link rel="stylesheet" href="lib/jquery-ui.min.css">
+		<link rel="stylesheet" href="styles.css">
 		<style type="text/css">
-			body.main {
-				font-family: Helvetica;
-				background:#eee;
-				margin:0;
-				padding:0;
-				overflow-y:scroll;
-			}
-			#overviewBoxContainer {
-				clear:both;
-			}
-			.overviewBox {
-				background:white;
-				border: 1px solid #ccc;
-				border-radius: 6px;
-				padding:12px 24px;
-				margin:12px 6px;
-			}
-			.overviewBox h3 {
-				margin-top:0;
-				margin-bottom:12px;
-			}
-			.overviewBox.dark {
-				background:#444;
-				float:left;
-			}
 			#row1, #row2 {
 				clear:both;
 			}
@@ -135,84 +113,8 @@
 			.description {
 				display:none;
 			}
-			#logo {
-				background: #222;
-				padding:6px 12px;
-				font-size:150%;
-				font-weight:bold;
-				float:left;
-				margin-right:12px;
-			}
-			#logo a {
-				text-decoration: none;
-				color: #eee;
-			}
-			#menu {
-				background: #353535;
-				color:silver;
-			}
-			#menuOptions {
-				padding: 12px;
-				z-index:0;
-			}
-			#menuOptions a {
-				color: #ddd;
-				text-decoration:none;
-				border:1px solid #666;
-				border-bottom: 1px solid #000;
-				border-right: 1px solid #000;
-				background: #555;
-				padding-left:12px;
-				padding-right:12px;
-				margin-right:12px;
-				border-radius: 4px;
-			}
-			#menuOptions a:hover {
-				color: white;
-				background: #777;
-			}
-			#menuOptions a.current {
-				color: #444;
-				font-weight:bold;
-				background: #eee;
-			}
 			#viewlist {
 				padding:24px;
-			}
-			.resultTable {
-				border: 1px solid #aaa;
-				font-size:11pt;
-				border-collapse: collapse;
-			}
-			.resultTable th {
-				background: #ddd;
-				border: 1px solid #aaa;
-				word-wrap: none;
-			}
-			.resultTable td {
-				padding: 6px 12px;
-				border: 1px solid #aaa;
-				word-wrap: break-word;
-				vertical-align: top;
-			}
-			.resultTable .policy {
-				font-size:110%;
-			}
-			tr:nth-child(even) {
-				background:#eee;
-			}
-			tr:nth-child(odd) {
-				background:white;
-			}
-			th.headerSortUp:after {
-				content: "\00a0↑";
-			}
-			th.headerSortDown:after {
-				content: "\00a0↓";
-			}
-			td.groupByValue, td.message {
-				word-break: break-all;
-				min-width:50%;
 			}
 			.search {
 				clear:both;
@@ -280,60 +182,6 @@
 			#histogramChart {
 				margin:12px;
 			}
-			#tableRow {
-				float: left;
-			}
-			#filter {
-				background: #ddd;
-				padding:6px 12px;
-			}
-			#filter hr {
-				display:none;
-			}
-		@media (max-width: 1023px) {
-			#filter select {
-				max-width:20%;
-			}
-			#filter.sidebar #calendar {
-				display:none;
-			}
-		}
-		@media (min-width: 1024px) {
-			#results.sidebar {
-				margin-left:332px;
-			}
-			#filter.sidebar {
-				margin:0;
-				position:absolute;
-				top:0;
-				left:0;
-				margin-top:46px;
-				height:100%;
-			}
-			#filter.sidebar #datepicker, #filter.sidebar .datepicker {
-				display:none;
-			}
-			#filter.sidebar .label {
-				font-weight:bold;
-				margin-top:12px;
-			}
-			#filter.sidebar hr {
-				display:block;
-			}
-			#filter.sidebar select {
-				display:block;
-				width:300px;
-				margin-bottom:6px;
-			}
-			#filter.sidebar input[type='text'] {
-				display:block;
-				width:292px;
-				margin-bottom:6px;
-			}
-			#filter.sidebar textarea#copyHostList {
-				height:250px;
-			}
-		}
 			.ui-datepicker .ui-datepicker-header {
 				background:#555;
 				border:0;
@@ -374,12 +222,6 @@
 			.ui-datepicker .ui-datepicker-prev:after {
 				margin-left:0.7em;
 				content: "<";
-			}
-			#overviewCalendar table {
-				height:222px;
-			}
-			#overviewCalendar td {
-				font-size: 1.2em;
 			}
 			textarea#copyHostList {
 				width:100%;
@@ -460,31 +302,6 @@ text {
 
 .previousNode {
 	background: #ccf;
-}
-
-#legend {
-	float:right;
-	background:#666;
-	color:white;
-	min-width:150px;
-	max-width:10%;
-	overflow:hidden;
-	border:1px solid #aaa;
-	border-radius:6px; 
-	padding:6px;
-	margin-left:12px;
-	text-align:center;
-}
-.legendItem {
-	color:black;
-        background:white;
-	text-align:left;
-	display:block;
-	padding:0 3px;
-	margin-top:1px;
-	cursor:pointer;
-        overflow:hidden;
-	text-overflow:ellipsis;
 }
 
 a.resolve {
@@ -684,75 +501,52 @@ a.resolve {
 			<a href='https://github.com/lwindolf/polscan'>Polscan</a>
 			</div>
 			<div id='menuOptions'>
-			<a href="#">Overview</a>
-			Maps:
-			<a href="#view=hostmap">Findings</a>
-			<a href="#view=inventory">Inventory</a>
-			<a href="#view=netmenu">Net</a>
-			<a href="#view=vulnerabilities">Vulnerabilities</a>
+			<a href="#" title="Dashboard">
+				<img src='img/home_icon.png'/><span class='menuText'>Dashboard</span></a>
 
-			Findings: 
-			<a href="#view=results&fG=all">All</a>
-			<a href="#view=results&fG=new">New</a>
-			<a href="#view=results&fG=solved">Solved</a>
+			<a href="#view=ScanResults" title="Scan Results">
+				<img src='img/zoom_icon.png'/><span class='menuText'>Findings</span></a>
 
-			&#9881;
-			<a href="#view=policies">Policies</a>
+			<a href="#view=Inventory" title="Inventory">
+				<img src='img/server_icon.png'/><span class='menuText'>Inventory</span></a>
+
+			<a href="#view=Network" title="Network">
+				<img src='img/net_comp_icon.png'/><span class='menuText'>Network</span></a>
+
+			<a href="#view=Vulnerabilities" title="Vulnerabilities">
+				<img src='img/lightning_icon.png'/><span class='menuText'>Vulnerabilities</span></a>
+
+			<a href="#view=Policies" title="Policies">
+				<img src='img/cog_icon.png'/><span class='menuText'>Policies</span></a>
 			</div>
 		</div>
-		<div id='page_title'></div>
-
-		<div id='filter' class='sidebar'></div>
-		<div id='results'></div>
+		<div id='content'>
+			<div id='viewinfo'><span class='block name'/></div>
+			<div id='filter'></div>
+			<div id='results'></div>
+		</div> 
 
 		<script>
 			var SCHEMA_VERSION = 1;
+			var view = new PolscanView();
 			var views = {};
+			var renderers = {};
+			var currentDay;
 			var resultCache = new Array();
 			var hostGroupNamespaces = new Array();
 			var hostGroups;
 			var hosts;
-			var currentDay = undefined;
-			var currentView = undefined;
-			var currentViewName = undefined;
-			var currentResultSet;
 			var groupBy = new Array();
 			var baseUrl = "results/latest/";
 			var loading = 0;
 			var warning = 0;
 			var failed = 0;
+			//var color = d3.scaleOrdinal(d3.schemeCategory20);
 			var color = d3.scale.category20();
 
 			function error(text) {
 				$('#errors').html('<div class="errorbox"><b>Error:</b> '+text+'</div>');
 				$('#errors').show();
-			}
-
-			function onCopyHosts() {
-				$('#hostlist').html('<textarea id="copyHostList">');
-				var hosts;
-				if(currentViewName === 'results' || currentViewName === 'vulnerabilities')
-					hosts = $('.host:visible').map(function() {
-						return $(this).html();
-					}).get();
-				if(currentViewName === 'hostmap' || currentViewName === 'inventory')
-					hosts = $('div.hostMapBox:visible').map(function() {
-						if($(this).hasClass('UNKNOWN'))
-							return;
-						if($(this).hasClass('OK'))
-							return;
-						return $(this).attr('host')
-					}).get();
-
-				var tmp = new Array();
-				var result = "";
-				for(var i = 0; i < hosts.length; i++) {
-					if(!tmp[hosts[i]])
-						result += hosts[i] + "\n";
-					tmp[hosts[i]] = 1;
-				}	
-				$('#hostlist textarea').html(result);
-				$('#hostlist').show();
 			}
 
 			function overlayMonitoring(host, alertTableId, append, cb) {
@@ -817,8 +611,6 @@ a.resolve {
 				var cacheName = name.replace('-', '_');
 
 				if(resultCache[cacheName]) {
-					console.log("Using "+name+".json from cache");
-					currentResultSet = cacheName;
 					callback(resultCache[cacheName]);
 					return;
 				}
@@ -826,7 +618,6 @@ a.resolve {
 				return $.getJSON(baseUrl + name + ".json", {})
 				.done(function(data) {
 					if(data["schema"] == SCHEMA_VERSION) {
-	                    currentResultSet = cacheName;
 		                resultCache[cacheName] = data;
 						callback(resultCache[cacheName]);
 					} else {
@@ -839,6 +630,17 @@ a.resolve {
 					else
 						error('Fetching results for group "'+name+'" failed! Maybe there is no data for this day?<br/><br/>Exception: ' + e);
 				}).promise();
+			}
+
+			/* Generic from cache fetcher. Returns data synchronously 
+			   or raises error */
+			function getCachedData(name) {
+				var cacheName = name.replace('-', '_');
+			
+				if(undefined !== resultCache[cacheName])
+					return resultCache[cacheName];
+				else
+					error('Data set "'+name+'" is not in cache!');
 			}
 
 			/* Generic JSON fetcher. Returns already loaded stuff from
@@ -876,31 +678,7 @@ a.resolve {
 				return false;
 			}
 
-			function loadView(name, params) {
-				$.getScript("view_"+name+".js")
-				.done(function(s, t) {
-					try {
-						currentView = new views[name[0].toUpperCase()+name.slice(1)+"View"]('#results');
-						currentViewName = name;
-						loadFilterSettings(params);
-						currentView.update(params);
-
-						// Ugly: all view except overview need a sidebar
-						if (name === "overview")
-							$('#results').removeClass('sidebar');
-						else
-							$('#results').addClass('sidebar');
-					} catch(e) {
-						console.log("Failed to load script dependency for view '"+name+"'! ("+e+")");
-					}
-				})
-				.fail(function(jxqhr, x, e) {
-					console.log("Failed to load script dependency for view '"+name+"'! ("+e+")");
-					error("Failed to load script dependency for view '"+name+"'! ("+e+")");
-				});
-			}
-
-			function onLocationHashChange() {
+			function getParams() {
 				var params = {};
 
 				try {
@@ -916,6 +694,11 @@ a.resolve {
 				} catch(e) {
 					console.log("Invalid parameter encoding! "+e);
 				}
+				return params;
+			}
+
+			function onLocationHashChange() {
+				var params = getParams();
 
 				if(params.fullscreen === "1")
 					$('#menu').hide();
@@ -941,6 +724,7 @@ a.resolve {
 					delete params.gI;
 
 				// FIXME: Update generic filter model
+				getData('overview', function(data) {
 				getData('host_groups', function(data) {
 				getData('hosts', function(data) {
 					hosts = data.results;
@@ -948,55 +732,44 @@ a.resolve {
 					$("#menu a.current").removeClass("current");
 
 					if(params.view) {
-						loadView(params.view, params);
+						view.load(params.view, params);
 						$("#menu a[href='#view="+params.view+"']").addClass("current");
-					} else if(!params.fG) {
-						loadView("overview", params);
-						$("#menu a[href='#']").addClass("current");
 					} else {
-						loadView("results", params);
-						$("#menu a[href='#view=results&fG="+params.fG+"']").addClass("current");
+						view.load("Dashboard", params);
+						$("#menu a[href='#']").addClass("current");
 					}
+				});
 				});
 				});
 			}
 
+			// merges changedParams into location
+			function changeLocationHash(changedParams) {
+				var params = getParams();
+				$.each(changedParams, function(n, value) {
+					params[n] = value;
+				});
+				setLocationHash(params);
+			}
+
+			// overwrites location with params
 			function setLocationHash(params) {
 				if(!params.d)
 					params.d = $('#datepicker').val();
 				if(!params.view)
-					params.view = currentViewName;
+					params.view = view.getName();
+				if(!params.r)
+					params.r = view.getRendererName();
 				window.location.hash = "#" + $.param(params);
 			}
 
 			(function() {
-				clean();
 				onLocationHashChange();
 
 				// Allow some simple navigation by browser history 
 				// for scanner results
 				$(window).on('hashchange', onLocationHashChange);
 			})();
-
-			function shortenNumber(nr) {
-				return (nr>1000)?Math.floor(nr/1000)+"k":nr;
-			}
-
-			function createBadges(id, failed, warning, name, hostCount) {
-				$("<div class='badges'><div class='badgesTitle'>" +
-				  name +
-				  "</div><div class='badge first" +
-				  ((failed>0)?" problems":"") +
-				  "'><span class='count' title='"+failed+"'>" +
-				  shortenNumber(failed) +
-				  "</span> Problems</div><div class='badge" +
-				  ((warning>0)?" warning":"") +
-				  "'><span class='count' title='"+warning+"'>" +
-				  shortenNumber(warning) +
-				  '</span> Warnings</div></div>').appendTo(id);
-				if(hostCount !== undefined)
-					$('<div class="badge hosts"><span class="count">'+hostCount+'</span> Hosts</div>').appendTo('.badges');
-			}
 
 			function createHistogram(id, group, policy) {
 				var name = group;
@@ -1050,12 +823,6 @@ a.resolve {
 						console.log("Could not find value set for group="+group+" policy="+policy);
 					}
 				});
-			}
-
-			function clean() {
-				$('#results').html('<div id="errors"/><div id="row1"></div><div id="loadmessage"><i>Loading ...</i></div><div id="row2"/>');
-				$('#errors').hide();
-				$('#loadmessage').hide();
 			}
 
 		</script>

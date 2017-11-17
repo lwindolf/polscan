@@ -39,6 +39,7 @@ fi
 
 # 1. If none given determine host list automatically
 if [ "$HOST_LIST" == "" ]; then 
+	export RESULT_BASE_DIR ONE_DAY_AGO  # Some host list providers might want to use it
         for h in $HOST_LIST_PROVIDER; do
                 echo "Fetching host list (provider '$h')..."
                 HLP="$LIB_DIR/host-list-providers/$h"

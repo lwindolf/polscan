@@ -3,12 +3,7 @@
    Represents hosts as color coded boxes according to maximum
    finding severity */
 
-views.NetmapView = function NetmapView(parentDiv) {
-	this.parentDiv = parentDiv;
-	this.filterOptions = {
-		host: true,
-		nt: true
-	};
+renderers.netmap = function netmapRenderer() {
 	this.netMapData = {};
 	this.previousNode;
 };
@@ -29,7 +24,7 @@ function lookupIp(ip) {
 var viewBoxX =0;
 var viewBoxY = 0;
 
-views.NetmapView.prototype.updateGraph = function() {
+renderers.netmap.prototype.updateGraph = function() {
 	var width = $('#netmap').width();
 	var	height = $('#netmap').height();
     var svg = d3.select("#netmap").append("svg")
@@ -92,7 +87,7 @@ views.NetmapView.prototype.updateGraph = function() {
 	svg.attr("height", g.graph().height + 40);
 }
 
-views.NetmapView.prototype.addGraphNode = function(service, direction) {
+renderers.netmap.prototype.addGraphNode = function(service, direction) {
 	var view = this;
 	var d = this.netMapData;
 
@@ -112,7 +107,7 @@ views.NetmapView.prototype.addGraphNode = function(service, direction) {
 						console.log("prev="+name);
 					if(name == view.previousNode)
 						tmp += "class='previousNode' ";
-					tmp += "class='host_"+name.replace(/[.\-]/g,'_')+"' href='#view=netmap&pN="+view.currentNode+"&h="+name+"'>"+name+"</a><br/> ";
+					tmp += "class='host_"+name.replace(/[.\-]/g,'_')+"' href='javascript:changeLocationHash({pN:\""+view.currentNode+"\",h:\""+name+"\"});'>"+name+"</a><br/> ";
 				}
 			}
 			if (i == 6)
@@ -132,7 +127,7 @@ views.NetmapView.prototype.addGraphNode = function(service, direction) {
 	}
 }
 
-views.NetmapView.prototype.addHost = function() {
+renderers.netmap.prototype.addHost = function() {
 	var view = this;
 	var host = this.currentNode;
 	var found = false;
@@ -151,9 +146,6 @@ views.NetmapView.prototype.addHost = function() {
 		$.each(data.results, function(i, item) {
 			if(item.host == host) {
 				found = true;
-
-				if(item.ln === '' || item.ltn === '' || item.rn === '' || item.rtn === '')
-					return;
 
 				// Resolve program for close-wait, time-wait listings
 				if(item.scope !== "-" && !(item.ltn in portToProgram))
@@ -255,54 +247,7 @@ views.NetmapView.prototype.addHost = function() {
 	});
 }
 
-views.NetmapView.prototype.listHosts = function(params) {
-	clean();
-	$(this.parentDiv).append('<h3>Please select a host</h3><table class="resultTable tablesorter"><thead><tr><th>Host Name</th><th>Problems</th><th>Max Severity</th></tr></thead><tbody/></table>');
-
-	getData("hosts", function(data) {
-		$.each(data.results, function(h) {
-			$('.resultTable').append('<tr><td><a href="#view=netmap&nt='+(params.nt?params.nt:'TCP connection')+'&h='+h+'">'+h+'</a></td><td class="problems" id="host_'+h.replace(/[.\-]/g,"_")+'"></td><td class="severity"></td></tr>');
-		});
-
-		if(isLive()) {
-			$('#loadmessage').show();
-			$('#loadmessage i').html('Checking monitoring...');
-			overlayMonitoring(undefined, undefined, true, function() {
-				// Ugly: Calculate severity from text tags to allow severity sorting
-				$(".resultTable td.problems").each(function(i,t) {
-					var val = $(this).html();
-					var severity = 0;
-					if(-1 !== val.indexOf('UNKNOWN'))
-						severity = 1;
-					if(-1 !== val.indexOf('WARNING'))
-						severity = 2;
-					if(-1 !== val.indexOf('FAILED'))
-						severity = 3;
-					if(-1 !== val.indexOf('DOWN'))
-						severity = 3;
-					$(this).parent().find('td.severity').html(severity);
-				});
-				$(".resultTable").tablesorter({sortList: [[2,1],[0,0]]});
-				$('#loadmessage').hide();
-			});
-		}
-	});
-}
-
-views.NetmapView.prototype.update = function(params) {
-	clean();
-	if(!("h" in params) || (params.h === "")) {
-		this.listHosts(params);
-		return;
-	}
-
-	if(!("nt" in params) || (params.nt === "")) {
-		setLocationHash({
-			h: params.h?params.h:Object.keys(hosts)[0],
-			nt: params.nt?params.nt:'TCP connection'
-		});
-		return;
-	}
+renderers.netmap.prototype.render = function(id, data, params) {
 
 	$('#row2').html('<div style="height:'+$(window).height()+'px;">'+
 					'<div class="split split-horizontal" id="netmap" style="border:1px solid #aaa;background:white;"/>' +
