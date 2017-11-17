@@ -12,7 +12,7 @@ renderers.netrad.prototype.render = function(id, data, params) {
 	$(id).append('<div id="networkSelectedName"><i>Hover over names to view FQDNs and click to see connection details.</i></div><div id="netgraph"/>');
 
 	// FIXME: link to mbostock example id
-	var diameter = $(window).height(),
+	var diameter = ($(window).width()>$(window).height()?$(window).width():$(window).height()),
 		radius = diameter / 2,
 		innerRadius = radius - 150;
 	var cluster = d3.layout.cluster()
@@ -21,7 +21,7 @@ renderers.netrad.prototype.render = function(id, data, params) {
 	var bundle = d3.layout.bundle();
 	var line = d3.svg.line.radial()
 		.interpolate("bundle")
-		.tension(.85)
+		.tension(0.85)
 		.radius(function(d) { return d.y; })
 		.angle(function(d) { return d.x / 180 * Math.PI; });
 	var svg = d3.select("#netgraph").append("svg")
@@ -33,7 +33,6 @@ renderers.netrad.prototype.render = function(id, data, params) {
 		node = svg.append("g").selectAll(".node");
 
 	var classes = [];
-	var prevHost = "";
 	var i = 0, overflow = 0;
 	var selectedHosts = {};
 	var hostLimit = 200;
@@ -66,13 +65,12 @@ renderers.netrad.prototype.render = function(id, data, params) {
 	classes.push(selectedHosts['Not_Shown']);
 
 	if(overflow)
-		$('#loadmessage i').html("Only displaying the first "+hostLimit+" of "+filteredHosts.length+" hosts in this filter/selection. Please choose a smaller group!");
+		$('#loadmessage i').html("Only displaying the first "+hostLimit+" of "+hostsWithConnections.length+" hosts in this filter/selection. Please choose a smaller group!");
 	else
 		$('#loadmessage').hide();
 
 	$.each(selectedHosts, function(host, hostData) {
 	    // get connections for these hosts
-		var connections = [];
 		$.each(data.results, function(i, item) {
 			if(item.host == host) {
 				var resolved=resolveIp(item.rn);
@@ -105,7 +103,7 @@ renderers.netrad.prototype.render = function(id, data, params) {
 	link = link
 	  .data(bundle(links))
 	  .enter().append("path")
-	  .each(function(d) { d.source = d[0], d.target = d[d.length - 1]; })
+	  .each(function(d) { d.source = d[0]; d.target = d[d.length - 1]; })
 	  .attr("class", "link")
 	  .attr("d", line);
 	node = node
