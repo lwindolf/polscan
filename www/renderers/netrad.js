@@ -11,7 +11,7 @@ renderers.netrad.prototype.render = function(id, data, params) {
 	$('#loadmessage i').html("Loading...");
 	$(id).append('<div id="networkSelectedName"><i>Hover over names to view FQDNs and click to see connection details.</i></div><div id="netgraph"/>');
 
-	// FIXME: link to mbostock example id
+	// http://mbostock.github.io/d3/talk/20111116/#17
 	var diameter = ($(window).width()>$(window).height()?$(window).width():$(window).height()),
 		radius = diameter / 2,
 		innerRadius = radius - 150;
@@ -65,7 +65,7 @@ renderers.netrad.prototype.render = function(id, data, params) {
 	classes.push(selectedHosts['Not_Shown']);
 
 	if(overflow)
-		$('#loadmessage i').html("Only displaying the first "+hostLimit+" of "+hostsWithConnections.length+" hosts in this filter/selection. Please choose a smaller group!");
+		$('#loadmessage i').html("Only displaying the first "+hostLimit+" of "+Object.keys(hostsWithConnections).length+" hosts in this filter/selection. Please choose a smaller group!");
 	else
 		$('#loadmessage').hide();
 
