@@ -274,6 +274,36 @@ td.groupByValue, td.message {
 #overviewCalendar table {
 	height:222px;
 }
-#overviewCalendar td {
+#overviewCalendar td { 		
 	font-size: 1.2em;
+}
+
+#row1, #row2 {
+	position: relative;
+	clear:both;
+}
+
+.live {
+	z-index:20;
+	position: absolute;
+	top: 12px;
+	left: 12px;
+	height:auto;
+	width:400px;
+}
+
+.liveLabel {
+	color: black !important;
+	border: 1px solid gray;
+	padding-left: 12px;
+	padding-right: 12px;
+}
+
+table.probes, table.probes td {
+	border: 1px solid gray;
+	border-collapse: collapse;
+}
+
+table.probes td {
+	padding: 3px 12px;
 }

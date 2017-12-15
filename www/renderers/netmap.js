@@ -127,6 +127,103 @@ renderers.netmap.prototype.addGraphNode = function(service, direction) {
 	}
 }
 
+renderers.netmap.prototype.applySeverity = function(str, severity) {
+	if(undefined !== severity) {
+		if('critical' in severity && str.match("("+severity.critical+")"))
+			return "<span class='FAILED'>"+str+"</span>";
+		if('warning' in severity && str.match("("+severity.warning+")"))
+			return "<span class='WARNING'>"+str+"</span>";
+	}
+	return str;
+}
+
+renderers.netmap.prototype.renderProbe = function(probeResult) {
+    var view = this;
+
+	if(undefined === probeResult['render'])
+		return probeResult.stdout;
+
+    try {
+		if(probeResult['render']['type'] === 'table') {
+			var result = "<table class='probes'><tbody>";
+			var columnSplit = new RegExp(probeResult['render']['split']);
+			var lines = probeResult.stdout.split(/\n/);
+			lines.forEach(function(l) {
+				result += "<tr><td>";
+				result += l.split(columnSplit)
+                           .map(function(str) {
+								return view.applySeverity(str, probeResult['render']['severity']);
+							})
+                           .join("</td><td>");
+				result += "</td></tr>";
+			});
+			result += "</tbody></table";
+			return result;
+		}
+		if(probeResult['render']['type'] === 'lines') {
+			return probeResult.stdout
+                   .split(/\n/)
+                   .map(function(str) {
+						return view.applySeverity(str, probeResult['render']['severity']);
+					})
+                   .join('<br/>');
+        }
+	} catch(e) {
+		console.log(e);
+		return "Rendering error!";
+	}
+}
+
+renderers.netmap.prototype.monitoringErrorCb = function(e) {
+	$('.liveLabel.Monitoring').addClass('FAILED');
+	$('.liveLabel.Monitoring').prop('title', 'Failed: '+e);
+}
+
+renderers.netmap.prototype.probeErrorCb = function(e) {
+	$('.liveLabel.Probes').addClass('FAILED');
+	$('.liveLabel.Probes').prop('title', 'Failed: '+e);
+}
+
+/* probe node infos using the probe API */
+renderers.netmap.prototype.probeResultCb = function(probe, host, res) {
+	var id = "inventoryTable";
+
+	if(0 === res.stdout.length)
+		return;
+
+	if(!$("#"+id+" .probes").length) {
+			$('#'+id+' tbody').prepend("<tr class='probes'><th>Live Probes</th></tr>");
+	}
+
+	$('.liveLabel.Probes').addClass('OK');
+
+	if(probe !== "netstat")	{		// Do not render netstat table in inventory bar
+		var rendered = "<tr id='probe_result_"+probe+"'><td style='overflow-x:auto;width:300px;' class='"+probe+"'><b>"+(res["name"]?res["name"]:probe)+"</b><br/>"+view.current.renderer.renderProbe(res)+"</td></tr>";
+		// FIXME: somehow sort problems to the top!
+		$('#'+id+' tr.probes').after(rendered);
+	}
+}
+
+renderers.netmap.prototype.overlayLive = function(host, forced = false) {
+	var r = this;
+
+	if(!isLive() && false === forced) {
+		$('#row1').append('<div class="live"><input type="button" value="Switch To Live Mode"/></div>');
+		$('#row1 .live input').click(function() {
+			r.overlayLive(host, true);
+		});
+		return;
+	}
+
+	$('#row1 .live').remove();
+	$('#row1').append('<div class="live">Live: <span class="liveLabel Monitoring">Monitoring</span> <span class="liveLabel Probes">Probes</span></div>');
+
+	var p = new ProbeAPI();
+	p.start(host, r.probeResultCb, r.probeErrorCb);
+
+	overlayMonitoring(host, "inventoryTable", false, undefined, r.monitoringErrorCb);
+};
+
 renderers.netmap.prototype.addHost = function() {
 	var view = this;
 	var host = this.currentNode;
@@ -242,8 +339,7 @@ renderers.netmap.prototype.addHost = function() {
 			});
 		});
 
-		if(isLive()) 
-			overlayMonitoring(host, "inventoryTable", false);
+		view.overlayLive(host);
 	});
 }
 
@@ -251,7 +347,7 @@ renderers.netmap.prototype.render = function(id, data, params) {
 
 	$('#row2').html('<div style="height:'+$(window).height()+'px;">'+
 					'<div class="split split-horizontal" id="netmap" style="border:1px solid #aaa;background:white;"/>' +
-	                '<div class="split split-horizontal" id="inv"><table id="inventoryTable" class="resultTable tablesorter"><thead><tr id="tr_ninv"><th>Network Inventory</th></tr></thead><tbody/></table></div>'+
+	                '<div class="split split-horizontal" id="inv"><table id="inventoryTable" class="resultTable tablesorter"><tbody><tr id="tr_ninv"><th>Network Inventory</th></tr></tbody></table></div>'+
 					'</div>'+
 	                '<table id="netMapTable" class="resultTable tablesorter"><thead><tr><th>Scope</th><th>Local Name</th><th>Local Transport</th><th>Remote Name</th><th>Remote Transport</th><th>In/Out</th><th>Count</th></tr></thead><tbody/></table>'
 	);

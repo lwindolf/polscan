@@ -1,3 +1,4 @@
+// vim: set ts=4 sw=4: 
 var http = require("http"),
     https = require("https"),
     express = require("express"),
@@ -6,10 +7,16 @@ var http = require("http"),
     fs = require("fs"),
     app = express(),
     promise = require("promise"),
+    net = require("net"),
     StatefulProcessCommandProxy = require("stateful-process-command-proxy");
 
 var config = require('../etc/backend-config.json');
 var probes = require('../etc/probes.json');
+
+process.on('uncaughtException', function(err) {
+  // dirty catch of broken SSH pipes
+  console.log(err.stack);
+});
 
 // Query PuppetDB API
 var puppetdb_rest = undefined;
@@ -69,57 +76,97 @@ icinga2_rest = {
 }
 
 // Remote server probe API
+
+function get_probes(request, response) {
+   response.writeHead(200, {'Content-Type': 'application/json'});
+
+   // Return all probes and initial flag so a frontend knows
+   // where to start
+   var output = {};
+   Object.keys(probes).forEach(function(probe) {
+       var p = probes[probe];
+       output[probe] = {
+           name     : p.name,
+           initial  : p.initial
+       };
+   });
+   response.end(JSON.stringify(output));
+}
+
 function probe(request, response) {
 
    var probe = request.params.probe;
    var host = request.params.host;
 
-   if(!(probe in probes)) {
-      response.writeHead(404, {'Content-Type': 'application/json'});
-      response.end(JSON.stringify({error:'No such probe'}));
+   try {
+	   if(!(probe in probes)) {
+		  response.writeHead(404, {'Content-Type': 'application/json'});
+		  response.end(JSON.stringify({error:'No such probe'}));
+		  return;
+	   }
+	   
+	   var cmd = probes[probe].command;
+	   var proxy = new StatefulProcessCommandProxy(
+		{
+		  name: "proxy_"+host,
+		  max: 1,
+		  min: 1,
+		  idleTimeoutMS: 15000,
+
+		  logFunction: function(severity,origin,msg) {
+		      //console.log(severity.toUpperCase() + " " +origin+" "+ msg);
+		  },
+
+		  processCommand: '/usr/bin/ssh',
+		  processArgs:  [host],
+		  processRetainMaxCmdHistory : 0,
+
+		  processInvalidateOnRegex :
+		      {
+		        'stderr':[{regex:'.*error.*',flags:'ig'}]
+		      },
+
+		  processCwd : './',
+		  processUid : null,
+		  processGid : null,
+		  initCommands : ['LANG=C;echo'],	// to catch banners and pseudo-terminal warnings
+
+		  validateFunction: function(processProxy) {
+		      return processProxy.isValid();
+		  },
+	   });
+
+	   proxy.executeCommands([cmd]).then(function(res) {
+		   response.writeHead(200, {'Content-Type': 'application/json'});
+
+		   var msg = {
+		       name   : probe,
+		       stdout : res[0].stdout,
+		       stderr : res[0].stderr,
+		       next   : []
+		   };
+		   if('name'   in probes[probe]) msg['name']   = probes[probe].name;
+		   if('render' in probes[probe]) msg['render'] = probes[probe].render;
+
+		   // Suggest followup probes
+		   for(p in probes) {
+		      if(probes[p]['if'] === probe && -1 !== res[0].stdout.indexOf(probes[p]['matches']))
+			msg['next'].push(p);
+		   }
+
+		  response.end(JSON.stringify(msg));
+	   }).catch(function(error) {
+		  response.writeHead(422, {'Content-Type': 'application/json'});
+		  response.end(JSON.stringify({"error":e}));
+		  done(e);
+		  return;
+	   });
+   } catch(e) {
+      response.writeHead(422, {'Content-Type': 'application/json'});
+      response.end(JSON.stringify({"error":e}));
+      done(e);
       return;
    }
-   
-   var cmd = probes[probe].command;
-   var proxy = new StatefulProcessCommandProxy(
-    {
-      name: "proxy_"+host,
-      max: 1,
-      min: 1,
-      idleTimeoutMS: 15000,
-
-      logFunction: function(severity,origin,msg) {
-          console.log(severity.toUpperCase() + " " +origin+" "+ msg);
-      },
-
-      processCommand: '/usr/bin/ssh',
-      processArgs:  [host],
-      processRetainMaxCmdHistory : 0,
-
-      processInvalidateOnRegex :
-          {
-            'stderr':[{regex:'.*error.*',flags:'ig'}]
-          },
-
-      processCwd : './',
-      processUid : null,
-      processGid : null,
-      initCommands : ['LANG=C;echo'],	// to catch banners and pseudo-terminal warnings
-
-      validateFunction: function(processProxy) {
-          return processProxy.isValid();
-      },
-   });
-
-   proxy.executeCommands(['hostname',cmd]).then(function(res) {
-      response.writeHead(200, {'Content-Type': 'application/json'});
-      // FIXME really process res, not just sending it
-      response.end(JSON.stringify(res));
-   }).catch(function(error) {
-      console.log("proxy failed:"+error);
-      response.writeHead(422, {'Content-Type': 'application/json'});
-      response.end(JSON.stringify({"error":error}));
-   });
 }
 
 // Query Icinga2 API
@@ -153,6 +200,12 @@ function static_content(type, path, response) {
       response.end("File not found");
    }
 }
+
+// Routing
+
+app.get('/api/probes', function(req, res) {
+   get_probes(req, res);
+});
 
 app.get('/api/probe/:probe/:host', function(req, res) {
    probe(req, res);

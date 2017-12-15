@@ -10,6 +10,8 @@
 		<script type="text/javascript" src="polscan_view.js"></script>
 		<script type="text/javascript" src="templates.js"></script>
 		<script type="text/javascript" src="group_list.js"></script>
+		<script type="text/javascript" src="api.js"></script>
+		<script type="text/javascript" src="probeapi.js"></script>
 		<script type="text/javascript" src="lib/d3.min.js"></script>
 		<script type="text/javascript" src="lib/dagre.min.js"></script>
 		<script type="text/javascript" src="lib/dagre-d3.min.js"></script>
@@ -549,7 +551,7 @@ a.resolve {
 				$('#errors').show();
 			}
 
-			function overlayMonitoring(host, alertTableId, append, cb) {
+			function overlayMonitoring(host, alertTableId, append, cb, errorcb) {
 				// FIXME: do not be icinga specific here
 				getAPI("icinga2", function(data) {
 					$.each(data.results, function(i, d) {
@@ -576,36 +578,10 @@ a.resolve {
 							$('#host_'+id).append(" <span class='"+severity+"'>"+name+'</span>');
 					});
 					cb();
-				 })
+				 }, errorcb)
 			}
 
-			function getAPI(name, callback, errorcb, params) {
-				var cacheName = "api_"+ name.replace('-', '_');
-				if(undefined !== params) {
-					name += "?" + params.map(function(obj) {
-						var k = Object.keys(obj)[0];
-						return k + "=" + obj[k];
-					}).join("&");
-				}
 
-				if(resultCache[cacheName]) {
-					console.log("Using API result '"+name+"' from cache");
-					callback(resultCache[cacheName]);
-					return;
-				}
-
-				return $.getJSON("/api/" + name, {})
-				.done(function(data) {
-		                	resultCache[cacheName] = data;
-					callback(resultCache[cacheName]);
-				})
-				.fail(function(j, t, e) {
-					if(errorcb)
-						errorcb(j, t, e);
-					else
-						error('Fetching API results for "'+name+'" failed!?<br/><br/>Exception: ' + e);
-				}).promise();
-			}
 
 			function getDataUrl(baseUrl, name, callback, errorcb) {
 				var cacheName = name.replace('-', '_');
