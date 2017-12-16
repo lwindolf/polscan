@@ -150,6 +150,7 @@ renderers.netmap.prototype.probeResultCb = function(probe, host, res) {
 /* render connections into connection graph */
 renderers.netmap.prototype.probeConnectionsResultCb = function(probe, host, res) {
 	var listen_port_to_program = {};
+	var connection_ids = {};
 
 	// Filter LISTEN and localhost inter-connections and prepare a list
 	// of LISTEN ports to determine connection direction
@@ -170,24 +171,50 @@ renderers.netmap.prototype.probeConnectionsResultCb = function(probe, host, res)
 
 	});
 
-	// FIXME: reduce high ports
-	// FIXME: reduce duplicate edges
-
 	view.current.renderer.addConnections(filtered.map(function(l) {
 		var a = l.split(/\s+/);
 		var hostRe = /^(.+):[^:]+$/;
 		var portRe = /.+:([^:]+)$/;
-		var lt = a[3].replace(portRe, "$1");
+		var ln  = a[3].replace(hostRe, "$1");
+		var ltn = a[3].replace(portRe, "$1");
+		var rn  = a[4].replace(hostRe, "$1");
+		var rtn = a[4].replace(portRe, "$1");
+		var scope = a[6].replace(/[\/0-9]+/, "");
+
+		// fuzzy logic: collapse client ports
+		if(ltn > 1024 && undefined === listen_port_to_program[ltn])
+			ltn = 'high';
+		else
+			direction = 'in';
+
+		if(rtn > 1024)
+			rtn = 'high';
+
+		// Add process info to TIME_WAIT listings
+		if(scope === '-' && listen_port_to_program[ltn] !== undefined)
+			scope = listen_port_to_program[ltn];
+
 		return {
-			scope : a[6].replace(/[\/0-9]+/, ""),
-			ln    : a[3].replace(hostRe, "$1"),
-			ltn   : lt,
-			rn    : a[4].replace(hostRe, "$1"),
-			rtn   : a[4].replace(portRe, "$1"),
-			dir   : (listen_port_to_program[lt] !== undefined?"in":"out"),
+			"scope" : scope,
+			"ln"    : ln,
+			"ltn"   : ltn,
+			"rn"    : rn,
+			"rtn"   : rtn,
+			dir   : (listen_port_to_program[ltn] !== undefined?"in":"out"),
 			cnt   : 1
 		};
-	}));
+	}).reduce(function(list, l) {
+		// reduce duplicate edges
+		var key = JSON.stringify(l);
+		if (connection_ids[key] === undefined) {
+			connection_ids[key] = l;
+			list.push(l);
+		} else {
+			connection_ids[key].cnt++;
+		}
+
+		return list;
+	}, []));
 }
 
 /* probe node infos using the probe API */
