@@ -5,7 +5,7 @@
 
 renderers.netmap = function netmapRenderer() {
 	this.netMapData = {};
-	this.previousNode;
+	this.previousNode = undefined;
 };
 
 function lookupIp(ip) {
@@ -137,19 +137,56 @@ renderers.netmap.prototype.probeErrorCb = function(e) {
 	$('.liveLabel.Probes').prop('title', 'Failed: '+e);
 }
 
-/* probe node infos using the probe API */
+/* render probe results in inventory table */
 renderers.netmap.prototype.probeResultCb = function(probe, host, res) {
 
-	if(probe === "netstat")	{
-		// Do not render netstat table in inventory bar
-	} else {
+	// Do not render netstat table in inventory bar
+	if(probe !== "netstat")
 		probeRenderAsRow("inventoryTable", probe, res);
-	}
-
 
 	$('.liveLabel.Probes').addClass('OK');
 }
 
+/* render connections into connection graph */
+renderers.netmap.prototype.probeConnectionsResultCb = function(probe, host, res) {
+	var listen_port_to_program = {};
+
+	// Filter LISTEN and localhost inter-connections and prepare a list
+	// of LISTEN ports to determine connection direction
+	var filtered = res.stdout.split(/\n+/).filter(function(l) {
+		var line=l.split(/\s+/);
+		if(line.length < 6)
+			return false;
+		// FIXME: IPv6 local IPs
+		if(line[3].indexOf('127') === 0 &&
+		   line[4].indexOf('127') === 0)
+			return false;
+		if(line[5] === 'LISTEN') {
+			if(undefined !== line[6])
+				listen_port_to_program[line[3].split(/:+/)[1]] = line[6].split(/\//)[1];
+			return false;
+		}
+		return line[0].indexOf('tcp') === 0;
+
+	});
+
+	console.log(filtered.map(function(l) {
+		var a = l.split(/\s+/);
+		var hostRe = /^(.+):[^:]+$/;
+		var portRe = /.+:([^:]+)$/;
+		var lt = a[3].replace(portRe, "$1");
+		return {
+			ltn : a[3].replace(hostRe, "$1"),
+			lt  : lt,
+			rtn : a[4].replace(hostRe, "$1"),
+			rn  : a[4].replace(portRe, "$1"),
+			dir : (listen_port_to_program[lt] !== undefined?"in":"out"),
+			cnt : 1
+		};
+	}));
+}
+
+/* probe node infos using the probe API */
 renderers.netmap.prototype.overlayLive = function(host, forced = false) {
 	var r = this;
 
@@ -165,105 +202,112 @@ renderers.netmap.prototype.overlayLive = function(host, forced = false) {
 	$('#row1').append('<div class="live">Live: <span class="liveLabel Monitoring">Monitoring</span> <span class="liveLabel Probes">Probes</span></div>');
 
 	var p = new ProbeAPI();
+	/* Start default probing */
 	p.start(host, r.probeResultCb, r.probeErrorCb);
+
+	/* Also start full connection probe explicitely */
+	p.probe('netstat-a', r.probeConnectionsResultCb, r.probeErrorCb);
 
 	overlayMonitoring(host, "inventoryTable", false, undefined, r.monitoringErrorCb);
 };
 
+renderers.netmap.prototype.addConnections = function(c) {
+	var view = this;
+	var d = this.netMapData = {
+		nodeToId: [],
+		nodes: [{label: "", class: 'null'}],
+		links: []
+	};
+
+	var portToProgram = new Array();
+	var connByService = new Array();
+
+	$('#netMapTable tbody').empty();
+
+	$.each(c, function(i, item) {
+		// Resolve program for close-wait, time-wait listings
+		if(item.scope !== "-" && !(item.ltn in portToProgram))
+			portToProgram[item.ltn] = item.scope;
+		if(item.scope === "-" && (item.ltn in portToProgram))
+			item.scope = portToProgram[item.ltn];
+
+		// Reduce connections to per service connections with ids like
+		//   high:::java:::high
+		//   high:::apache2:::80
+		//   ...
+		id = item.ltn+":::"+item.scope+":::"+item.rtn;
+		var s;
+		if(item.scope !== "-")
+			s = item.scope;
+		else
+			return; 	// displaying unknown procs is just useless
+
+		if(!(id in connByService))
+			connByService[id] = { service: s, "port": item.ltn, in: [], out: [], outPorts: [] };
+
+		var resolvedRemote = resolveIp(item.rn);
+		if(item.dir === 'in') {
+			connByService[id].out.push(resolvedRemote);
+		} else {
+			connByService[id].in.push(resolvedRemote);
+			connByService[id].outPorts.push(item.rtn);
+		}
+
+		var remoteName;
+		if(resolvedRemote.match(/^(10\.|172\.|192\.)/))
+			remoteName = resolvedRemote;
+		else if(resolvedRemote.match(/^[0-9]/))
+			remoteName = '<a class="resolve" href="javascript:lookupIp(\''+resolvedRemote+'\')" title="Click to resolve IP">'+resolvedRemote+'</a>';
+		else
+			remoteName = '<a class="host_'+resolvedRemote.replace(/[.\-]/g,'_')+'" href="#view=netmap&h='+resolvedRemote+'">'+resolvedRemote+'</a>';
+
+		$('#netMapTable tbody').append('<tr>'+
+			'<td>'+item.scope+'</td>' +
+			'<td>'+item.ln+'</td>' +
+			'<td>'+item.ltn+'</td>' +
+			'<td>'+remoteName+'</td>' +
+			'<td>'+item.rtn+'</td>' +
+			'<td>'+item.dir+'</td>' +
+			'<td>'+item.cnt+'</td>' +
+		'</tr>');
+	});
+
+	// We need a fake node to connect as input for programs without
+	// incoming connections to force the program nodes to the 2nd rank
+	// we will hide this node and its links using CSS
+	for(var id in connByService) {
+		var program = connByService[id].service;
+
+		if(!(program in d.nodeToId)) {
+			var nId = d.nodes.length;
+			d.nodeToId[program] = nId;
+			d.nodes.push({"label": program, class: 'local'});
+		}
+		view.addGraphNode(connByService[id], "in");
+		view.addGraphNode(connByService[id], "out");
+	}
+
+	view.updateGraph();
+
+	$("#netMapTable").tablesorter({sortList: [[1,1],[2,1],[3,1]]});
+}
+
 renderers.netmap.prototype.addHost = function() {
 	var view = this;
 	var host = this.currentNode;
-	var found = false;
-	var d = this.netMapData = {
-		nodeToId: [],
-		nodes: [],
-		links: []
-	};
 
 	console.log("addHostToNetGraph "+host);
 
 	// get connections for this host
 	getData("netedge "+this.neType, function(data) {
-		var portToProgram = new Array();
-		var connByService = new Array();
-		$.each(data.results, function(i, item) {
-			if(item.host == host) {
-				found = true;
-
-				// Resolve program for close-wait, time-wait listings
-				if(item.scope !== "-" && !(item.ltn in portToProgram))
-					portToProgram[item.ltn] = item.scope;
-				if(item.scope === "-" && (item.ltn in portToProgram))
-					item.scope = portToProgram[item.ltn];
-
-				// Reduce connections to per service connections with ids like
-				//   high:::java:::high
-				//   high:::apache2:::80
-				//   ...
-				id = item.ltn+":::"+item.scope+":::"+item.rtn;
-				var s;
-				if(item.scope !== "-")
-					s = item.scope;
-				else
-					return; 	// displaying unknown procs is just useless
-
-				if(!(id in connByService))
-					connByService[id] = { service: s, "port": item.ltn, in: [], out: [], outPorts: [] };
-
-				var resolvedRemote = resolveIp(item.rn);
-				if(item.dir === 'in') {
-					connByService[id].out.push(resolvedRemote);
-				} else {
-					connByService[id].in.push(resolvedRemote);
-					connByService[id].outPorts.push(item.rtn);
-				}
-
-				var remoteName;
-				if(resolvedRemote.match(/^(10\.|172\.|192\.)/))
-					remoteName = resolvedRemote;
-				else if(resolvedRemote.match(/^[0-9]/))
-					remoteName = '<a class="resolve" href="javascript:lookupIp(\''+resolvedRemote+'\')" title="Click to resolve IP">'+resolvedRemote+'</a>';
-				else
-					remoteName = '<a class="host_'+resolvedRemote.replace(/[.\-]/g,'_')+'" href="#view=netmap&h='+resolvedRemote+'">'+resolvedRemote+'</a>';
-
-				$('#netMapTable tbody').append('<tr>'+
-					'<td>'+item.scope+'</td>' +
-					'<td>'+item.ln+'</td>' +
-					'<td>'+item.ltn+'</td>' +
-					'<td>'+remoteName+'</td>' +
-					'<td>'+item.rtn+'</td>' +
-					'<td>'+item.dir+'</td>' +
-					'<td>'+item.cnt+'</td>' +
-				'</tr>');
-			}
+		var filtered = data.results.filter(function(item) {
+			return item.host === host;
 		});
 
-		if(found) {
-			// We need a fake node to connect as input for programs without
-			// incoming connections to force the program nodes to the 2nd rank
-			// we will hide this node and its links using CSS
-			//
-			// Node id is 0
-			d.nodes.push({"label": "", class: 'null'});
-
-			for(var id in connByService) {
-				var program = connByService[id].service;
-
-				if(!(program in d.nodeToId)) {
-					var nId = d.nodes.length;
-					d.nodeToId[program] = nId;
-					d.nodes.push({"label": program, class: 'local'});
-				}
-				view.addGraphNode(connByService[id], "in");
-				view.addGraphNode(connByService[id], "out");
-			}
-
-			view.updateGraph();
-
-			$("#netMapTable").tablesorter({sortList: [[1,1],[2,1],[3,1]]});
-		} else {
+		if(filtered.length === 0)
 			error("Sorry! No connection data available for "+host+" on this day.");
-		}
+		else
+			view.addConnections(filtered);
 
 		// Present network inventory
 		// FIXME: rather have a getInventories() method

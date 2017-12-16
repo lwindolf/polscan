@@ -6,7 +6,7 @@
         "initial": "True"
    },
    "netstat": {
-	"name"   : "Network Connections",
+	"name"   : "Listening Services",
         "command": "(sudo -n netstat -tlpn 2>/dev/null || netstat -tln) | grep -v 'Active Internet'",
         "refresh": 30,
         "initial": "True",
@@ -14,6 +14,11 @@
              "type" : "table",
              "split": "\\s+"
         }
+   },
+   "netstat-a": {
+	"name"   : "All Connections",
+        "command": "sudo -n netstat -tlpa --numeric-hosts 2>/dev/null | egrep -v '^(Active Internet|Proto)'",
+        "refresh": 30
    },
    "apache": {
 	"name"   : "Apache vhosts",
