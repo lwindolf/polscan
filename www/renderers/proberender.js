@@ -20,7 +20,7 @@ function probeRenderResult(probeResult) {
 
     try {
 		if(probeResult['render']['type'] === 'table') {
-			var result = "<table class='probes'><tbody>";
+			var result = "<div style='overflow:scroll;width:100%'><table class='probes'><tbody>";
 			var columnSplit = new RegExp(probeResult['render']['split']);
 			var lines = probeResult.stdout.split(/\n/);
 			lines.forEach(function(l) {
@@ -32,7 +32,7 @@ function probeRenderResult(probeResult) {
                            .join("</td><td>");
 				result += "</td></tr>";
 			});
-			result += "</tbody></table";
+			result += "</tbody></table></div>";
 			return result;
 		}
 		if(probeResult['render']['type'] === 'lines') {
@@ -58,7 +58,7 @@ function probeRenderAsRow(id, probe, res) {
 			$('#'+id+' tbody').prepend("<tr class='probes'><th>Live Probes: </th></tr>");
 
 	// Add a result row
-	var rendered = "<tr id='probe_result_"+toId(probe)+"'><td style='overflow-x:auto;width:300px;' class='"+probe+"'><b>"+(res["name"]?res["name"]:probe)+"</b><br/>"+probeRenderResult(res)+"</td></tr>";
+	var rendered = "<tr id='probe_result_"+toId(probe)+"'><td style='overflow-x:auto' class='"+probe+"'><b>"+(res["name"]?res["name"]:probe)+"</b><br/>"+probeRenderResult(res)+"</td></tr>";
 	$('#'+id+' tr.probes').after(rendered);
 
 	// Add label to header
@@ -83,6 +83,9 @@ function probeRenderAsRow(id, probe, res) {
 	} else {
 		$('#probe_label_'+toId(probe)).addClass('shown');
 	}
+
+	// Ensure tables overflow correctly
+	$('#'+id+' table.probes').parent().width($('#'+id).parent().width());
 
 	// FIXME: Sort result table alphabetically and by severity
 }

@@ -21,16 +21,17 @@ function lookupIp(ip) {
 	})
 }
 
-var viewBoxX =0;
+var viewBoxX = 0;
 var viewBoxY = 0;
 
 renderers.netmap.prototype.updateGraph = function() {
+	$('#netmap').empty();
+
 	var width = $('#netmap').width();
 	var	height = $('#netmap').height();
     var svg = d3.select("#netmap").append("svg")
-        .attr("width", width)
-        .attr("height", height);
-
+		.attr("width", width)
+		.attr("height", height);
 
 	// Allow panning as suggested in by dersinces (CC BY-SA 3.0) in
 	// http://stackoverflow.com/questions/20099299/implement-panning-while-keeping-nodes-draggable-in-d3-force-layout
@@ -84,7 +85,7 @@ renderers.netmap.prototype.updateGraph = function() {
 	render(nodeArea, g);
 
 	var xCenterOffset = (svg.attr("width") - g.graph().width) / 2;
-	svg.attr("height", g.graph().height + 40);
+	nodeArea.attr('transform', 'translate(' + xCenterOffset + ',40)');
 }
 
 renderers.netmap.prototype.addGraphNode = function(service, direction) {
@@ -125,6 +126,14 @@ renderers.netmap.prototype.addGraphNode = function(service, direction) {
 		if(direction !== 'in')
 			d.links.push({source: 0, target: d.nodeToId[service.service], class: "null", weigth: 0});
 	}
+}
+
+renderers.netmap.prototype.resized = function(renderer) {
+	// Ensure tables overflow correctly
+	$('#inventoryTable table.probes').parent().width($('#inventoryTable').parent().width());
+
+	// Redraw graph
+	renderer.updateGraph();
 }
 
 renderers.netmap.prototype.monitoringErrorCb = function(e) {
@@ -229,6 +238,7 @@ renderers.netmap.prototype.overlayLive = function(host, forced = false) {
 		return;
 	}
 
+	$('#errors').hide();
 	$('#row1 .live').remove();
 	$('#row1').append('<div class="live">Live: <span class="liveLabel Monitoring">Monitoring</span> <span class="liveLabel Probes">Probes</span></div>');
 
@@ -365,6 +375,7 @@ renderers.netmap.prototype.addHost = function() {
 }
 
 renderers.netmap.prototype.render = function(id, data, params) {
+	var r = this;
 
 	$('#row2').html('<div style="height:'+$(window).height()+'px;">'+
 					'<div class="split split-horizontal" id="netmap" style="border:1px solid #aaa;background:white;"/>' +
@@ -375,8 +386,15 @@ renderers.netmap.prototype.render = function(id, data, params) {
 
 	Split(['#netmap', '#inv'], {
 		sizes: [75, 25],
-		minSize: [200, 200]
+		minSize: [200, 200],
+		onDragEnd: function() {
+			r.resized(r);
+		}
     });
+
+	$(window).resize(function() {
+		r.resized(r);
+	});
 
 	this.previousNode = params.pN;
 	this.currentNode = params.h;

@@ -302,6 +302,7 @@ td.groupByValue, td.message {
 table.probes, table.probes td {
 	border: 1px solid gray;
 	border-collapse: collapse;
+	word-wrap: normal;
 }
 
 table.probes td {
