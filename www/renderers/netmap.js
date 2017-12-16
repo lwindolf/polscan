@@ -170,18 +170,22 @@ renderers.netmap.prototype.probeConnectionsResultCb = function(probe, host, res)
 
 	});
 
-	console.log(filtered.map(function(l) {
+	// FIXME: reduce high ports
+	// FIXME: reduce duplicate edges
+
+	view.current.renderer.addConnections(filtered.map(function(l) {
 		var a = l.split(/\s+/);
 		var hostRe = /^(.+):[^:]+$/;
 		var portRe = /.+:([^:]+)$/;
 		var lt = a[3].replace(portRe, "$1");
 		return {
-			ltn : a[3].replace(hostRe, "$1"),
-			lt  : lt,
-			rtn : a[4].replace(hostRe, "$1"),
-			rn  : a[4].replace(portRe, "$1"),
-			dir : (listen_port_to_program[lt] !== undefined?"in":"out"),
-			cnt : 1
+			scope : a[6].replace(/[\/0-9]+/, ""),
+			ln    : a[3].replace(hostRe, "$1"),
+			ltn   : lt,
+			rn    : a[4].replace(hostRe, "$1"),
+			rtn   : a[4].replace(portRe, "$1"),
+			dir   : (listen_port_to_program[lt] !== undefined?"in":"out"),
+			cnt   : 1
 		};
 	}));
 }

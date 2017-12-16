@@ -320,10 +320,12 @@ table.probes td {
 .probes .probe_label.hidden {
 	border:1px solid #ddd;
 	background: #fdfdfd;
+	color: #aaa;
 }
 .probes .probe_label.hidden:hover {
 	border:1px solid #777;
 	background: #eee;
+	color: #444;
 }
 .probes .probe_label.shown {
 	border:1px solid #777;
