@@ -307,3 +307,24 @@ table.probes, table.probes td {
 table.probes td {
 	padding: 3px 12px;
 }
+
+.probes .probe_label {
+	display:inline-block;
+	padding:3px;
+	margin:1px;
+	font-weight:normal;
+	border-radius:3px;
+	cursor:pointer;
+}
+
+.probes .probe_label.hidden {
+	border:1px solid #ddd;
+	background: #fdfdfd;
+}
+.probes .probe_label.hidden:hover {
+	border:1px solid #777;
+	background: #eee;
+}
+.probes .probe_label.shown {
+	border:1px solid #777;
+}

@@ -127,53 +127,6 @@ renderers.netmap.prototype.addGraphNode = function(service, direction) {
 	}
 }
 
-renderers.netmap.prototype.applySeverity = function(str, severity) {
-	if(undefined !== severity) {
-		if('critical' in severity && str.match("("+severity.critical+")"))
-			return "<span class='FAILED'>"+str+"</span>";
-		if('warning' in severity && str.match("("+severity.warning+")"))
-			return "<span class='WARNING'>"+str+"</span>";
-	}
-	return str;
-}
-
-renderers.netmap.prototype.renderProbe = function(probeResult) {
-    var view = this;
-
-	if(undefined === probeResult['render'])
-		return probeResult.stdout;
-
-    try {
-		if(probeResult['render']['type'] === 'table') {
-			var result = "<table class='probes'><tbody>";
-			var columnSplit = new RegExp(probeResult['render']['split']);
-			var lines = probeResult.stdout.split(/\n/);
-			lines.forEach(function(l) {
-				result += "<tr><td>";
-				result += l.split(columnSplit)
-                           .map(function(str) {
-								return view.applySeverity(str, probeResult['render']['severity']);
-							})
-                           .join("</td><td>");
-				result += "</td></tr>";
-			});
-			result += "</tbody></table";
-			return result;
-		}
-		if(probeResult['render']['type'] === 'lines') {
-			return probeResult.stdout
-                   .split(/\n/)
-                   .map(function(str) {
-						return view.applySeverity(str, probeResult['render']['severity']);
-					})
-                   .join('<br/>');
-        }
-	} catch(e) {
-		console.log(e);
-		return "Rendering error!";
-	}
-}
-
 renderers.netmap.prototype.monitoringErrorCb = function(e) {
 	$('.liveLabel.Monitoring').addClass('FAILED');
 	$('.liveLabel.Monitoring').prop('title', 'Failed: '+e);
@@ -186,22 +139,15 @@ renderers.netmap.prototype.probeErrorCb = function(e) {
 
 /* probe node infos using the probe API */
 renderers.netmap.prototype.probeResultCb = function(probe, host, res) {
-	var id = "inventoryTable";
 
-	if(0 === res.stdout.length)
-		return;
-
-	if(!$("#"+id+" .probes").length) {
-			$('#'+id+' tbody').prepend("<tr class='probes'><th>Live Probes</th></tr>");
+	if(probe === "netstat")	{
+		// Do not render netstat table in inventory bar
+	} else {
+		probeRenderAsRow("inventoryTable", probe, res);
 	}
+
 
 	$('.liveLabel.Probes').addClass('OK');
-
-	if(probe !== "netstat")	{		// Do not render netstat table in inventory bar
-		var rendered = "<tr id='probe_result_"+probe+"'><td style='overflow-x:auto;width:300px;' class='"+probe+"'><b>"+(res["name"]?res["name"]:probe)+"</b><br/>"+view.current.renderer.renderProbe(res)+"</td></tr>";
-		// FIXME: somehow sort problems to the top!
-		$('#'+id+' tr.probes').after(rendered);
-	}
 }
 
 renderers.netmap.prototype.overlayLive = function(host, forced = false) {

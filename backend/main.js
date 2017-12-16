@@ -147,6 +147,7 @@ function probe(request, response) {
 		   };
 		   if('name'   in probes[probe]) msg['name']   = probes[probe].name;
 		   if('render' in probes[probe]) msg['render'] = probes[probe].render;
+		   if('type'   in probes[probe]) msg['type']   = probes[probe].type;
 
 		   // Suggest followup probes
 		   for(p in probes) {

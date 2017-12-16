@@ -12,6 +12,7 @@
 		<script type="text/javascript" src="group_list.js"></script>
 		<script type="text/javascript" src="api.js"></script>
 		<script type="text/javascript" src="probeapi.js"></script>
+		<script type="text/javascript" src="renderers/proberender.js"></script>
 		<script type="text/javascript" src="lib/d3.min.js"></script>
 		<script type="text/javascript" src="lib/dagre.min.js"></script>
 		<script type="text/javascript" src="lib/dagre-d3.min.js"></script>
@@ -549,6 +550,11 @@ a.resolve {
 			function error(text) {
 				$('#errors').html('<div class="errorbox"><b>Error:</b> '+text+'</div>');
 				$('#errors').show();
+			}
+
+			// Make a valid DOM id from a string
+			function toId(name) {
+				return name.replace(/[.\-\s+]/g, "_");
 			}
 
 			function overlayMonitoring(host, alertTableId, append, cb, errorcb) {
