@@ -9,7 +9,6 @@ function getAPI(name, callback, errorcb, params) {
 		}).join("&");
 	}
 
-	// FIXME: caching API results: not a good idea
 	return $.getJSON("/api/" + name, {})
 	.done(function(data) {
 		callback(data);
