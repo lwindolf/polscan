@@ -15,6 +15,26 @@
              "split": "\\s+"
         }
    },
+   "last": {
+	"name"   : "Recent Logins",
+	"command": "last",
+        "render" : {
+             "type" : "table",
+             "split": "\\s+"
+        }
+   },
+   "who": {
+	"name"   : "Active Users",
+	"command": "who",
+	"initial": "True",
+        "refresh": 30,
+        "render" : {
+             "type" : "lines",
+             "severity": {
+                "warning" : ".+"
+	     }
+        }
+   },
    "netstat-a": {
 	"name"   : "All Connections",
         "command": "sudo -n netstat -tlpa --numeric-hosts 2>/dev/null | egrep -v '^(Active Internet|Proto)'",

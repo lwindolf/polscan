@@ -1,5 +1,5 @@
 // vim: set ts=4 sw=4: 
-/* Generic helper to render probe info */
+/* Generic helper to render probe info into a table */
 
 /* Compute probe result severity */
 function probeResultApplySeverity(str, severity) {
@@ -51,15 +51,20 @@ function probeRenderResult(probeResult) {
 
 /* Render a probe result into a target table and add a header */
 function probeRenderAsRow(id, probe, res) {
+	var label  = "#probe_label_" +toId(probe);
+	var result = "#probe_result_"+toId(probe);
+
 	if(0 === res.stdout.length)
 		return;
 
 	if(!$("#"+id+" .probes").length)
-			$('#'+id+' tbody').prepend("<tr class='probes'><th>Live Probes: </th></tr>");
+		$('#'+id+' tbody').prepend("<tr class='probes'><th>Live Probes: </th></tr>");
+	if(!$(result).length)
+		$('#'+id+' .probes').after("<tr id='probe_result_"+toId(probe)+"'>");
 
 	// Add a result row
-	var rendered = "<tr id='probe_result_"+toId(probe)+"'><td style='overflow-x:auto' class='"+probe+"'><b>"+(res["name"]?res["name"]:probe)+"</b><br/>"+probeRenderResult(res)+"</td></tr>";
-	$('#'+id+' tr.probes').after(rendered);
+	var rendered = "<td style='overflow-x:auto' class='"+probe+"'><b>"+(res["name"]?res["name"]:probe)+"</b><br/>"+probeRenderResult(res)+"</td>";
+	$(result).append(rendered);
 
 	// Add label to header
 	var severity = '';
@@ -69,19 +74,27 @@ function probeRenderAsRow(id, probe, res) {
 	if(-1 !== rendered.indexOf('FAILED'))
 		severity = 'FAILED';
 
-	$('#'+id+' tr.probes th').append("<span id='probe_label_"+toId(probe)+"' class='probe_label "+severity+"'>"+probe+"</span>");
+	if(!$(label).length) {
+		$('#'+id+' tr.probes th').append("<span id='probe_label_"+toId(probe)+"' class='probe_label "+severity+"'>"+probe+"</span>");
 
-	// Hide probe results without severity or of type server
-	if(severity === '' && res['type'] != 'service') {
-		$('#probe_result_'+toId(probe)).hide();
-		$('#probe_label_'+toId(probe)).addClass('hidden');
-		$('#probe_label_'+toId(probe)).click(function() {
-			$('#probe_label_'+toId(probe)).removeClass('hidden');
-			$('#probe_label_'+toId(probe)).addClass('shown');
-			$('#probe_result_'+toId(probe)).show();
-		});
-	} else {
-		$('#probe_label_'+toId(probe)).addClass('shown');
+		// Initially hide probe results without severity or of type server
+		if(severity === '' && res['type'] != 'service') {
+			$(result).hide();
+			$(label).addClass('hidden');
+			$(label).click(function() {
+				$(label).removeClass('hidden');
+				$(label).addClass('shown');
+				$(result).show();
+			});
+		} else {
+			$(label).addClass('shown');
+		}
+	}
+
+	// Show probe results without severity or of type server
+	if(severity !== '') {
+		$(label).removeClass('hidden');
+		$(label).addClass('shown');
 	}
 
 	// Ensure tables overflow correctly

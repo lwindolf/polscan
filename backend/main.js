@@ -87,7 +87,8 @@ function get_probes(request, response) {
        var p = probes[probe];
        output[probe] = {
            name     : p.name,
-           initial  : p.initial
+           initial  : p.initial,
+           refresh  : p.refresh
        };
    });
    response.end(JSON.stringify(output));
@@ -145,14 +146,14 @@ function probe(request, response) {
 		       stderr : res[0].stderr,
 		       next   : []
 		   };
-		   if('name'   in probes[probe]) msg['name']   = probes[probe].name;
-		   if('render' in probes[probe]) msg['render'] = probes[probe].render;
-		   if('type'   in probes[probe]) msg['type']   = probes[probe].type;
+		   if('name'    in probes[probe]) msg['name']    = probes[probe].name;
+		   if('render'  in probes[probe]) msg['render']  = probes[probe].render;
+		   if('type'    in probes[probe]) msg['type']    = probes[probe].type;
 
 		   // Suggest followup probes
 		   for(p in probes) {
 		      if(probes[p]['if'] === probe && -1 !== res[0].stdout.indexOf(probes[p]['matches']))
-			msg['next'].push(p);
+				msg['next'].push(p);
 		   }
 
 		  response.end(JSON.stringify(msg));

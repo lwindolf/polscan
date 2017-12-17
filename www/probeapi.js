@@ -9,11 +9,38 @@ function ProbeAPI() {
 
 	arguments.callee._singletonInstance = this;
 
+	var a = this;
+	$.ajax({
+		dataType: "json",
+		async: false,
+		url: "/api/probes",
+		success: function(data) {
+			a.probes = data;
+		}
+	    // FIXME: error handling
+	});
+
 	// Perform a given probe and call callback cb for result processing
 	this.probe = function(name, cb, errorCb) {
 		var a = this;
+
+		a.probes[name].updating = true;
+		a.probes[name].timestamp = Date.now();
+
+		// on updates we need to use the previously stored callback
+		if(undefined === cb) {
+			cb      = a.probes[name].cb;
+			errorCb = a.probes[name].errorCb;
+		} else {
+			a.probes[name].cb      = cb;
+			a.probes[name].errorCb = errorCb;
+		}
+
 		getAPI('probe/'+name+'/'+a.host, function(res) {
 		    // FIXME: check actual response code here!
+
+			a.probes[name].updating = false;
+			a.probes[name].timestamp = Date.now();
 
 			// Always trigger follow probes, serialization is done in backend
 			for(var p in res.next) {
@@ -22,7 +49,12 @@ function ProbeAPI() {
 
 			if(undefined !== cb)
 				cb(name, a.host, res);
-		}, errorCb);	
+		}, function(e) {
+			// FIXME: use a promise instead
+			a.probes[name].updating = false;
+			a.probes[name].timestamp = Date.now();
+			errorCb(e);
+		});	
 	};
 
 	// Triggers the initial probes, all others will be handled in the
@@ -33,30 +65,30 @@ function ProbeAPI() {
             if(a.probes[p].initial)
 				a.probe(p, cb, errorCb);
         });
-
-		// FIXME: Setup update timer
 	};
 
 	// Start probing a given host, handles initial probe list fetch
 	// Ensures to stop previous host probes.
 	this.start = function(host, cb, errorCb) {
-		var a = this;
-		a.host = host;
-		a.stop();
-
-		if(undefined === a.probes) {
-			// On first call we need to fetch the probe list first
-			getAPI("probes", function(data) {
-				a.probes = data;
-				a.startProbes(cb, errorCb);
-			});
-		} else {
-			a.startProbes(cb, errorCb);
-		}
+		this.host = host;
+		this.stop();
+		this.startProbes(cb, errorCb);
+		this.update();
 	};
 
 	// Stop all probing
 	this.stop = function() {
-		// FIXME: clearInterval(a.timer);
+		clearTimeout(this.updateTimer);
+		this.probeStates = {};
+	};
+
+	this.update = function() {
+		var a = this;
+		var now = Date.now();
+		this.updateTimer = setTimeout(this.update.bind(this), 5000);		
+		$.each(this.probes, function(name, p) {
+			if(p.updating === false && p.refresh*1000 < now - p.timestamp)
+				a.probe(name)
+		});
 	};
 }
