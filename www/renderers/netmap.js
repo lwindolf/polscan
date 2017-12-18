@@ -59,7 +59,7 @@ renderers.netmap.prototype.updateGraph = function() {
 
 	$.each(this.netMapData.nodes, function(i, n) {
 		var props = { "label": n.label, "labelType": "html", "class": n.class };
-		if(n.class === 'local')
+		if(undefined !== n.class && 0 === n.class.indexOf('local'))
 			props.width = 100;
 		g.setNode(i, props);
 	});
@@ -160,6 +160,7 @@ renderers.netmap.prototype.probeResultCb = function(probe, host, res) {
 renderers.netmap.prototype.probeConnectionsResultCb = function(probe, host, res) {
 	var listen_port_to_program = {};
 	var connection_ids = {};
+	var r = view.current.renderer;
 
 	// Filter LISTEN and localhost inter-connections and prepare a list
 	// of LISTEN ports to determine connection direction
@@ -180,7 +181,7 @@ renderers.netmap.prototype.probeConnectionsResultCb = function(probe, host, res)
 
 	});
 
-	view.current.renderer.addConnections(filtered.map(function(l) {
+	r.addConnections(filtered.map(function(l) {
 		var a = l.split(/\s+/);
 		var hostRe = /^(.+):[^:]+$/;
 		var portRe = /.+:([^:]+)$/;
@@ -223,7 +224,7 @@ renderers.netmap.prototype.probeConnectionsResultCb = function(probe, host, res)
 		}
 
 		return list;
-	}, []));
+	}, []), listen_port_to_program);
 }
 
 /* probe node infos using the probe API */
@@ -252,8 +253,8 @@ renderers.netmap.prototype.overlayLive = function(host, forced = false) {
 	overlayMonitoring(host, "inventoryTable", false, undefined, r.monitoringErrorCb);
 };
 
-renderers.netmap.prototype.addConnections = function(c) {
-	var view = this;
+renderers.netmap.prototype.addConnections = function(c, listen_ports) {
+	var r = this;
 	var d = this.netMapData = {
 		nodeToId: [],
 		nodes: [{label: "", class: 'null'}],
@@ -300,7 +301,7 @@ renderers.netmap.prototype.addConnections = function(c) {
 		else if(resolvedRemote.match(/^[0-9]/))
 			remoteName = '<a class="resolve" href="javascript:lookupIp(\''+resolvedRemote+'\')" title="Click to resolve IP">'+resolvedRemote+'</a>';
 		else
-			remoteName = '<a class="host_'+resolvedRemote.replace(/[.\-]/g,'_')+'" href="#view=netmap&h='+resolvedRemote+'">'+resolvedRemote+'</a>';
+			remoteName = '<a class="host_'+resolvedRemote.replace(/[.\-]/g,'_')+'" href="#view=Network&r=netmap&h='+resolvedRemote+'">'+resolvedRemote+'</a>';
 
 		$('#netMapTable tbody').append('<tr>'+
 			'<td>'+item.scope+'</td>' +
@@ -316,7 +317,7 @@ renderers.netmap.prototype.addConnections = function(c) {
 	// We need a fake node to connect as input for programs without
 	// incoming connections to force the program nodes to the 2nd rank
 	// we will hide this node and its links using CSS
-	for(var id in connByService) {
+	$.each(Object.keys(connByService).sort(), function(i, id) {
 		var program = connByService[id].service;
 
 		if(!(program in d.nodeToId)) {
@@ -324,11 +325,27 @@ renderers.netmap.prototype.addConnections = function(c) {
 			d.nodeToId[program] = nId;
 			d.nodes.push({"label": program, class: 'local'});
 		}
-		view.addGraphNode(connByService[id], "in");
-		view.addGraphNode(connByService[id], "out");
-	}
+		r.addGraphNode(connByService[id], "in");
+		r.addGraphNode(connByService[id], "out");
+	});
 
-	view.updateGraph();
+	// Finally ensure all services are visible (even those without connections)
+	// This is to avoid them staying invisible and to have a place to add 
+	// service type probe results
+	if(undefined !== listen_ports)
+		$.each(listen_ports, function(port, program) {
+			if(!(program in d.nodeToId)) {
+				var nId = d.nodes.length;
+				d.nodeToId[program] = nId;
+				d.nodes.push({"label": program, class: 'local_unused'});
+
+				var service = { service: program, "port": port, in: [], out: [], outPorts: [] };
+				r.addGraphNode(service, "in");
+				r.addGraphNode(service, "out");
+			}
+		});
+
+	r.updateGraph();
 
 	$("#netMapTable").tablesorter({sortList: [[1,1],[2,1],[3,1]]});
 }

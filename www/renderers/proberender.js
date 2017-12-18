@@ -54,8 +54,11 @@ function probeRenderAsRow(id, probe, res) {
 	var label  = "#probe_label_" +toId(probe);
 	var result = "#probe_result_"+toId(probe);
 
-	if(0 === res.stdout.length)
+	if(0 === res.stdout.length) {
+		$(label).remove();
+		$(result).remove();
 		return;
+	}
 
 	if(!$("#"+id+" .probes").length)
 		$('#'+id+' tbody').prepend("<tr class='probes'><th>Live Probes: </th></tr>");
@@ -64,7 +67,7 @@ function probeRenderAsRow(id, probe, res) {
 
 	// Add a result row
 	var rendered = "<td style='overflow-x:auto' class='"+probe+"'><b>"+(res["name"]?res["name"]:probe)+"</b><br/>"+probeRenderResult(res)+"</td>";
-	$(result).append(rendered);
+	$(result).html(rendered);
 
 	// Add label to header
 	var severity = '';
