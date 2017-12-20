@@ -36,23 +36,33 @@
         }
    },
    "netstat-a": {
-	"name"   : "All Connections",
+        "name"   : "All Connections",
         "command": "sudo -n netstat -tlpa --numeric-hosts 2>/dev/null | egrep -v '^(Active Internet|Proto)'",
         "refresh": 30
    },
    "apache": {
-	"name"   : "Apache vhosts",
+        "name"   : "Apache vhosts",
         "command": "sudo -n /usr/sbin/apache2ctl -t -D DUMP_VHOSTS 2>/dev/null || /usr/sbin/apache2ctl -t -D DUMP_VHOSTS",
         "if"     : "netstat",
         "matches": "apache",
-	"type"   : "service",
+        "type"   : "service",
         "render" : { "type" : "lines" }
    },
+   "varnish": {
+        "command": "varnishstat -1",
+        "if"     : "netstat",
+        "matches": "varnishd",
+	    "type"   : "service",
+        "render" : {
+             "type" : "table",
+             "split": "\\s+"
+        }
+   },
    "memcached": {
-	"command": "printf 'stats\nquit\n' | nc localhost 11211 | /bin/egrep 'STAT (version|threads|bytes|curr_connections)'",
+        "command": "printf 'stats\nquit\n' | nc localhost 11211 | /bin/egrep 'STAT (version|threads|bytes|curr_connections)'",
         "if"     : "netstat",
         "matches": "memcached",
-	"type"   : "service",
+	    "type"   : "service",
         "render" : {
              "type" : "table",
              "split": "\\s+"
@@ -95,8 +105,8 @@
    "rabbitmq vhosts": {
         "command": "sudo -n rabbitmqctl list_vhosts",
         "if"     : "netstat",
-        "matches": "rabbit",
-	"type"   : "service",
+        "matches": ":15672",
+        "type"   : "service",
         "render" : { "type" : "lines" }
    },
    "VIPs": {
@@ -110,7 +120,7 @@
         "command": "curl -s http://localhost:8761/ | grep '<a href=.http' | sed 's/.*a href=.\\([^>]*\\).>.*/\\1/'",
         "if"     : "netstat",
         "matches": ":8761",
-	"type"   : "service",
+        "type"   : "service",
         "render" : { "type" : "lines" }
    },
    "df": {
@@ -155,7 +165,7 @@
         "command": "/usr/bin/pgrep -a java 2>/dev/null | /bin/sed 's/.*-Dcatalina.base=\\([^ ]*\\) .*/\\1/' | while read d; do echo $d; (cd $d; find webapps -type d -maxdepth 1;find webapps/ -name '*.war' -maxdepth 1); done",
         "if"     : "netstat",
         "matches": "java",
-	"type"   : "service",
+        "type"   : "service",
         "render" : { "type" : "lines" }
    },
    "ping": {
@@ -170,6 +180,43 @@
             }
         }
    },
+   "ES Status": {
+        "command": "curl -XGET 'http://localhost:9200/_cat/health?pretty'",
+        "if"     : "netstat",
+        "matches": ":9200",
+        "type"   : "service",
+        "render" : {
+             "type" : "lines",
+             "severity": {
+                "critical" : "red",
+                "warning"  : "yellow"
+            }
+        }
+   },
+   "ES Nodes": {
+        "command": "curl -XGET 'http://localhost:9200/_cat/nodes?pretty'",
+        "if"     : "netstat",
+        "matches": ":9200",
+        "type"   : "service",
+        "render" : {
+             "type" : "table",
+             "split": "\\s+"
+        }
+   },
+   "ES Indices": {
+        "command": "curl -XGET 'http://localhost:9200/_cat/indices?pretty'",
+        "if"     : "netstat",
+        "matches": ":9200",
+        "type"   : "service",
+        "render" : {
+             "type" : "table",
+             "split": "\\s+",
+             "severity": {
+                "critical" : "red",
+                "warning"  : "yellow"
+            }
+        }
+   },  
    "Mail": {
 	"command": "cd /var/spool/mail && sudo grep -c Delivered-To *",
 	"initial": "True",
