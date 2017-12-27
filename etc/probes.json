@@ -216,7 +216,15 @@
                 "warning"  : "yellow"
             }
         }
-   },  
+   },
+   "Zookeeper": {
+        "command": "echo dump | nc localhost 2181",
+        "refresh": 60,
+        "if"     : "netstat",
+        "matches": ":2181",
+        "type"   : "service",
+        "render" : { "type" : "lines" }
+   },
    "Mail": {
 	"command": "cd /var/spool/mail && sudo grep -c Delivered-To *",
 	"initial": "True",
