@@ -118,6 +118,6 @@ ScanResults.prototype.update = function(params) {
 		view.addInfoBlock('Warnings', view.warning);
 
 		// FIXME: view.addHistogram
-		createHistogram('#histogramRow', params.fG, params.sT);
+		//createHistogram('#histogramRow', params.fG, params.sT);
 	});
 };

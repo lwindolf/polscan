@@ -1,6 +1,19 @@
-Note: polscan is licensed GPLv3, with the exception for the JS libraries in 
-subdir "www/lib": Chart.js, d3.js, d3pie.js, dagre-d3.js, jQuery, jQueryUI, 
-Sparklines, Split.js and TableSorter which are all MIT licensed.
+Note: different licenses do apply:
+
+   - GPLv3 for all non-library Javascript and Shell code
+
+   - LGPL 2.1 for the antu-classic icons for ok/warning/failed
+     symbols (https://github.com/fabianalexisinostroza/Antu-classic)
+
+   - CC BY-NC-ND 3.0 for the side bar icons from the
+     Gentleface.com free icon set
+
+   - MIT for all JS libraries in subdir "www/lib":
+
+       Chart.js, d3.js, d3pie.js, dagre-d3.js, jQuery, jQueryUI, 
+       Sparklines, Split.js and TableSorter
+
+
 
 
                     GNU GENERAL PUBLIC LICENSE

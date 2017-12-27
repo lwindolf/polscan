@@ -1,0 +1,15 @@
+{{#if changes.length}}
+<table id='topChangesTable' class='resultTable'>
+<tbody>
+{{#each changes}}
+	<tr>
+		<td class='policy'>
+			<span severity='{{severity}}'>{{name}}</span>
+		</td><td>
+			{{count}}
+		</td>
+	</tr>
+{{/each}}
+</tbody>
+</table>
+{{/if}}

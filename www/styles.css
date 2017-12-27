@@ -157,10 +157,6 @@ body.main {
 	width: 100%;
 }
 
-#results h3 {
-	margin-left:6px;
-}
-
 #legend {
 	background:#eee;
 	color:#444;
@@ -202,9 +198,7 @@ body.main {
 	word-wrap: break-word;
 	vertical-align: top;
 }
-.resultTable .policy {
-	font-size:110%;
-}
+
 th.headerSortUp:after {
 	content: "\00a0↑";
 }
@@ -251,9 +245,9 @@ td.groupByValue, td.message {
 	stroke: #aaa;
 }
 
-.dashboard {
+#dashboard {
 	clear:both;
-	background:#ccc;
+	padding:12px 24px;
 }
 .overviewBox {
 
@@ -269,13 +263,6 @@ td.groupByValue, td.message {
 .overviewBox.dark {
 	background:#444;
 	float:left;
-}
-
-#overviewCalendar table {
-	height:222px;
-}
-#overviewCalendar td { 		
-	font-size: 1.2em;
 }
 
 #row1, #row2 {
@@ -330,4 +317,124 @@ table.probes td {
 }
 .probes .probe_label.shown {
 	border:1px solid #777;
+}
+
+#dashboard h3 {
+	background: #777;
+	font-size:1.1em;
+	color: white;
+	padding: 6px 24px;
+	margin: 0;
+}
+
+#topChangesBox h3 {
+	margin-top:0 !important;
+}
+#topChanges {
+	height:212px;
+	background:#eee;
+	padding:6px;
+	float:left;
+}
+#topChanges table {
+	float:left;
+	width:auto;
+	background: white;
+	margin:6px;
+}
+
+#policies {
+	clear:both;
+	width:auto;
+}
+
+#policies .trend canvas {
+	height:24px;
+}
+
+.policy span[severity="ok"]:before {
+    content:'';
+	background: url('img/ok.svg');
+	background-repeat: no-repeat;
+	width:24px;
+	height:24px;
+    display:inline-block;
+	vertical-align:middle;
+	margin-right:3px;
+}
+
+.policy span[severity="failed"]:before {
+    content:'';
+	background: url('img/failed.svg');
+	background-repeat: no-repeat;
+	width:24px;
+	height:24px;
+    display:inline-block;
+	vertical-align:middle;
+	margin-right:3px;
+}
+
+.policy span[severity="warning"]:before {
+    content:'';
+	background: url('img/warning.svg');
+	background-repeat: no-repeat;
+	width:24px;
+	height:24px;
+    display:inline-block;
+	vertical-align:middle;
+	margin-right:3px;
+}
+
+#overviewCalendar, #overviewHistogram, #topChangesBox, #policies {
+	float:left;
+	margin-top:13px;
+	margin-right:18px;
+	margin-bottom:18px;
+}
+
+#overviewCalendar {
+	height:220px;
+}
+#overviewCalendar table {
+	height:220px;
+}
+#overviewCalendar td { 		
+	font-size: 1.2em;
+}
+
+#overviewCalendar div.ui-corner-all {
+	border-bottom-right-radius:0;
+	border-bottom-left-radius:0;
+	border-radius:0;
+}
+
+#overviewCalendar div.ui-datepicker-header, #overviewHistogram div.chartTitle {
+	background: #777;
+	font-size:1.1em;
+	line-height:1.25;
+	color: white;
+	padding: 1px;
+	margin:0;
+}
+
+#overviewCalendar div.ui-datepicker {
+	border:0;
+	padding:0;
+}
+
+#overviewCalendar table.ui-datepicker-calendar {
+	border:12px solid #eee;
+}
+
+#overviewHistogram div.chartTitle {
+	text-align:left;
+	padding:6px 24px;
+}
+
+#overviewHistogram div.chart {
+	float:left;
+	margin-right:12px;
+}
+#overviewHistogram canvas {
+	border:12px solid #eee;
 }

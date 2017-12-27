@@ -4,30 +4,26 @@
 renderers.dashboard = function dashboardRenderer() { };
 
 renderers.dashboard.prototype.addTopChanges = function(changes, type) {
-	var results = [];
-        var sortbar = [];
+	if(undefined === changes[type])
+		return;
 
-	$.each(changes[type], function(name, count) {
-		sortbar.push({ "name": name, "count": count });
-        });
-	$.each(sortbar.sort(function(a,b) {
-		return b.count-a.count;
-	}), function(i,item) {
-		if(results.length < 3)
-			results.push("<div>"+item.name+" <b>(+"+item.count+")</b></div>");
-	});
-	if(results.length != -1)
-		$('#topChanges').append("<div class='changeList'><div class='changeItems "+type.toUpperCase()+"'>"+results.join('')+"</div></div>");
+	$('#topChanges').append(render('dashboard_top_changes', {
+		changes: Object.keys(changes[type]).map(function(name, index) {
+					return { "id": name, "name": name.replace('---', ': '), "severity": type, "count": changes[type][name] };
+			    }).sort(function(a,b) {
+					return b.count-a.count;
+				}).splice(0,4)
+	}));
 };
 
 renderers.dashboard.prototype.render = function(id, data, params) {
 	var r = this;
 
-	$(this.parentDiv).addClass('dashboard');
+	$(id).append('<div id="dashboard"><div id="overviewCalendar"/><div id="topChangesBox"><h3>Top Changes</h3><div id="topChanges"></div></div><div id="overviewHistogram"/></div>');
 
 	getData("overview", function(data) {
-			$("#row1").append("<div class='chart'><span id='overviewCalendar'/></div>");
 			addCalendar("#overviewCalendar", data.date);
+			createHistogram("#overviewHistogram", 'all');
 			$("#loadmessage").hide();
 
 			var groupFailed = [];
@@ -67,25 +63,16 @@ renderers.dashboard.prototype.render = function(id, data, params) {
 				}
 			});
 
-
-/*			$("<div id='findingsPies' class='overviewBox dark'>").appendTo("#row1");
-			$("<div id='pieChartFailed' class='pie'>").appendTo("#findingsPies");
-			$("<div id='pieChartWarning' class='pie'>").appendTo("#findingsPies");
-			addPieChart('pieChartFailed', 'Problems', 260, '#fff', groupFailed);
-			addPieChart('pieChartWarning', 'Warnings', 260, '#777' ,groupWarning);
-*/
-			$( "<div id='topChangesBox'>" ).appendTo("#row2");
-			$( "<h3>Top Changes</h3><div id='topChanges'></div>").appendTo("#topChangesBox");
-
-			$( "<div id='policies'>" ).appendTo("#row2");
-			$( "<h3>Findings / Changes per Policy</h3><table class='resultTable tablesorter' id='findingsPerPolicy'><thead><tr><th>Group</th><th>Policy</th><th>Problems</th><th>Change</th><th>Warnings</th><th>Change</th><th colspan='2'>Trend</th></tr></thead><tbody></tbody></table>").appendTo("#policies");
+			$("<div id='policies'><h3>Findings / Changes per Policy</h3><table class='resultTable tablesorter' id='findingsPerPolicy'><thead><tr><th>Group</th><th>Policy</th><th>Problems</th><th>Diff</th><th>Warnings</th><th>Diff</th><th class='trend'>Trend</th></tr></thead><tbody></tbody></table></div>").appendTo("#dashboard");
 
 			getData("histogram", function(data) {
 				var changes = { 'ok': {}, 'failed': {}, 'warning': {}};
 
 				// Avoid showing trend chart for small data set
-				if(data.histogram[0].FAILED.length < 5)
+				if(data.histogram[0].FAILED.length < 5) {
 					$('#histogramChart').parent().hide();
+					$('#policies .trend').hide();
+				}
 
 				if(data.histogram[0].FAILED.length < 2)
 					$('#topChangesBox').hide();
@@ -108,13 +95,13 @@ renderers.dashboard.prototype.render = function(id, data, params) {
 						var tmp = '<tr><td class="group" title="'+item.description+'" filter="' + group + '">' + group + '</td><td class="policy" '+pf+'>' + (policy?policy:"") + '</td>';
 						tmp += '<td class="policy" '+pf+'>';
 						if(failed > 0)
-							tmp += '<span class="FAILED problems" title="Total failures found">' + failed + '</span>';
-						else
-							tmp += '<span title="Total failures found">0</span>';
-						tmp += '</td><td class="change">';
+							tmp += '<span title="Total problems found" severity="failed">'+failed+'</span>';
+						else if(warning == 0)
+							tmp += '<span title="Policy is compliant" severity="ok"/>';
+						tmp += '</td><td class="policy">';
 						diff = failed - failed2;
-						if(diff != 0) {
-							tmp += '<span class="'+(diff>0?"FAILED":"compliant")+' changes" filter="'+(diff>0?'new':'solved')+'---' + policy + '" title="Total change problems">+' + Math.abs(diff) + '</span>';
+						if(!isNaN(diff) && diff != 0) {
+							tmp += '<span filter="'+(diff>0?'new':'solved')+'---' + policy + '" title="Total change problems">+' + Math.abs(diff) + '</span>';
 							if(diff > 0) {
 								changes.failed[group+'---'+policy] = Math.abs(diff);
 							} else {
@@ -123,13 +110,11 @@ renderers.dashboard.prototype.render = function(id, data, params) {
 						}
 						tmp += '</td><td class="policy" '+pf+'>';
 						if(warning > 0)
-							tmp += '<span class="WARNING problems" title="Total warnings seen">' + warning + '</span>';
-						else
-							tmp += '<span title="Total warnings found">0</span>';
-						tmp += '</td><td class="change">';
+							tmp += '<span title="Total warnings seen" severity="'+(warning>0?"warning":"ok")+'">' + warning + '</span>';
+						tmp += '</td><td class="policy">';
 						diff = warning - warning2;
-						if(diff != 0) {
-							tmp += '<span class="'+(diff>0?"WARNING":"compliant")+' changes" filter="'+(diff>0?'new':'solved')+'---' + policy + '" title="Total change warnings">+' + Math.abs(diff) + '</span>';
+						if(!isNaN(diff) && diff != 0) {
+							tmp += '<span filter="'+(diff>0?'new':'solved')+'---' + policy + '" title="Total change warnings">+' + Math.abs(diff) + '</span>';
 							if(diff > 0) {
 								changes.warning[group+'---'+policy] = Math.abs(diff);
 							} else {
@@ -137,19 +122,17 @@ renderers.dashboard.prototype.render = function(id, data, params) {
 							}
 						}
 						tmp += '</td>';
-						tmp += '<td><div class="inlinesparkline_f'+group+'___'+policy.replace(/[^a-zA-Z]/g, '')+'"/></td>';
-						tmp += '<td><div class="inlinesparkline_w'+group+'___'+policy.replace(/[^a-zA-Z]/g, '')+'"/></td>';
-						tmp += '</tr>';
+						if(data.histogram[0].FAILED.length >= 5) {
+							tmp += '<td class="trend"><div class="inlinesparkline_'+group+'___'+policy.replace(/[^a-zA-Z]/g, '')+'"/></td>';
+							tmp += '</tr>';
+						}
 						$("#findingsPerPolicy").append(tmp);
-						$('.inlinesparkline_w'+group+'___'+policy.replace(/[^a-zA-Z]/g, '')).sparkline(item.WARNING, {
-							type: 'line',
-							lineColor: '#a0a000',
-							fillColor: '#ffff00'
-						});
-						$('.inlinesparkline_f'+group+'___'+policy.replace(/[^a-zA-Z]/g, '')).sparkline(item.FAILED, {
-							type: 'line',
-							lineColor: '#ff0000',
-							fillColor: '#ffa0a0'
+						$('.inlinesparkline_'+group+'___'+policy.replace(/[^a-zA-Z]/g, '')).sparkline(item.WARNING.map(function(count, i) {
+							return item.FAILED[i] + ":" + count;
+						}), {
+							type: 'bar',
+							barSpacing: 0,
+							stackedBarColor: [ '#f77', '#eecc00'	 ]
 						});
 					}
 				});
@@ -186,5 +169,4 @@ renderers.dashboard.prototype.render = function(id, data, params) {
 				});
 			});
 		});
-	createHistogram('#row1', 'all');
 };

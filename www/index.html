@@ -44,9 +44,6 @@
 			.severity {
 				font-size:0;
 			}
-			span.changes, span.problems {
-				padding: 0 6px;
-			}
 			.FAILED_ni {
 				color: #f00;
 			}
@@ -126,7 +123,7 @@
 			.badges {
 				height:260px;
 			}
-			.badges, .chart {
+			.badges {
 				margin:12px 6px;
 				border:1px solid #aaa;
 				border-radius:6px;
@@ -181,9 +178,6 @@
 			}
 			h3 {
 				clear:both;
-			}
-			#histogramChart {
-				margin:12px;
 			}
 			.ui-datepicker .ui-datepicker-header {
 				background:#555;
@@ -412,29 +406,7 @@ a.resolve {
 				display:block;
 				font-weight:bold;
 			}
-			#topChangesBox {
-				clear:both;
-				float:left;
-			}
-			#topChanges, #topChanges div.changeList {
-				float:left;
-			}
-			.changeList {
-				padding:6px;
-			}
-			.changeTitle, .changeItems {
-				display:block;
-			}
-			.changeItems div {
-				padding:6px 6px;
-			}
-			.changeItems.OK {
-				color: black;
-			}
-			#policies {
-				float:left;
-				clear:both;
-			}
+
 			#viewlist .title {
 				font-weight:bold;
 				margin-bottom:3px;
@@ -763,6 +735,10 @@ a.resolve {
 					name = group + ":::" + policy;
 
 				getData("histogram", function(data) {
+					// No histograms for less than 5 days
+					if(data.labels.length < 5)
+						return;
+
 					var chartData = {
 						labels: [],
 						datasets: []
@@ -795,7 +771,7 @@ a.resolve {
 							pointHighlightFill: "#cc0"
 						}
 
-						$(id).append('<div class="chart"><div class="chartTitle">Issue Trends: '+(policy?policy:group)+'</div><canvas id="histogramChart" width="600" height="200"></canvas></div>');
+						$(id).append('<div class="chart"><div class="chartTitle">Issue Trends: '+(policy?policy:group)+'</div><canvas id="histogramChart" width="600" height="176"></canvas></div>');
 						var ctx = $("#histogramChart").get(0).getContext("2d");
 						var myLineChart = new Chart(ctx).Line(chartData, {
 							animation: false,
