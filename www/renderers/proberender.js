@@ -36,12 +36,12 @@ function probeRenderResult(probeResult) {
 			return result;
 		}
 		if(probeResult['render']['type'] === 'lines') {
-			return probeResult.stdout
+			return "<pre>"+probeResult.stdout
                    .split(/\n/)
                    .map(function(str) {
 						return probeResultApplySeverity(str, probeResult['render']['severity']);
 					})
-                   .join('<br/>');
+                   .join('\n')+"</pre>;
         }
 	} catch(e) {
 		console.log(e);
