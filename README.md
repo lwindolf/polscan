@@ -98,7 +98,7 @@ Or just run it from the source directory
 Access Results
 --------------
 
-For simplicity all results are store in files in plain text and JSON. The JSON files are used by the static HTML viewer that can be used to inspect the result archive.
+For simplicity all results are stored in files in plain text and JSON. The JSON files are used by the static HTML viewer that can be used to inspect the result archive.
 
 To quickly expose the static results in any webservers document root run the following commands from the directory you installed polscan into:
 
