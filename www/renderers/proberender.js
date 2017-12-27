@@ -41,7 +41,7 @@ function probeRenderResult(probeResult) {
                    .map(function(str) {
 						return probeResultApplySeverity(str, probeResult['render']['severity']);
 					})
-                   .join('\n')+"</pre>;
+                   .join('\n')+"</pre>";
         }
 	} catch(e) {
 		console.log(e);
