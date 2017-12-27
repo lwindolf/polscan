@@ -93,6 +93,8 @@ Or just run it from the source directory
     ./polscan -t systemd-no-failed.sh -l server1    # Test scanner on single host
     ./polscan -t all -l server1                     # Test results on single host
 
+    ./polscan -r 2017-10-09		# Recreate result JSON
+
 Access Results
 --------------
 
