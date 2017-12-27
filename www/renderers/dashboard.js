@@ -82,6 +82,14 @@ renderers.dashboard.prototype.render = function(id, data, params) {
 
 			getData("histogram", function(data) {
 				var changes = { 'ok': {}, 'failed': {}, 'warning': {}};
+
+				// Avoid showing trend chart for small data set
+				if(data.histogram[0].FAILED.length < 5)
+					$('#histogramChart').parent().hide();
+
+				if(data.histogram[0].FAILED.length < 2)
+					$('#topChangesBox').hide();
+
 				$.each(data.histogram, function(i, item ) {
 					if(-1 != item.id.indexOf(":::")) {
 						var compliant = 1;
