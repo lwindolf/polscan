@@ -658,14 +658,6 @@ a.resolve {
 			function onLocationHashChange() {
 				var params = getParams();
 
-				if(params.fullscreen === "1")
-					$('#menu').hide();
-				else
-					$('#menu').show();
-
-				if(params.title)
-					$('#page_title').html(params.title);
-
 				if(params.d) {
 					var newBaseUrl = "results/json/"+params.d+"/";
 					if(newBaseUrl != baseUrl) {
