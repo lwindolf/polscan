@@ -79,8 +79,8 @@ Screenshots
 
 Note: polscan is intentionally limited to Debian and for simplicity tries not to implement any distro-specific dependencies.
 
-How to run it
--------------
+Running the Scanner
+-------------------
 
 polscan keeps results on a daily basis so it makes sense to set up a daily cron.
 
@@ -95,12 +95,16 @@ Or just run it from the source directory
 
     ./polscan -r 2017-10-09		# Recreate result JSON
 
-Access Results
---------------
+Access Results via GUI
+----------------------
 
-For simplicity all results are stored in files in plain text and JSON. The JSON files are used by the static HTML viewer that can be used to inspect the result archive.
+It is preferred to run the GUI using Node.js
 
-To quickly expose the static results in any webservers document root run the following commands from the directory you installed polscan into:
+     nodejs backend/main.js
+
+as this will expose live probing, Icinga and PuppetDB API.
+
+Alternatively you can choose to access only static results by copying the static HTML/JS and linking the result file into a webserver document root. Also check out the extra/ subdir for vhost examples.
 
     cp -r www /var/www/polscan
     mkdir /var/www/polscan/results
