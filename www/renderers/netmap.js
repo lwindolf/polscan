@@ -136,6 +136,10 @@ renderers.netmap.prototype.resized = function(renderer) {
 	renderer.updateGraph();
 }
 
+renderers.netmap.prototype.monitoringCb = function(e) {
+        $('.liveLabel.Monitoring').addClass('OK');
+}
+
 renderers.netmap.prototype.monitoringErrorCb = function(e) {
 	$('.liveLabel.Monitoring').addClass('FAILED');
 	$('.liveLabel.Monitoring').prop('title', 'Failed: '+e);
@@ -250,7 +254,7 @@ renderers.netmap.prototype.overlayLive = function(host, forced = false) {
 	/* Also start full connection probe explicitely */
 	p.probe('netstat-a', r.probeConnectionsResultCb, r.probeErrorCb);
 
-	overlayMonitoring(host, "inventoryTable", false, undefined, r.monitoringErrorCb);
+	overlayMonitoring(host, "inventoryTable", false, r.monitoringCb, r.monitoringErrorCb);
 };
 
 renderers.netmap.prototype.addConnections = function(c, listen_ports) {
