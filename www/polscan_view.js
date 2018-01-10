@@ -188,6 +188,9 @@ PolscanView.prototype.load = function(name, params) {
 			else
 				view.rendererName = params.r;
 
+			if(params.fullscreen === '1')
+				$('body').html('<div id="results"/>');
+
 			$('#results').html('<div id="errors"/><div id="row1"></div><div id="loadmessage"><i>Loading ...</i></div><div id="row2"/>');
 			$('#errors').hide();
 			$('#loadmessage').hide();
