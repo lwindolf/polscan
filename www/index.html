@@ -44,25 +44,6 @@
 			.severity {
 				font-size:0;
 			}
-			.FAILED_ni {
-				color: #f00;
-			}
-			.FAILED {
-				background: #f44;
-				border: 1px solid #c44;
-				padding: 0 6px;
-				color: white;
-			}
-			.bcf10 { background: #f00; color:#f00; }
-			.bcf9 { background: #f22; color:#f22; }
-			.bcf8 { background: #f44; color:#f44; }
-			.bcf7 { background: #f66; color:#f66; }
-			.bcf6 { background: #f77; color:#f77; }
-			.bcf5 { background: #f88; color:#f88; }
-			.bcf4 { background: #f99; color:#f99; }
-			.bcf3 { background: #faa; color:#faa; }
-			.bcf2 { background: #fbb; color:#fbb; }
-			.bcf1 { background: #fcc; color:#fcc; }
 			.WARNING_ni {
 			}
 			.WARNING {
@@ -79,7 +60,25 @@
 			.bcw3 { background: #ff6; color: #ff6; }
 			.bcw2 { background: #ff6; color: #ff6; }
 			.bcw1 { background: #ff6; color: #ff6; }
-                        .NORESULTS {
+       			.FAILED_ni {
+				color: #f00;
+			}
+			.FAILED {
+				background: #f44;
+				border: 1px solid #c44;
+				color: white;
+			}
+			.bcf10 { background: #f00; color:#f00; }
+			.bcf9 { background: #f22; color:#f22; }
+			.bcf8 { background: #f44; color:#f44; }
+			.bcf7 { background: #f66; color:#f66; }
+			.bcf6 { background: #f77; color:#f77; }
+			.bcf5 { background: #f88; color:#f88; }
+			.bcf4 { background: #f99; color:#f99; }
+			.bcf3 { background: #faa; color:#faa; }
+			.bcf2 { background: #fbb; color:#fbb; }
+			.bcf1 { background: #fcc; color:#fcc; }
+                 .NORESULTS {
                                 background: #eee;
                                 border: 1px dotted #aaa;
                                 color: #eee;
@@ -533,10 +532,20 @@ a.resolve {
 				return name.replace(/[.\-\s+]/g, "_");
 			}
 
-			function overlayMonitoring(host, alertTableId, append, cb, errorcb) {
+			var monitoringResults;
+			function updateMonitoring(host, alertTableId, append, cb, errorcb) {
 				// FIXME: do not be icinga specific here
 				getAPI("icinga2", function(data) {
-					$.each(data.results, function(i, d) {
+					monitoringResults = data.results;
+					overlayMonitoring(host, alertTableId, append);
+					if(cb)
+						cb();
+				}, errorcb);
+			}
+			function overlayMonitoring(host, alertTableId, append, cb, errorcb) {
+				if(!monitoringResults)
+					return;
+				$.each(monitoringResults, function(i, d) {
 						var h = d.name.replace(/!.*/, "");
 						var name = d.name.replace(/.*!/, "");
 						var id = h.replace(/[.\-]/g, "_");
@@ -549,21 +558,16 @@ a.resolve {
 						}
 						// Optionally: for current host add alerts in inventory table
 						if(host === h && undefined !== alertTableId) {
-							if(!$("#"+alertTableId+" .alerts_td").length) {
-								$('#'+alertTableId).append("<tr class='alerts_td'><th>Monitoring</th></tr>");
-							}
+							$('tr.alerts_td').remove();
+							$('#'+alertTableId).append("<tr class='alerts_td'><th>Monitoring</th></tr>");
 							$('#'+alertTableId+' tr.alerts_td').after("<tr><td class='"+severity+"'>"+name+": "+d.attrs.last_check_result.output+"</td></tr>");
 						}
 
 						// Optionally append to host id element
 						if(append)
 							$('#host_'+id).append(" <span class='"+severity+"'>"+name+'</span>');
-					});
-					cb();
-				 }, errorcb)
+				});
 			}
-
-
 
 			function getDataUrl(baseUrl, name, callback, errorcb) {
 				var cacheName = name.replace('-', '_');
