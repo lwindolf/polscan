@@ -230,8 +230,6 @@ renderers.netmap.prototype.probeConnectionsResultCb = function(probe, host, res)
 
 		return list;
 	}, []), listen_port_to_program);
-
-	updateMonitoring(host, "inventoryTable", false, r.monitoringCb, r.monitoringErrorCb);
 }
 
 /* probe node infos using the probe API */
@@ -256,6 +254,8 @@ renderers.netmap.prototype.overlayLive = function(host, forced = false) {
 
 	/* Also start full connection probe explicitely */
 	p.probe('netstat-a', r.probeConnectionsResultCb, r.probeErrorCb);
+
+	updateMonitoring(host, "inventoryTable", false, r.monitoringCb, r.monitoringErrorCb);
 };
 
 renderers.netmap.prototype.addConnections = function(c, listen_ports) {
