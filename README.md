@@ -95,17 +95,11 @@ Or just run it from the source directory
 
     ./polscan -r 2017-10-09		# Recreate result JSON
 
-Access Results via GUI
-----------------------
 
-It is preferred to run the GUI using Node.js
+Running the GUI
+---------------
 
-     nodejs backend/main.js
+Start the GUI server with
 
-as this will expose live probing, Icinga and PuppetDB API.
+     npm start
 
-Alternatively you can choose to access only static results by copying the static HTML/JS and linking the result file into a webserver document root. Also check out the extra/ subdir for vhost examples.
-
-    cp -r www /var/www/polscan
-    mkdir /var/www/polscan/results
-    ln -s /var/www/polscan/results results
