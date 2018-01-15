@@ -27,7 +27,7 @@
                 }
 	},
 	"static": {
-		"rootdir": "../www",
-		"results": "../results"
+		"rootdir": "www",
+		"results": "results"
 	}
 }
