@@ -397,20 +397,23 @@ table.probes td {
 	margin: 0;
 }
 
-#topChangesBox h3 {
+#topChangesBox h3, #scanInfoBox h3 {
 	margin-top:0 !important;
 }
-#topChanges {
+#topChanges, #scanInfo {
 	height:212px;
 	background:#eee;
 	padding:6px;
 	float:left;
 }
-#topChanges table {
+#topChanges table, #scanInfo table {
 	float:left;
 	width:auto;
-	background: white;
 	margin:6px;
+}
+#topChanges table {
+	background: white;
+
 }
 
 #policies {
@@ -455,7 +458,7 @@ table.probes td {
 	margin-right:3px;
 }
 
-#overviewCalendar, #overviewHistogram, #topChangesBox, #policies {
+#overviewCalendar, #overviewHistogram, #topChangesBox, #policies, #scanInfoBox {
 	float:left;
 	margin-top:13px;
 	margin-right:18px;
