@@ -28,8 +28,6 @@ else
 	LIB_DIR="${BASE}/lib"
 fi
 
-NON_INTERACTIVE=$(/usr/bin/tty -s; echo $?)
-
 # Command line parsing, setup environment
 MODE=scan
 if [ "$1" == "-r" ]; then
@@ -376,7 +374,7 @@ results_to_json() {
 		count=$(ls | xargs -n1 grep "^$g (OK|WARNING|FAILED) " | wc -l)
 		echo -n '{"group": "'$g'", "WARNING": '${pgroups[warn_$g]-0}', "FAILED": '${pgroups[fail_$g]-0}', "count": '${count-0}'},'
 	done
-	) | write_json list overview 'WARNING": '${pall[warn]-0}', "FAILED": '${pall[fail]-0}', "hostCount": '$(echo $HOST_LIST | wc -w)', "overview'
+	) | write_json list overview 'WARNING": '${pall[warn]-0}', "FAILED": '${pall[fail]-0}', "scanTime": '$(stat -c %Y "$RESULT_DIR")', "reportTime": '$(date +%s)', "hostCount": '$(echo $HOST_LIST | wc -w)', "overview'
 
 	# Host infos
 	(
