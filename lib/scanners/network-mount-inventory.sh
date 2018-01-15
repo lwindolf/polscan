@@ -9,4 +9,4 @@ done
 
 while read ip share; do
 	result_network_edge "Mount Point" "nfs" "$(hostname -f)" "high" "$ip" "NFS Share $share" "in" 1
-done < <(test -f /sbin/showmount && /sbin/showmount --no-headers | sed "s/\:/ /")
+done < <(test -f /sbin/showmount && /sbin/showmount --no-headers 2>/dev/null | sed "s/\:/ /")
