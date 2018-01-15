@@ -27,8 +27,8 @@ var http = require("http"),
     net = require("net"),
     StatefulProcessCommandProxy = require("stateful-process-command-proxy");
 
-var config = require('../etc/backend-config.json');
-var probes = require('../etc/probes.json');
+var config = require('./etc/config.json');
+var probes = require('./etc/probes.json');
 
 process.on('uncaughtException', function(err) {
   // dirty catch of broken SSH pipes
