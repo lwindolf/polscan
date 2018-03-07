@@ -58,6 +58,7 @@ function addVulnResultRows(rows, offset, count, sortOrder) {
 function vulnMatches(item) {
 	if(params.sT &&
 	  !((undefined !== item.host && item.host.indexOf(this.params.sT) != -1) ||
+	    (undefined !== item.cve && item.cve.indexOf(this.params.sT) != -1) ||
 	    (undefined !== item.pkg && item.pkg.indexOf(this.params.sT) != -1)))
 		return false;
 	if(undefined !== filteredHosts &&
