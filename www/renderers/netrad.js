@@ -4,37 +4,14 @@
 
 renderers.netrad = function netmapRenderer() {};
 
-renderers.netrad.prototype.render = function(id, data, params) {
-	this.neType = params.nt;
-		
+renderers.netrad.prototype.prepareData = function (data) {
+	var selectedHosts = {};
+	var classes = [];
+
 	$('#loadmessage').show();
 	$('#loadmessage i').html("Loading...");
-	$(id).append('<div id="networkSelectedName"><i>Hover over names to view FQDNs and click to see connection details.</i></div><div id="netgraph"/>');
 
-	// http://mbostock.github.io/d3/talk/20111116/#17
-	var diameter = ($(window).width()<$(window).height()?$(window).width():$(window).height()),
-		radius = diameter / 2,
-		innerRadius = radius - 150;
-	var cluster = d3.layout.cluster()
-		.size([360, innerRadius]);
-	//    .value(function(d) { return d.size; });
-	var bundle = d3.layout.bundle();
-	var line = d3.svg.line.radial()
-		.interpolate("bundle")
-		.tension(0.85)
-		.radius(function(d) { return d.y; })
-		.angle(function(d) { return d.x / 180 * Math.PI; });
-	var svg = d3.select("#netgraph").append("svg")
-		.attr("width", diameter)
-		.attr("height", diameter)
-		.append("g")
-		.attr("transform", "translate(" + radius + "," + radius + ")");
-	var link = svg.append("g").selectAll(".link"),
-		node = svg.append("g").selectAll(".node");
-
-	var classes = [];
 	var i = 0, overflow = 0;
-	var selectedHosts = {};
 	var hostLimit = 200;
 
 	// Filter hosts a 2nd time to drop all without connections
@@ -97,6 +74,36 @@ renderers.netrad.prototype.render = function(id, data, params) {
 		});
 		hostData.size = hostData.imports.length*30 + 1;
 	});
+	
+	return classes;
+};
+
+renderers.netrad.prototype.render = function(id, input, params) {
+	
+	$(id).append('<div id="networkSelectedName"><i>Hover over names to view FQDNs and click to see connection details.</i></div><div id="netgraph"/>');
+
+	var classes = this.prepareData (input);
+
+	// http://mbostock.github.io/d3/talk/20111116/#17
+	var diameter = ($(window).width()<$(window).height()?$(window).width():$(window).height()),
+		radius = diameter / 2,
+		innerRadius = radius - 150;
+	var cluster = d3.layout.cluster()
+		.size([360, innerRadius])
+	    .value(function(d) { return d.size; });
+	var bundle = d3.layout.bundle();
+	var line = d3.svg.line.radial()
+		.interpolate("bundle")
+		.tension(0.85)
+		.radius(function(d) { return d.y; })
+		.angle(function(d) { return d.x / 180 * Math.PI; });
+	var svg = d3.select("#netgraph").append("svg")
+		.attr("width", diameter)
+		.attr("height", diameter)
+		.append("g")
+		.attr("transform", "translate(" + radius + "," + radius + ")");
+	var link = svg.append("g").selectAll(".link"),
+		node = svg.append("g").selectAll(".node");
 
 	var nodes = cluster.nodes(packageHierarchy(classes)),
 	    links = packageImports(nodes);

@@ -1,7 +1,7 @@
 // vim: set ts=4 sw=4: 
-/* A view visualizing distribution of findings over host groups.
-   Represents hosts as color coded boxes according to maximum
-   finding severity */
+/* A view showing per-service connections for a single host in a
+   directed graph with inbound and outbound connections for the host
+   allowing to traverse the connections */
 
 renderers.netmap = function netmapRenderer() {
 	this.netMapData = {};

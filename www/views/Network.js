@@ -3,7 +3,7 @@
 
 function Network() {
 	this.name = 'Network';
-	this.renderers = ['netrad', 'netmap'];
+	this.renderers = ['netrad', 'netmap', 'netgraph'];
 	this.defaultRenderer = 'netrad';
 	this.firstHost = undefined;
 
