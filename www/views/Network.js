@@ -21,6 +21,14 @@ function Network() {
 			nt: true
 		};
 	}
+	if('netgraph' === params.r) {
+		this.filterOptions = {
+			filterby: true,
+			groupbyhg: true,
+			search: true,
+			nt: true
+		};
+	}
 }
 
 Network.prototype = Object.create(PolscanView.prototype);
@@ -45,7 +53,6 @@ Network.prototype.resultsFilter = function(item) {
 
 Network.prototype.update = function(params) {
 	var view = this;
-	view.neType = 'TCP connection';
 
 	if(!("nt" in params) || (params.nt === "")) {
 		changeLocationHash({
@@ -54,7 +61,7 @@ Network.prototype.update = function(params) {
 		return;
 	}
 
-	getData("netedge "+this.neType, function(data) {
+	getData("netedge "+params.nt, function(data) {
 		view.params = params;
 		view.filteredHosts = get_hosts_filtered(params, false);
 
@@ -64,9 +71,18 @@ Network.prototype.update = function(params) {
 			return;
 		}
 
-		$(view.parentDiv).append("<div id='render'></div>");
+		$(view.parentDiv).append("<div id='legend'/>"+
+		                         "<div id='render'/>");
+
+		$('#render').addClass("split split-horizontal");
+		$('#legend').addClass("split split-horizontal");
+		Split(['#legend', '#render'], {
+			sizes: [20, 80],
+			minSize: [200, 200]
+		});
+
 		view.render('#render', { results: results }, view.params);
-		if('netrad' === params.r)
+		if(params.r !== 'netmap')
 			view.addInfoBlock('Hosts', view.filteredHosts.length);
 		// Maybe add connections info block
 	});

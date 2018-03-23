@@ -1,10 +1,10 @@
 // vim: set ts=4 sw=4: 
 /* A view visualizing active network connections using 
-   a WebGL d3 force layout. */
+   a Pixi.js WebGL accelerated fixed d3 force layout. */
 
 renderers.netgraph = function netgraphRenderer() {};
 
-renderers.netgraph.prototype.prepareData = function (data) {
+renderers.netgraph.prototype.prepareData = function (data, params) {
 	var selectedHosts = {};
 	var selectedEdges = {};
 	var graph = {};
@@ -14,8 +14,11 @@ renderers.netgraph.prototype.prepareData = function (data) {
 	$('#loadmessage').show();
 	$('#loadmessage i').html("Loading...");
 
-	var i = 0, overflow = 0;
+	var i = 0, overflowDrop = 0;
+	var connCountDrop = 0;
+	var noConnDrop = 0;
 	var hostLimit = 5000;
+	var groups = [];
 
 	// Filter hosts a 2nd time to drop all without connections
 	var hostsWithConnections = {};
@@ -26,12 +29,18 @@ renderers.netgraph.prototype.prepareData = function (data) {
 	$.each(hostsWithConnections, function(host) {
 		if(i < hostLimit) {
 			var resolved = resolveIp(host);
-			var hostData = { name: resolved, connCount:0 };
+			var group = getGroupByHost(params.gT, resolved);
+			var groupId = groups.indexOf(group);
+			if(-1 === groupId) {
+				groups.push(group);
+				groupId = groups.length;
+			}
+			var hostData = { name: resolved, connCount:0, group: groupId };
 			selectedHosts[resolved] = graph.nodes.length;
 			graph.nodes.push(hostData);
 			i+=1;
 		} else {
-			overflow = 1;
+			overflowDrop++;
 		}
 	});
 
@@ -66,9 +75,14 @@ renderers.netgraph.prototype.prepareData = function (data) {
 	// - have to many connections (global connectivity e.g. monitoring
 	//   or automation agents with persistent connections)
 	// - have no connections
+	var maxConnLimit = Math.max(hostLimit/100, Math.floor(graph.nodes.length/100));
 	graph.nodes = graph.nodes.filter(function(node) {
-		if (node.connCount === 0 || node.connCount > 50) {
+		if (node.connCount === 0 || node.connCount > maxConnLimit) {
 			selectedHosts[node.name] = undefined;
+			if(node.connCount > 0)
+				connCountDrop++;
+			else
+				noConnDrop++;
 			return false;
 		}
 		return true;
@@ -83,13 +97,49 @@ renderers.netgraph.prototype.prepareData = function (data) {
 			return n.name === edge.rn;
 		});
 	});
+
  	// And connections of deleted nodes are gone
+	var connectedNodes = {};
 	graph.edges = graph.edges.filter(function(edge) {
-		return (edge.source >= 0 && edge.target >= 0);
+		var valid = (edge.source >= 0 && edge.target >= 0);
+		if(valid) {
+			connectedNodes[edge.source] = 1;
+			connectedNodes[edge.target] = 1;
+		}
+		return valid;
 	});
 
-	if(overflow)
-		$('#loadmessage i').html("Only displaying the first "+graph.nodes.length+" of "+Object.keys(hostsWithConnections).length+" hosts in this filter/selection. Please choose a smaller group!");
+	// Finally drop all nodes that have no connections
+	// (caused by them having only some connections to
+	//  other hosts that were dropped due to connCount limit)
+	graph.nodes = graph.nodes.filter(function(node, i) {
+		if (connectedNodes[i] === undefined) {
+			connCountDrop++;
+			return false;
+		}
+		return true;
+	});
+
+	// FIXME: duplicated from above!
+	// Make sure node indizes are still correct
+	$.each(graph.edges, function(i, edge) {
+		edge.source = graph.nodes.findIndex(function(n) {
+			return n.name === edge.ln;
+		});
+		edge.target = graph.nodes.findIndex(function(n) {
+			return n.name === edge.rn;
+		});
+	});
+
+	if(overflowDrop || connCountDrop)
+		$('#loadmessage i').html("Only displaying the "+graph.nodes.length+
+		                         " of "+Object.keys(hostsWithConnections).length+
+		                         " hosts with connections in this filter/selection.<br/>"+
+		                         (overflowDrop?overflowDrop+" hosts dropped because of max host limit ("+hostLimit+")<br/>":"")+
+		                         (connCountDrop?connCountDrop+" hosts dropped to reduce cardinality (connection count limit "+maxConnLimit+")<br/>":"")+
+		                         "Please filter to a smaller group!");
+	else if(graph.nodes.length === 0)
+		$('#loadmessage i').html("Sorry no connections found!");
 	else
 		$('#loadmessage').hide();
 
@@ -97,10 +147,7 @@ renderers.netgraph.prototype.prepareData = function (data) {
 };
 
 renderers.netgraph.prototype.render = function(id, data, params) {
-
-	$(id).append('<div id="netgraph" height="auto"/>');
-
-	var graph = this.prepareData(data);
+	var graph = this.prepareData(data, params);
 	var color = d3.scale.category20();
 	var width = $(id).parent().width()
 	var height = $(window).height()-$(id).offset().top;
@@ -108,12 +155,17 @@ renderers.netgraph.prototype.render = function(id, data, params) {
 	// Derived from https://bl.ocks.org/iros/36a18c646f3b3b5b9001ad758bfd8a08#file-index-html
 	var renderer = new PIXI.autoDetectRenderer(width, height, {
 		antialias: true,
-		backgroundColor : 0
+		backgroundColor: 0,
 	});
 	$(id)[0].appendChild(renderer.view);
-	d3.select(id).call(d3.behavior.zoom().scaleExtent([0.1, 8]).on("zoom", zoom))
+	d3.select(id).call(d3.behavior.zoom().scaleExtent([0.1, 5]).on("zoom", zoom))
+	d3.behavior.zoom().scale(0.1)
 
+	// create the root of the scene graph
 	var stage = new PIXI.Container();
+	var graphics = new PIXI.Graphics();
+	stage.interactiveChildren = false;
+	stage.addChild(graphics);
 
 	function zoom() {
 		graphics.position.x = d3.event.translate[0];
@@ -122,40 +174,9 @@ renderers.netgraph.prototype.render = function(id, data, params) {
 		graphics.scale.y = d3.event.scale;
 		force.tick();
 		renderer.render(stage);
-	}
-			
-	// create the root of the scene graph
-	var stage = new PIXI.Container();
-	var graphics = new PIXI.Graphics();
-/*	graphics.updateCircle = function(newx,newy) {
-	  drawNode(d, newx, newy, r, fill);    
-	}
-*/
-    function drawNode(d,x,y,r,fill) {
-      if (typeof fill === "string") {
-        fill = parseInt(fill.substring(1), 16);
-      }
+	}		
 
-/*		var t = new PIXI.Text(d.name);
-		t.x = x + Math.floor(r*1.5);
-		t.y = y;
-		stage.addChild(t); */
-
-      graphics.lineStyle(0);
-      graphics.beginFill(fill, 1);
-      graphics.drawCircle(x,y,r);
-      graphics.endFill();
-      graphics.interactive = true;
-      graphics.buttonMode = true;
-      graphics.hitArea = new PIXI.Circle(x,y,r);
-/*      graphics.click = function(e) {
-        this.alpha = 0.5;
-		safety = 0;
-        force.start();
-      }*/
-    }
-
-    function drawEdge(d, x1,y1,x2,y2, width) {
+    function drawEdge(d, x1, y1, x2, y2, width) {
       graphics.lineStyle(width, 0xbbbbbb);
       graphics.beginFill(0xffffff, 0.5);
       graphics.moveTo(x1,y1);
@@ -166,37 +187,43 @@ renderers.netgraph.prototype.render = function(id, data, params) {
 	var safety = 0;
     var force = d3.layout.force()
       .charge(-800)
-      .linkDistance(50)
+      .linkDistance(100)
       .size([width, height])
 	  .nodes(graph.nodes)
 	  .links(graph.edges)
+      .alpha(0.3)
 	  .start();
 
 	while(force.alpha() > 0.01) { // You'll want to try out different, "small" values for this
 		force.tick();
-		if(safety++ > 200) {
+		if(safety++ > 250) {
 		  break;// Avoids infinite looping in case this solution was a bad idea
 		}
 	}
+
 	force.on("tick", function(d) {
 		graphics.clear();
+
 		force.links().forEach(function(d) {
 		  drawEdge(d, d.source.x,
 			d.source.y,
 			d.target.x,
 			d.target.y,
-			Math.sqrt(d.value) || 1);
+			1); //Math.sqrt(d.value) || 1);
 		});
 
 		force.nodes().forEach(function(d){
-		  drawNode(d, d.x, d.y, 10, color(d.group));  
+			var fill = parseInt(color(d.group).substring(1), 16);
+			graphics.beginFill(fill, 1);
+			graphics.drawCircle(d.x, d.y, 10);
+		    graphics.endFill();
 		});
-		stage.addChild(graphics);
 	});
 
 	animate();
+	force.stop();
 
-	var g_TICK = 80; // 1000/80 = ~12 frames per second
+	var g_TICK = 40; // 1000/40 = ~6 frames per second
 	var g_Time = 0;
 
 	function animate() {
@@ -208,6 +235,7 @@ renderers.netgraph.prototype.render = function(id, data, params) {
 
 		g_Time = timeNow;
 
+		force.tick();
 		renderer.render(stage);
 		requestAnimationFrame(animate);
 	}
