@@ -60,7 +60,7 @@ Network.prototype.update = function(params) {
 		});
 		return;
 	}
-	if(params.r === 'netmap' && undefined === view.params.h) {
+	if(params.r === 'netmap' && undefined === params.h) {
 		setLocationHash({h:view.firstHost, nt: params.nt});
 		return;
 	}
