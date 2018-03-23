@@ -101,7 +101,7 @@ function loadRendererSettings(id, params, o) {
 		if(params.gI && params.gI != '')
 			$('#groupById').append('<option name="'+params.gI+'" selected>'+params.gI+'</option>');
 	}
-	if(o.groupbyhg && -1 !== ['hostmap', 'treemap'].indexOf(params.r))
+	if(o.groupbyhg && -1 !== ['hostmap', 'treemap', 'netgraph'].indexOf(params.r))
 		fbox.append('<span class="label">Group Hosts by</span> <select id="hostmapGroupType"></select> ');
 
 	if(o.host) {

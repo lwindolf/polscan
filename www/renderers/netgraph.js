@@ -77,12 +77,14 @@ renderers.netgraph.prototype.prepareData = function (data, params) {
 	// - have no connections
 	var maxConnLimit = Math.max(hostLimit/100, Math.floor(graph.nodes.length/100));
 	graph.nodes = graph.nodes.filter(function(node) {
-		if (node.connCount === 0 || node.connCount > maxConnLimit) {
+		if (node.connCount === 0) {
 			selectedHosts[node.name] = undefined;
-			if(node.connCount > 0)
-				connCountDrop++;
-			else
-				noConnDrop++;
+			noConnDrop++;
+			return false;
+		}
+		if (node.connCount > maxConnLimit && graph.nodes.length > hostLimit/10) {
+			selectedHosts[node.name] = undefined;
+			connCountDrop++;
 			return false;
 		}
 		return true;

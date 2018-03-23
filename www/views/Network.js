@@ -60,16 +60,16 @@ Network.prototype.update = function(params) {
 		});
 		return;
 	}
+	if(params.r === 'netmap' && undefined === view.params.h) {
+		setLocationHash({h:view.firstHost, nt: params.nt});
+		return;
+	}
 
 	getData("netedge "+params.nt, function(data) {
 		view.params = params;
 		view.filteredHosts = get_hosts_filtered(params, false);
 
 		var results = data.results.filter(view.resultsFilter, view);
-		if(undefined === view.params.h) {
-			setLocationHash({h:view.firstHost, nt: params.nt});
-			return;
-		}
 
 		$(view.parentDiv).append("<div id='legend'/>"+
 		                         "<div id='render'/>");
