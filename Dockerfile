@@ -1,5 +1,5 @@
 FROM ubuntu:16.04
-MAINTAINER Lars Windolf
+MAINTAINER lars.windolf@gmx.de
 
 RUN apt-get update
 RUN apt-get install -y bash bats
@@ -8,5 +8,7 @@ RUN mkdir -p /src/
 WORKDIR /src/
 
 COPY . /src/
-RUN cd tests && ./run.sh
+
+WORKDIR /src/tests/
+RUN ./run.sh
 
