@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Network
 # name: Inventory
 # description: Inventory only scanner determining webserver upstreams (nginx server definitions, Apache proxy passes). Relies on nginx upstream definitions to be found in /etc/nginx/conf.d/* and Apache BalancerMember directives found in {/etc/apache2,/usr/local/apache2/conf}/sites-enabled.

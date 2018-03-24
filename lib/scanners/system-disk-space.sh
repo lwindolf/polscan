@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: System
 # name: Disk Space
 # description: Simple policy that ensure disks won't run full within the next 3 days using a 14 day interval of samples. Uses average growth in this interval to predict days to disk full. Warns if disk will be full in 7 days, critical when disk full in 3 days.

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: nginx ServerTokens
 # description: An nginx production webserver should not give details in the 'Server:' header

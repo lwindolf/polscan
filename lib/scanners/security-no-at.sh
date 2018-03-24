@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: No at daemon
 # description: The atd daemon must not be installed

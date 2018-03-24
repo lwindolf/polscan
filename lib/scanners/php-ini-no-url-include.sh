@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: PHP
 # name: allow_url_include = Off
 # description: Prevent PHP launching remote PHP scripts

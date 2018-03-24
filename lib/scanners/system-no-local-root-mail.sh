@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: System
 # name: No local root mail
 # description: There should be no local root mail. Policy checks wether /var/mail/root is less than 1kByte

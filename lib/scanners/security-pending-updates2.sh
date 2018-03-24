@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: Pending Updates
 # description: There should be no pending updates. This check uses apt-show-versions which needs to be installed.

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: System
 # name: /tmp Partition
 # description: /tmp is to be a separate partition

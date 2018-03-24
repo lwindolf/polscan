@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: AppArmor no complain
 # description: Checks if there are no AppArmor profiles in complain mode

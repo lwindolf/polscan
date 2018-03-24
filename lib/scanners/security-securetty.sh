@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: securetty
 # description: No root login via virtual consoles and serial ports

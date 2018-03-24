@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: No root aliases
 # description: Ensures there are no users with UID 0 besides root.

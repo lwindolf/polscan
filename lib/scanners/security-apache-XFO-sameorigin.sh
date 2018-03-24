@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: Apache XFO sameorigin
 # description: An Apache production webserver might want to prevent embedding its pages as frames. This prevents clickjacking.

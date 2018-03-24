@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: No SysRq
 # description: /proc/sys/kernel/sysrq is to be 0

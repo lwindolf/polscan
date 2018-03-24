@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: PHP
 # name: file_uploads = Off
 # description: Prevent file uploads.

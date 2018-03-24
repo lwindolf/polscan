@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: SELinux enabled
 # description: Uses 'sestatus' to check if SELinux is enabled. Checks grub.cfg for not having selinux=0.

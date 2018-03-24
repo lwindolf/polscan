@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Network
 # name: Internet Reachable
 # description: Ensures that outbound internet traffic is possible. Useful when you use external APT repos other other internet services.

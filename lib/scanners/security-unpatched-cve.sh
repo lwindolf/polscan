@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security-CVEs
 # name: Unpatched CVEs
 # description: There should be no urgent CVEs unpatched for which there are Debian updates available. Requires debsecan. Also provides a count based inventory.

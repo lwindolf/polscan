@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: No public portmap
 # description: The portmap port must no be visible on external IPs.

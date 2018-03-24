@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Network
 # name: No DHCP Clients
 # description: Production servers should not use DHCP to assign IPs

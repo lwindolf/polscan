@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: SSH
 # name: UsePrivilegeSeparation
 # description: Checks /etc/ssh/sshd_config for UsePrivilegeSeparation no

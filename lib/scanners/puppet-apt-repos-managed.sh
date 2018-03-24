@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Puppet
 # name: APT repos managed
 # description: Checks for Puppet 2/3/4 wether all APT repos with the exception of the default debian definition are managed

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: SSH
 # name: Key Permissions
 # description: Checks for correct key permissions. This avoids having unusable/unprotected keys.

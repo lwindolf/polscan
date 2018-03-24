@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: No IPv4 forwarding
 # description: IPv4 forwarding is to be disabled

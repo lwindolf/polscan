@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: pcid CPU flag
 # description: /proc/cpuinfo must contain pcid

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Network
 # name: FQDN
 # description: Ensure that the server has an FQDN configured.

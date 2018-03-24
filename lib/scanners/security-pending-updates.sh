@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: Pending Updates
 # description: There should be no pending security updates. We consider all package upgrades with 'Debian-Security' string as providing security upgrades that need to be installed

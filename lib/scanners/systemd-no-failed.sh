@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Systemd
 # name: No failed services
 # description: Ensure there are no failed services or units in maintenance

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: System
 # name: Panic on OOM
 # description: /proc/sys/vm/panic_on_oom is to be 1. /proc/sys/kernel.panic is to be > 0. This prevents undefined service behaviour on OOM

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: Apache Forbidden Ciphers
 # description: An Apache production webserver should not allow those ciphers: aNULL, eNULL, EXPORT, DES, MD5, PSK, RC4

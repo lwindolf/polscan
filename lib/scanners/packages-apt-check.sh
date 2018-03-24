@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Packages
 # name: No APT errors
 # description: Checks if all APT dependencies are fine (using 'apt-get check')

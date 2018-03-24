@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Puppet
 # name: /etc/sudoers* managed
 # description: Checks for Puppet 2/3/4 wether all sudoers definitions are managed

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Network
 # name: Primary Net
 # description: Inventory only scanner determining the network the FQDN resolves to

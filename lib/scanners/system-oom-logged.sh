@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: System
 # name: OOM logged
 # description: There shall be no 'Out of memory: kill process' in /var/log/dmesg as they usually indicate insufficient memory or memory leaks.

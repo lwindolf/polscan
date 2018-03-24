@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: PAM nullok
 # description: PAM should not allow nullok or nullok_secure

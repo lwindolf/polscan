@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Performance
 # name: Swappiness = 1
 # description: Swappiness should be reduced as much as possible on databases of all kinds. Note: due to OOM behaviour since Linux 2.6.32+ swappiness=0 is dangerous, so to be safe we stay with swappiness=1 and throw a warning on swappiness=0.

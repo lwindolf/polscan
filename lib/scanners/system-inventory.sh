@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: System
 # name: Inventory
 # description: Inventory only scanner determining kernel version with uname -r, locale, timezone, CPU+RAM GB count, OS release, RAID vendor, Uptime, NMI Watchdog Setting

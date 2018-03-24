@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: Apache XCTO nosniff
 # description: An Apache production webserver might want to prevent MSIE from file type sniffing. Only set if you are sure all your documents have proper MIME types, otherwise you might break your site for MSIE users.

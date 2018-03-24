@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Network
 # name: All Log Martians
 # description: Ensures logging of all suspicious packages

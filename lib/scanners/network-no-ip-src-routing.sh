@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Network
 # name: No IP Source Routing
 # description: Ensures that IP Source Routing is disabled

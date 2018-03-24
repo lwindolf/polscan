@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: PHP
 # name: PECL Upgrades
 # description: Checks there are PECL installed modules that have pending upgrades

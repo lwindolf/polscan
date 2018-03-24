@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: No automounter
 # description: The automounter must not be installed

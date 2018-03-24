@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: SSH
 # name: SFTP disabled
 # description: SFTP subsystem must not be enabled in /etc/ssh/sshd_config

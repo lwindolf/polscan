@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Network
 # name: Hostname and FQDN resolve local
 # description: Ensures that the hostname and the FQDN resolve to an IP of a local interface

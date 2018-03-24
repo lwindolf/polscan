@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: PHP
 # name: Modules Load
 # description: Checks if all modules do load. Fuzzy check that uses the "php" from path. This might not always be the one you want.

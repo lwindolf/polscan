@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: System
 # name: /home Partition
 # description: /home is to be a separate partition

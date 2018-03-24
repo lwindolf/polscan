@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: Remote FS Mounts
 # description: All remote FS mounts need to use nodev and nosuid

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: System
 # name: RAID State
 # description: There should be no RAID errors. Uses Nagios plugin check_raid from Debian package nagios-plugins-contrib to check RAID errors.

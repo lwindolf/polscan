@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: No compiler
 # description: Production systems, especially frontends should have no compiler to prevent overly easy privilege escalation.

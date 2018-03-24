@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Network
 # name: SYN Cookie Protection
 # description: Ensures that SYN cookies are enabled.

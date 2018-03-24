@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: SSH
 # name: No keyboard auth
 # description: /etc/ssh/sshd_config must not have enabled keyboard-interactive authentication

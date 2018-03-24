@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: PHP
 # name: No PECL
 # description: Checks there are no PECL installed modules at all. This makes sense when using disto packages or self-build packages exclusively.

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Network
 # name: Inventory
 # description: Inventory only scanner determining distributed filesystem mount points from /proc/mounts and mount clients on NFS exports using showmount

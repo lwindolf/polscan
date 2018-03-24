@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: SSH
 # name: Legacy Options
 # description: Checks /etc/ssh/sshd_config for disabled legacy features: IgnoreRhosts yes, HostbasedAuthentication no, RhostsRSAAuthentication no, Protocol 2 (no 1). Use for older SSH versions only as these options are default e.g. in Jessie.

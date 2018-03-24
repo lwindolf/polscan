@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: System
 # name: Immutable Files
 # description: There must be no immutable files as they would block automation tools.

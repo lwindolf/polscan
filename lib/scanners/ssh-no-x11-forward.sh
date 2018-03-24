@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: SSH
 # name: X11Forwarding no
 # description: Checks /etc/ssh/sshd_config for X11Forwarding yes

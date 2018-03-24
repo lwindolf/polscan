@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Packages
 # name: No dpkg errors
 # description: Checks no installed package has F flag (for half-configured) and wether dpkg reports audit issues.

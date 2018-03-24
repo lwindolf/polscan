@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: No Avahi
 # description: No Avahi services should be running

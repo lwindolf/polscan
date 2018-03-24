@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Performance
 # name: TZ is set
 # description: On production servers the TZ env variable should be set to avoid filesystem stat() syscalls for timezone change detection via /etc/localtime on each call to Glibc localtime() 

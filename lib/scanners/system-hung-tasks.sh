@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: System
 # name: No Hung Tasks
 # description: There shall be no 'blocked for more than xxx seconds' in dmesg

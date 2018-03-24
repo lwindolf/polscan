@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: No SSH User Equivalency
 # description: There must be no direct user equivalency. To detect this we match all SSH keys of all users against all authorized_keys to find network wide user equivalency.

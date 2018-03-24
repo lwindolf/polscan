@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: System
 # name: Overflow tmp
 # description: There should be no overflow mounted /tmp. This happens when you have no /tmp partition and / runs full. In this case the kernel mounts an 1MB /tmp partition which is unusable in normal operation.

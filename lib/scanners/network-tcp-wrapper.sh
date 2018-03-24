@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Network
 # name: TCP wrapper
 # description: Ensure sane TCP wrapper config with "ALL: ALL" in hosts.deny and no "ALL: ALL" in hosts.allow

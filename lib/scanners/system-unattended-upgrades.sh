@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: System
 # name: Unattended Upgrades
 # description: The Debian unattended-upgrades packages is installed and activated

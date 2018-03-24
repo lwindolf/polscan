@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: nginx SSL Certs
 # description: An nginx production webserver should not use weak certificates. Checks for weak signatures (better than SHA-256) and RSA public key size (>=4096)

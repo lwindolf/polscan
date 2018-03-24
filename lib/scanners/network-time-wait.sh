@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Network
 # name: TCP Time Wait
 # description: On frontend servers exposed to DoS you want basic settings to improve the pool of connections in state TIME_WAIT 

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: System
 # name: No Panic on OOM
 # description: /proc/sys/vm/panic_on_oom is to be 0. /proc/sys/vm/overcommit_memory is to be 2. This is usually NOT a good idea because an OOM situation causes undefined behaviour.

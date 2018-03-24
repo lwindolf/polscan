@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: System
 # name: USB Drives
 # description: On server systems USB disk devices are not normal. So you might want to know about all of them.

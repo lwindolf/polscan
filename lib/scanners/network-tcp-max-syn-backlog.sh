@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Network
 # name: SYN flooding
 # description: Ensures that SYN cookies are enabled and SYN backlog is configured on hosts with dmesg reporting SYN flood

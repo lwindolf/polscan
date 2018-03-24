@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: No IPv6 forwarding
 # description: IPv6 forwarding is to be disabled

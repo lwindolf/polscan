@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Puppet
 # name: Cron Jobs managed
 # description: Checks for Puppet 2/3/4 wether all cron jobs are managed using the Puppet cron resource

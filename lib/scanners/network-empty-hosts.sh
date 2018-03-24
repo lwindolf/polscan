@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Network
 # name: No entries in /etc/hosts
 # description: Ensures that there are no extra entries in /etc/hosts

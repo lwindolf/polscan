@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Puppet-Run
 # name: Not disabled
 # description: Checks for Puppet 2/3/4 lock file indicating Puppet runs are disabled. Also checks if the puppet daemon is running.

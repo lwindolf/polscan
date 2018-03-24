@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: nginx Prefer Server Ciphers
 # description: An nginx production webserver should prefer the server side ciphers.

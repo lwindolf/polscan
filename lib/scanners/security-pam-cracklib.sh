@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: PAM cracklib
 # description: pam_cracklib.so is to be enabled in /etc/pam.d/* to enforce better passwords

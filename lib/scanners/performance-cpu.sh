@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Performance
 # name: Powersave Off
 # description: On production hardware servers we do not want any type of power saving active. Checks both the CPU scaling governor /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor and if the Intel pstate driver is active with min_perf_pct at 100

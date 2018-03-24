@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: System
 # name: sysctl Settings
 # description: sysctl settings should be applied and persistent. That means all settings in /etc/sysctl.conf /etc/sysctl.d/*.conf must be active. This is important because network settings are not safely applied in Debian Squeeze by the procps script (running to early in the boot order).

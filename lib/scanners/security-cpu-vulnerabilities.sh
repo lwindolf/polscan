@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: CPU vulnerabilities
 # description: Checks for Meltdown and Specte mitigations

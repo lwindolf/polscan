@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Virtualization
 # name: Inventory
 # description: Inventory only scanner virtualization instance count (containers, VMs) and type (KVM, LXC, docker...)

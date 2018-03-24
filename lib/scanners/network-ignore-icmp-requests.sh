@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Network
 # name: Ignore ICMP
 # description: Ensures that ICMP requests are ignored

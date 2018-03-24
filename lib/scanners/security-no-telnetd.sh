@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: No telnetd
 # description: Ensures that telnetd is not installed

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Systemd
 # name: No masked services
 # description: Ensure there are no masked services

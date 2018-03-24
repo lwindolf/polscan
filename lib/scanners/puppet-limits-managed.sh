@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Puppet
 # name: /etc/security/limits* managed
 # description: Checks for Puppet 2/3/4 wether all /etc/security/limits.d/* definitions are managed using drop files

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: Security Repo
 # description: Ensure the security.debian.org repo is enabled

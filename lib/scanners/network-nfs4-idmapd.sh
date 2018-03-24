@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Network
 # name: NFS4 Idmapd
 # description: On all NFS4 clients idmapd should be running

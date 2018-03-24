@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: System
 # name: 208 day freeze
 # description: Ensure we are not running an outdated buggy kernel. Enforce safe uptime <190 days

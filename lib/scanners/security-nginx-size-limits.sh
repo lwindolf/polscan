@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: nginx size limits
 # description: An nginx production webserver should prevent buffer attacks. While there are defaults for the different client request buffer setting and size limits it might be worth minimizing the as much as possible.

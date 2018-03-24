@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: PHP
 # name: expose_php = Off
 # description: Prevent expose the PHP version in 'X-Powered-By' HTTP header

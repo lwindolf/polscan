@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: nginx Forbidden Ciphers
 # description: An nginx production webserver should not allow those ciphers: aNULL, eNULL, EXPORT, DES, MD5, PSK, RC4

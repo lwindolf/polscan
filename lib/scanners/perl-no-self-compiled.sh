@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Perl
 # name: No self-compiled
 # description: Checks there are no self-compiled Perl modules. Fuzzy check that takes existing directories as indication for those.

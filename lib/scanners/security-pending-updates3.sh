@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: Pending Updates
 # description: There should be no pending security updates. This check uses aptitudes which needs to be installed.

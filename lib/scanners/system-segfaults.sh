@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: System
 # name: No Segfaults
 # description: There shall be no 'segfault at ' messages in dmesg

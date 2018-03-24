@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: System
 # name: No MCE logged
 # description: There shall be no 'Machine check events' in /var/log/dmesg as they can indicate real hardware issues

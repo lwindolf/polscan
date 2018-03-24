@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: Pending Updates
 # description: There should be no pending security updates. This check uses debsecan and checks for "high urgency" listings. Note: debsecan does not report package versions.

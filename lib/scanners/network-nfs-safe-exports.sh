@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Network
 # name: Safe NFS Exports
 # description: Ensures no NFS export has no_root_squash set

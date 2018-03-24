@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: SSH
 # name: Strict Modes enabled
 # description: Checks /etc/ssh/sshd_config for StrictModes no

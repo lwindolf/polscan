@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: PHP
 # name: display_errors = Off
 # description: Prevent exposing PHP errors.

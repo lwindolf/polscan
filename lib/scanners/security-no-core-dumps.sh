@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: No Core Dumps
 # description: Checks if core dumps are disabled in /etc/security/limits.conf and /etc/security/limits.d/*

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: PHP
 # name: open_basedir is set
 # description: PHP code should be restricted to its code directory.

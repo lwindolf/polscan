@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: System
 # name: USB Keyboard
 # description: On server systems USB keyboards are not normal. So you might want to know when on is attached

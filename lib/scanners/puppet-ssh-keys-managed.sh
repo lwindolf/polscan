@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Puppet
 # name: SSH Keys managed
 # description: Checks for Puppet 2/3/4 wether all SSH keys are managed

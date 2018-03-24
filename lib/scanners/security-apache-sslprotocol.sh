@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: Apache SSL Protocol
 # description: An Apache production webserver should disable legacy protocols

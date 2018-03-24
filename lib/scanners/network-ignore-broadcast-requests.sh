@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Network
 # name: Ignore Broadcasts
 # description: Ensures that ICMP broadcast requests are ignored

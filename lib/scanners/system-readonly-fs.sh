@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: System
 # name: Readonly FS
 # description: There should be no read-only local filesystems

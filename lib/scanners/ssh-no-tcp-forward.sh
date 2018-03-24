@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: SSH
 # name: AllowTcpForwarding no
 # description: Checks /etc/ssh/sshd_config for AllowTcpForwarding no

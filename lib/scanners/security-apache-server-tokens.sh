@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: Apache ServerTokens
 # description: An Apache production webserver should not give details in the 'Server:' header

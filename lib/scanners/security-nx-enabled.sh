@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: Execute Disable Support
 # description: On Intel CPUs execute disable protection should be active

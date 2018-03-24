@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: dmesg restricted
 # description: Non-root users should have no access to sensitive infos in dmesg

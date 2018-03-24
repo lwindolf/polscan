@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: No promiscuous interface
 # description: Ensures there are no interfaces in promiscuous mode indicating package capturing

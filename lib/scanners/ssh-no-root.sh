@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: SSH
 # name: PermitRootLogin no
 # description: Checks /etc/ssh/sshd_config for PermitRootLogin no

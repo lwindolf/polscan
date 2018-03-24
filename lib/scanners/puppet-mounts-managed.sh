@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Puppet
 # name: Mounts managed
 # description: Checks for Puppet 2/3/4 wether all mount points are managed as a File resource. This is no perfect check, but gives an indication that they are not rogue mounts.

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: System
 # name: /var Partition
 # description: /var is to be a separate partition

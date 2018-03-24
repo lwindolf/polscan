@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Updates
 # name: Distro Release
 # description: Checks if distribution is still ok

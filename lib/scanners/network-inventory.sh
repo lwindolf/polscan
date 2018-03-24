@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Network
 # name: Inventory
 # description: Inventory only scanner determining external IPv4 IPs, all routes, all nameservers and the number of configured scope global IPv6 addresses

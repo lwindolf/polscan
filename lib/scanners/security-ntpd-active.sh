@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: ntpd on
 # description: There must be a running ntpd

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: ASLR enabled
 # description: Address Space Layout Randomization is to be enabled.

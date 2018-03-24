@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: Enforce Bash History
 # description: Enforce safe Bash history for all users. Enforce timestamp for history.

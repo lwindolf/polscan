@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: No portmapper
 # description: Ensures that portmap is not installed

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: SSH
 # name: Inventory
 # description: Inventory only scanner fuzzy guessing SSH key equivalencies from authorized_keys comment field. Recognizes all non-revoked keys with <user>@<host> in the comment field. Fuzzy matches host names to known FQDNs.

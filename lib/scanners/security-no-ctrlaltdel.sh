@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: Ctrl-Alt-Del disabled
 # description: Reboot via console Ctrl-Alt-Del should be disabled

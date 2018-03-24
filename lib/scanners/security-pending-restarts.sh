@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: Pending Restarts
 # description: There should be no pending service restarts after library upgrades. This is checked using the needstart tool which needs to be installed (Available starting with Jessie/Wheezy Backports).

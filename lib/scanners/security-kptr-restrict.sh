@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: kptr restricted
 # description: Non-root users should have no access to kernel symbols in /proc/kallsyms

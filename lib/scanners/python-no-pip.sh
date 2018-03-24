@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Python
 # name: No Pip
 # description: Checks there are no Pip installed packages at all. This makes sense when using distro packages or self-build packages exclusively.

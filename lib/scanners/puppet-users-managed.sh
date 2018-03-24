@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Puppet
 # name: Users managed
 # description: Checks for Puppet 2/3/4 wether all UID > 1000 are managed using Puppet resources

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Network
 # name: IP Spoofing
 # description: Ensures that IP spoofing protection is enabled

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Security
 # name: Tomcat Admin
 # description: Check for insane tomcat admin default password 'admin' as there as just to many places online suggesting this.

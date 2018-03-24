@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Packages
 # name: Inventory
 # description: Inventory only scanner for 3rd party repos
