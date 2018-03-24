@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Network
 # name: Host Reverse Lookup
 # description: Ensures that all hosts have reverse lookup properly configured

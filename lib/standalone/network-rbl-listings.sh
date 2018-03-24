@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: Network
 # name: RBL Listings
 # description: Ensures that no known external IP is DNS blacklisted. Requires the 'Network' inventory scanner for a list of external IPs.

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: System
 # name: NIC Names
 # description: Inventory only scanner determining NIC names via facter 2. Probably won't work with facter 3+

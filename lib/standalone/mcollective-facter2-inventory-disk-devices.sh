@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # group: System
 # name: Disk Devices
 # description: Inventory only scanner determining disk devices via facter 2. Probably won't work with facter 3+
