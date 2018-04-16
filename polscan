@@ -214,7 +214,7 @@ results_to_json() {
 	cd "$RESULT_DIR" || exit 1
 
 	# Determine host list from input result dir
-	HOST_LIST=$(cd "$RESULT_DIR" && ls)
+	cd "$RESULT_DIR" && ls | grep -v .hosts >".hosts"
 
 	# Do regroup results by group and policy
 	declare -A policies
@@ -227,12 +227,9 @@ results_to_json() {
 
 	# Never overwrite host groups without need
 	if [ ! -f "${JSON_DIR}/host_groups.json" ]; then
-		# Some preparations for running the host group providers:
-		export HOST_LIST        # Some host group providers might want to use it
-		export RESULT_DIR       # Some host group providers might want to use it
-
 		# Write hostgroups to intermediate file
 		# FIXME: Account for multiple host group providers!
+		export RESULT_DIR       # Some host group providers might want to use it
 		$LIB_DIR/host-group-providers/$HOST_GROUP_PROVIDERS | grep -v '^$' >"${JSON_DIR}/hgs"
 
 		# Determine host group names
@@ -374,7 +371,7 @@ results_to_json() {
 		count=$(ls | xargs -n1 grep "^$g (OK|WARNING|FAILED) " | wc -l)
 		echo -n '{"group": "'$g'", "WARNING": '${pgroups[warn_$g]-0}', "FAILED": '${pgroups[fail_$g]-0}', "count": '${count-0}'},'
 	done
-	) | write_json list overview 'WARNING": '${pall[warn]-0}', "FAILED": '${pall[fail]-0}', "scanTime": '$(stat -c %Y "$RESULT_DIR")', "reportTime": '$(date +%s)', "hostCount": '$(echo $HOST_LIST | wc -w)', "overview'
+	) | write_json list overview 'WARNING": '${pall[warn]-0}', "FAILED": '${pall[fail]-0}', "scanTime": '$(stat -c %Y "$RESULT_DIR")', "reportTime": '$(date +%s)', "hostCount": '$(wc -w "$RESULT_DIR/.hosts")', "overview'
 
 	# Host infos
 	(

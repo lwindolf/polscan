@@ -3,7 +3,7 @@
 # name: Subdomain-Prefix
 # description: Hostgroup provider based on domain names. Simply groups all hosts by first subdomain prefix
 
-echo "$HOST_LIST" |\
+cat $RESULT_DIR/.hosts |\
 xargs -n 1 |\
 grep -v "^[^.]*$" |\
 sed 's/^\([^.]*\.\([^.]*\)\)/Subdomain-Prefix::\2 \1/'
