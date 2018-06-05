@@ -1,8 +1,8 @@
-// vim: set ts=4 sw=4: 
+// vim: set ts=4 sw=4:
 // Polscan view base object
 //
 // A polscan view presents one type of data (e.g. scan results or inventories)
-// and allows to filter by data type specific filter options and to switch 
+// and allows to filter by data type specific filter options and to switch
 // between different data type specific renderers
 //
 // PolscanView is both a view singleton and factory for views and renderers
@@ -44,7 +44,7 @@ PolscanView.prototype.onCopyHosts = function() {
 PolscanView.prototype.getLegendColor = function(i) {
     if(this.legend.colors)
         return this.legend.colors[i];
-        
+
     return color(i);
 }
 
@@ -52,27 +52,26 @@ PolscanView.prototype.getLegendColorByValue = function(v) {
 	return this.getLegendColor(this.legend.colorIndex[v]);
 }
 
-PolscanView.prototype.addLegendItem = function(title, count, colorIndex) {
+PolscanView.prototype.addLegendItem = function(id, title, count, colorIndex) {
     var view = this;
 
     if(!view.legend.order)
         view.legend.order = [];
+    if(!view.legend.idToIndex)
+        view.legend.idToIndex = {};
 
     var i = view.legend.order.length;
     view.legend.order.push(colorIndex);
-    $('#legend').append("<span class='legendItem legendIndex"+i+"' title='"+title+"'>"+title+" ("+count+")</span>");
-    $('#legend .legendIndex'+i).css("border-left", "16px solid "+view.getLegendColor(colorIndex));
+	view.legend.idToIndex[id] = i;
+    $('#legend').append("<span data-legend-index='"+i+"' class='legendItem' title='"+title+"'>"+title+" ("+count+")</span>");
+    $('#legend .legendItem[data-legend-index='+i+']').css("border-left", "16px solid "+view.getLegendColor(colorIndex));
 }
 
 // Common selection handler for legends
 PolscanView.prototype.selectLegendItem = function(e) {
 	var view = e.data;
-    var li;
-	$.each(e.target.className.split(/\s+/), function(i, item) {
-			if(item.indexOf("legendIndex") == 0)
-				li = item.substring(11);
-	});
-	if(!li) {
+    var li = $(e.target).data('legend-index');
+	if(undefined === li) {
 		console.log("Error: could not find legend index!");
 		return;
 	}
@@ -84,12 +83,12 @@ PolscanView.prototype.selectLegendItem = function(e) {
 
 	// Highlight selected items
 	$.each(view.legend.order, function(i, index) {
-	    if(-1 === view.legend.selection.indexOf(""+i))
-	        $('#legend .legendIndex'+i).css('background', 'white');
+	    if(-1 === view.legend.selection.indexOf(i))
+	        $('#legend .legendItem[data-legend-index='+i+']').css('background', 'white');
 	    else
-    	    $('#legend .legendIndex'+i).css('background', view.getLegendColor(view.legend.order[i]));
+    	    $('#legend .legendItem[data-legend-index='+i+']').css('background', view.getLegendColor(view.legend.order[i]));
 	});
-	
+
 	try {
 		view.renderer.filterByLegend(view.legend);
 	} catch(e) {
@@ -181,6 +180,7 @@ PolscanView.prototype.load = function(name, params) {
 	$.getScript("views/"+name+".js")
 	.done(function(s, t) {
 		try {
+			view.legend = undefined;
 			view.current = new window[name]();
 			view.viewName = name;
 			if(undefined === params.r || '' === params.r)
@@ -207,4 +207,3 @@ PolscanView.prototype.load = function(name, params) {
 	})
 	.fail(view.ajaxError);
 }
-

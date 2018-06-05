@@ -1,9 +1,27 @@
-// vim: set ts=4 sw=4: 
+// vim: set ts=4 sw=4:
 // Renderer for displaying finding details in a sortable table
 // Loads row asynchronously to allow for larger tables
 
-renderers.table = function tableRenderer(parentDiv) { 
+renderers.table = function tableRenderer(parentDiv) {
 	this.tableLoadTimeout = undefined;
+};
+
+renderers.table.prototype.filterByLegend = function(legend) {
+
+	if(legend.selection && legend.selection.length) {
+		// Hide all
+		$('.resultTable tr').hide();
+
+		// Selectively show stuff
+		$.each(legend.selection, function(i, li) {
+
+			$('.resultTable tr[data-legend-index='+li+']').show();
+			$('.resultTable tr[data-legend-index='+li+']').children().show();
+		});
+	} else {
+		// Show all
+		$('.resultTable tr').show();
+	}
 };
 
 renderers.table.prototype.sortTable = function(id, sortOrder) {
@@ -148,7 +166,12 @@ renderers.table.prototype.createResultTable = function(id, data, params) {
 		}
 		visibleHosts[item.host] = 1;
 
-		rows += '<tr><td class="host">' + item.host + '</td>';
+		if(0 !== severity)
+			rows += '<tr data-legend-index="'+data.legend.idToIndex[item.severity+":::"+(item.group?item.group:params.fG) + ":::" + item.policy]+'">';
+		else
+			rows += '<tr>';
+
+        rows += '<td class="host">' + item.host + '</td>';
 		if(item.group)
 			rows += '<td class="group">' + item.group + '</td>';
 		rows +=
@@ -162,7 +185,7 @@ renderers.table.prototype.createResultTable = function(id, data, params) {
 		// followed by any whitespace or comma separated list.
 		var pos = item.message.indexOf(':');
 		if(pos != -1) {
-			var groupByStr = item.message.substring(0, pos); 
+			var groupByStr = item.message.substring(0, pos);
 			if(groupBy[groupByStr] === undefined) {
 				groupBy[groupByStr] = 1;
 			} else {

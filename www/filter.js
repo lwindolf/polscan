@@ -100,7 +100,7 @@ function addCalendar(id, initialDate) {
 		getDataUrl('results/json/'+yearMonth, 'calendar', function(data) {
 			for(i = 1; i <= 31; i++) {
 				var td = $(id + ' td').filter(function() {
-					return $(this).text() == ""+i; 
+					return $(this).text() == ""+i;
 				});
 				if(-1 !== data.days.indexOf(i))
 					td.addClass('available');
@@ -166,7 +166,7 @@ function loadFilterSettings(params, o) {
 			$("#search").val(params.sT);
 	}
 	if(o.host) {
-		fbox.append('Host <input type="text" value="'+(params.h !== undefined?params.h:'')+'" list="availableHosts" id="selectedHost"/>' +	
+		fbox.append('Host <input type="text" value="'+(params.h !== undefined?params.h:'')+'" list="availableHosts" id="selectedHost"/>' +
 				' <datalist id="availableHosts"/>');
 		getData("hosts", function(data) {
 			$.each(data.results, function(host) {
@@ -202,7 +202,6 @@ function loadFilterSettings(params, o) {
 		$("#filter *").removeAttr('disabled');
 	});
 
-	$('.filterGo').click(function() {
-		applyFilterSettings();
-	});
+	$('.filterGo').click(function() { applyFilterSettings(); });
+    $('#datepicker').change(function() { applyFilterSettings(); });
 }

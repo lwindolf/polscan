@@ -24,7 +24,7 @@
 		<script type="text/javascript" src="lib/handlebars.min-latest.js"></script>
 		<script type="text/javascript" src="lib/jquery.sparkline.min.js"></script>
 		<script type="text/javascript" src="lib/split.min.js"></script>
- 
+
 		<link rel="stylesheet" href="lib/jquery-ui.min.css">
 		<link rel="stylesheet" href="styles.css">
 		<style type="text/css">
@@ -448,7 +448,7 @@ a.resolve {
 			<div id='viewinfo'><span class='block name'/></div>
 			<div id='filter'></div>
 			<div id='results'></div>
-		</div> 
+		</div>
 
 		<script>
 			var SCHEMA_VERSION = 1;
@@ -552,11 +552,11 @@ a.resolve {
 				}).promise();
 			}
 
-			/* Generic from cache fetcher. Returns data synchronously 
+			/* Generic from cache fetcher. Returns data synchronously
 			   or raises error */
 			function getCachedData(name) {
 				var cacheName = name.replace('-', '_');
-			
+
 				if(undefined !== resultCache[cacheName])
 					return resultCache[cacheName];
 				else
@@ -619,7 +619,6 @@ a.resolve {
 
 			function onLocationHashChange() {
 				var params = getParams();
-
 				if(params.d) {
 					var newBaseUrl = "results/json/"+params.d+"/";
 					if(newBaseUrl != baseUrl) {
@@ -678,7 +677,7 @@ a.resolve {
 			(function() {
 				onLocationHashChange();
 
-				// Allow some simple navigation by browser history 
+				// Allow some simple navigation by browser history
 				// for scanner results
 				$(window).on('hashchange', onLocationHashChange);
 			})();

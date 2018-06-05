@@ -1,4 +1,4 @@
-// vim: set ts=4 sw=4: 
+// vim: set ts=4 sw=4:
 /* A view visualizing distribution of inventory over host groups.
    Represents inventory type items as color coded bars inside
    host boxes. Suitable for mapping out inventory where each
@@ -75,7 +75,7 @@ Inventory.prototype.addLegend = function(results) {
 		if(!legend[l].match(/^[0-9]+$/))
 			numeric = 0;
 	}
-	
+
 	if(numeric)
 	    view.legend.colors = [];
 
@@ -96,7 +96,7 @@ Inventory.prototype.addLegend = function(results) {
 		} else {
 	        colorIndex = view.legend.colorIndex[name];
 		}
-		view.addLegendItem(name, legendCount[name], colorIndex);
+		view.addLegendItem(name, name, legendCount[name], colorIndex);
 	}
 
 	$("#legend .legendItem").on("click", view, view.selectLegendItem);

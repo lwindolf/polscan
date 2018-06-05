@@ -1,6 +1,6 @@
-// vim: set ts=4 sw=4: 
+// vim: set ts=4 sw=4:
 /* A HTML renderer using a mix of table and map, to visualize a
-   distribution of findings over host groups. Represents hosts 
+   distribution of findings over host groups. Represents hosts
    as color coded boxes according to maximum finding severity */
 
 renderers.hostmap = function hostmapRenderer() { };
@@ -94,12 +94,12 @@ renderers.hostmap.prototype.render = function(id, data, params) {
 	var findingsByHost = [];
 
 	$.each(data.results, function(i, item) {
-		if(undefined !== data.legend.colors)
+		if('ScanResults' === view.viewName)
 			// Instead of complex counting we make strings with the first char
 			// of all findings severities by host e.g. "FFOOOOOOFWOOOO" for
 			// 3 times failed and 1 warning
 			findingsByHost[item.host] += item.severity.substring(0,1);
-		else
+		if('Inventory' === view.viewName)
 			findingsByHost[item.host] = item.values; // Overwrite as inventory should be 1:1
 	});
 
@@ -147,6 +147,6 @@ renderers.hostmap.prototype.render = function(id, data, params) {
 
 	this.filterByLegend(data.legend);
 	installTooltip('.hostMapBox', this.tooltip, data);
-	        
+
 	$("#hostmap").tablesorter({sortList: [[1,1],[2,1],[3,1],[0,0]]});
 };

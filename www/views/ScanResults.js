@@ -1,4 +1,4 @@
-// vim: set ts=4 sw=4: 
+// vim: set ts=4 sw=4:
 // View for displaying finding details by group
 
 function ScanResults() {
@@ -65,7 +65,7 @@ ScanResults.prototype.addLegend = function(results) {
 	var numeric = 0;
 	var lastElem = topFindings[topFindings.length-1];
 	Object.keys(topFindings).sort(function(a,b) {
-		if((-1 !== a.indexOf('FAILED')  && -1 !== b.indexOf('FAILED')) || 
+		if((-1 !== a.indexOf('FAILED')  && -1 !== b.indexOf('FAILED')) ||
 		   (-1 !== a.indexOf('WARNING') && -1 !== b.indexOf('WARNING')))
 			return topFindings[b] - topFindings[a];
 		if(-1 !== a.indexOf('FAILED'))
@@ -74,7 +74,7 @@ ScanResults.prototype.addLegend = function(results) {
 	}).forEach(function(name) {
 	    var count = topFindings[name];
 		var tmp = name.split(/:::/);
-		view.addLegendItem(tmp[1]+" - "+tmp[2], count, view.legend.colorIndex[tmp[0]]);
+		view.addLegendItem(name, tmp[1]+" - "+tmp[2], count, view.legend.colorIndex[tmp[0]]);
 	});
 	$("#legend .legendItem").on("click", view, view.selectLegendItem);
 };
@@ -84,11 +84,6 @@ ScanResults.prototype.update = function(params) {
 
 	if(!params.fG) {
         params.fG = 'new';
-		setLocationHash(params);
-		return;
-	}
-	if(!params.gT) {
-		params.gT = 'Domain';
 		setLocationHash(params);
 		return;
 	}
@@ -111,8 +106,8 @@ ScanResults.prototype.update = function(params) {
 		});
 
 		var results = data.results.filter(view.resultsFilter, view);
-		view.render('#tableRow', { results: results, legend: view.legend }, view.params);
 		view.addLegend(results);
+		view.render('#tableRow', { results: results, legend: view.legend }, view.params);
 		view.addInfoBlock('Hosts',    view.filteredHosts.length);
 		view.addInfoBlock('Failed',   view.failed);
 		view.addInfoBlock('Warnings', view.warning);

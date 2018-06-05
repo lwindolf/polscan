@@ -105,7 +105,7 @@ function loadRendererSettings(id, params, o) {
 		fbox.append('<span class="label">Group Hosts by</span> <select id="hostmapGroupType"></select> ');
 
 	if(o.host) {
-		fbox.append('<hr/>Host <input type="text" value="'+(params.h !== undefined?params.h:'')+'" list="availableHosts" id="selectedHost"/>' +	
+		fbox.append('<hr/>Host <input type="text" value="'+(params.h !== undefined?params.h:'')+'" list="availableHosts" id="selectedHost"/>' +
 				' <datalist id="availableHosts"/>');
 		getData("hosts", function(data) {
 			$.each(data.results, function(host) {
@@ -132,8 +132,7 @@ function loadRendererSettings(id, params, o) {
 		});
 	});
 
-	// FIXME
-//	$('.filterGo').click(function() {
-//		applyFilterSettings();
-//	});
+    $('#inventoryType').change(function() { applyFilterSettings(); });
+    $('#findingsGroup').change(function() { applyFilterSettings(); });
+    $('#netedgeType').change(function() { applyFilterSettings(); });
 }
