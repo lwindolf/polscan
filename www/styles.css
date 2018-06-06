@@ -1,4 +1,4 @@
-// vim: set ts=4 sw=4: 
+// vim: set ts=4 sw=4:
 @font-face {
 	font-family: 'Muli';
 	src: url("fonts/Muli-Bold.ttf");
@@ -35,7 +35,7 @@ body.main {
 }
 
 #menu {
-	position:fixed; 
+	position:fixed;
 	background: #222;
 	color:silver;
 	float:left;
@@ -471,7 +471,7 @@ table.probes td {
 #overviewCalendar table {
 	height:220px;
 }
-#overviewCalendar td { 		
+#overviewCalendar td {
 	font-size: 1.2em;
 }
 
@@ -512,4 +512,33 @@ table.probes td {
 	border:12px solid #eee;
 }
 
+.split, .split-flex {
+	-webkit-box-sizing: border-box;
+	   -moz-box-sizing: border-box;
+		    box-sizing: border-box;
 
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
+.gutter {
+	background-color: #eee;
+
+	background-repeat: no-repeat;
+	background-position: 50%;
+}
+
+.gutter.gutter-horizontal {
+	background-image: url('img/grips-vertical.png');
+	cursor: ew-resize;
+}
+
+.gutter.gutter-vertical {
+	background-image: url('img/grips-horizontal.png');
+	cursor: ns-resize;
+}
+
+.split.split-horizontal, .gutter.gutter-horizontal {
+	height: 100%;
+	float: left;
+}

@@ -101,8 +101,8 @@ ScanResults.prototype.update = function(params) {
 		$('#render').addClass("split split-horizontal");
 		$('#legend').addClass("split split-horizontal");
 		Split(['#legend', '#render'], {
-			sizes: [20, 80],
-			minSize: [200, 200]
+			sizes: [25, 75],
+			minSize: [234, 0]	// 234px matches view name block width
 		});
 
 		var results = data.results.filter(view.resultsFilter, view);
