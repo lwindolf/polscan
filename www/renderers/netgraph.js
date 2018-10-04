@@ -1,5 +1,5 @@
-// vim: set ts=4 sw=4: 
-/* A view visualizing active network connections using 
+// vim: set ts=4 sw=4:
+/* A view visualizing active network connections using
    a Pixi.js WebGL accelerated fixed d3 force layout. */
 
 renderers.netgraph = function netgraphRenderer() {};
@@ -68,7 +68,7 @@ renderers.netgraph.prototype.prepareData = function (data, params) {
 			selectedEdges[edge] = 1;
 			graph.nodes[selectedHosts[ln]].connCount++;
 			graph.nodes[selectedHosts[rn]].connCount++;
-		}		
+		}
 	});
 
 	// Finally cleanup hosts that:
@@ -176,7 +176,7 @@ renderers.netgraph.prototype.render = function(id, data, params) {
 		graphics.scale.y = d3.event.scale;
 		force.tick();
 		renderer.render(stage);
-	}		
+	}
 
     function drawEdge(d, x1, y1, x2, y2, width) {
       graphics.lineStyle(width, 0xbbbbbb);

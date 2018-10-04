@@ -242,7 +242,7 @@ app.use(express.static(path.join(__dirname, config["static"]["rootdir"])));
 app.use("/results", express.static(path.join(__dirname, config["static"]["results"])));
 
 app.all('*', function(req, res) {
-   res.sendfile('index.html')  
+   res.sendFile('index.html')  
 });
 
 http.createServer(app).listen(8081);
