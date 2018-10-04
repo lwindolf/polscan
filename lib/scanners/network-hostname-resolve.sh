@@ -4,7 +4,7 @@
 # name: Hostname and FQDN resolve local
 # description: Ensures that the hostname and the FQDN resolve to an IP of a local interface
 
-local_ips=$(ip a | sed '/inet /!d; s/^.* inet \([0-9][0-9\.]*\)\/.*$/\1/' | grep -v "^127.")
+local_ips=$(ip a | sed '/inet[6]* /!d; s/^.* inet[6]* \([a-f0-9\:][a-f0-9\.\:\/]*\)\/.*$/\1/' | egrep -v "^(127.|::)")
 short=$(hostname -s)
 fqdn=$(hostname -f)
 result_short=$(getent hosts $short)
