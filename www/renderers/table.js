@@ -10,7 +10,7 @@ renderers.table.prototype.filterByLegend = function(legend) {
 
 	if(legend.selection && legend.selection.length) {
 		// Hide all
-		$('.resultTable tr').hide();
+		$('.resultTable tbody tr').hide();
 
 		// Selectively show stuff
 		$.each(legend.selection, function(i, li) {
