@@ -1,3 +1,5 @@
+# This Dockerfile is only to run TravisCI build tests
+
 FROM ubuntu:16.04
 MAINTAINER lars.windolf@gmx.de
 
