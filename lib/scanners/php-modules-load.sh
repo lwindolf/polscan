@@ -4,7 +4,7 @@
 # name: Modules Load
 # description: Checks if all modules do load. Fuzzy check that uses the "php" from path. This might not always be the one you want.
 
-php=$(which php)
+php=$(which php 2>/dev/null)
 if [ -f "$php" ]; then
 	fails=$($php -m 2>&1 >/dev/null)
 	if [ "$fails" != "" ]; then
