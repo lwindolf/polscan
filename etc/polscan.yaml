@@ -7,11 +7,13 @@
 #
 # You can provide multiple providers. For example:
 #
-#    HOST_LIST_PROVIDER=Puppet
-#    HOST_LIST_PROVIDER="Puppet PreviousDay"
+#    HOST_LIST_PROVIDER:
+#       - Puppet
+#       - PreviousDay
 #
 # If you do not mind polscan probing set to "auto_detect"
-HOST_LIST_PROVIDER: auto_detect
+HOST_LIST_PROVIDER:
+  - auto_detect
 
 # HOST_GROUP_PROVIDERS:
 #
@@ -20,11 +22,14 @@ HOST_LIST_PROVIDER: auto_detect
 #
 # You can provide multiple providers
 #
-#    HOST_GROUP_PROVIDERS="Nagios Chef"
+#    HOST_GROUP_PROVIDERS:
+#       - Nagios
+#       - Chef
 #
 # If you do not mind polscan probing and collecting as much
-# groups as possible set this to "auto_detect"
-HOST_GROUP_PROVIDERS: auto_detect
+# groups as possible set this to "auto_detect" only
+HOST_GROUP_PROVIDERS:
+  - auto_detect
 
 # SCAN_CONCURRENCY
 #
@@ -64,7 +69,7 @@ SUDO_CMD: sudo
 # RESULT_BASE_DIR:
 #
 # Set to any data dir location you want. Will default
-# to $BASE/results if empty.
+# to <base dir>/results if empty.
 RESULT_BASE_DIR:
 
 # RESULT_JSON_GZIP:

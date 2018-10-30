@@ -44,4 +44,5 @@ if [ "$selected" != "" ]; then
 	echo ${results_by_provider[$selected]}
 else
 	echo "ERROR: No suitable host list provider!" >&2
+	exit 1
 fi
