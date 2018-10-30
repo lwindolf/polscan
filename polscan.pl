@@ -52,18 +52,19 @@ if(defined($config->{RESULT_BASE_DIR}) and $config->{RESULT_BASE_DIR} ne "") {
 my $DATE = `date +%Y/%m/%d`;
 chomp $DATE;
 
+# FIXME: implement syntax help
 # FIXME: proper getops
 # Command line parsing, setup environment
 my $MODE = "scan";
-if ($#ARGV > 1 and $ARGV[1] eq "-r") {
+if ($#ARGV > 0 and $ARGV[0] eq "-r") {
 	$MODE = "report";
-	$DATE = $ARGV[2];
+	$DATE = $ARGV[1];
 	shift(@ARGV);
 	shift(@ARGV);
 }
 
 my $HOST_LIST = "";
-if ($#ARGV > 1 and $ARGV[1] eq "-l") {
+if ($#ARGV > 0 and $ARGV[0] eq "-l") {
 	$HOST_LIST = $ARGV[1];
 	shift(@ARGV);
 	shift(@ARGV);
