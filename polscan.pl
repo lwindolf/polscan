@@ -70,6 +70,13 @@ if ($#ARGV > 0 and $ARGV[0] eq "-l") {
 	shift(@ARGV);
 }
 
+my $TEST = "";
+if ($#ARGV > 0 and $ARGV[0] eq "-t") {
+	$TEST = $ARGV[1];
+	shift(@ARGV);
+	shift(@ARGV);
+}
+
 # Determine previous scan date (going back up to 7 days)
 my $i = 1;
 my $ONE_DAY_AGO = "nonsense";
@@ -86,10 +93,15 @@ while((! -d "$RESULT_DIR/$ONE_DAY_AGO") && ($i < 30)) {
 ################################################################################
 # Scanner mode
 ################################################################################
-sub scan() {
 
-	# 0. Prepare output dir
-	make_path $RESULT_DIR unless(-d $RESULT_DIR) or die "Failed to mkdir '$RESULT_DIR' ($!)";
+################################################################################
+# Uses global $HOST_LIST or configured host group providers to produce a list
+# of hosts to be scanned
+#
+# Returns a newline separated list of hosts
+################################################################################
+sub get_host_list() {
+	my $result = $HOST_LIST;
 
 	# 1. If none given determine host list automatically
 	if($HOST_LIST eq "") {
@@ -99,15 +111,58 @@ sub scan() {
 
 		foreach my $h (@{$config->{HOST_LIST_PROVIDER}}) {
 			print "Fetching host list (provider '$h')...\n";
-	        my $HLP = "$LIB_DIR/host-list-providers/$h";
-	        die "ERROR: Could not find host list provider $HLP" unless(-f $HLP);
-	        $HOST_LIST = "${HOST_LIST}\n" . `$HLP`;
-	        die "ERROR: Running host list provider '$h' failed ($!)!" if($? != 0);
+		    my $HLP = "$LIB_DIR/host-list-providers/$h";
+		    die "ERROR: Could not find host list provider $HLP" unless(-f $HLP);
+		    $result = "$result\n" . `$HLP`;
+		    die "ERROR: Running host list provider '$h' failed ($!)!" if($? != 0);
 		}
 	}
+	die "ERROR: Could not find any hosts! Aborting." if($result eq "");
+	print "Host list: $result\n";
+	return $result;
+}
 
-	die "ERROR: Could not find any hosts! Aborting." if($HOST_LIST eq "");
-	print "Host list: $HOST_LIST\n";
+################################################################################
+# Returns all scanner file names for a given type
+#
+# $1	type 'standalone' or 'scanners' (for remote)
+################################################################################
+sub get_scanners($) {
+	my $config = $CONF_DIR . "/" . $_[0] . ".conf";
+
+	die "Could not find scanner config file '$config'" unless(-f $config);
+	# FIXME: make this Perl'ish
+	return `grep -v "^ *#" "$config" 2>/dev/null`;
+}
+
+################################################################################
+# Uses global $TEST or reads the configured scanners
+#
+# Returns a newline separated list of scanners
+################################################################################
+sub get_scanner_list() {
+	my $list;
+
+	if($TEST eq "" || $TEST eq "all") {
+		$list = get_scanners('scanners');
+	} else {
+		$list = $TEST;
+	}
+
+	return $list;
+}
+
+################################################################################
+# Builds a scanner script and performs a scan on multiple hosts
+################################################################################
+sub scan() {
+
+	# 0. Prepare output dir
+	make_path $RESULT_DIR unless(-d $RESULT_DIR) or die "Failed to mkdir '$RESULT_DIR' ($!)";
+
+	my $hosts = get_host_list();
+	my $scanners = get_scanner_list();
+
 }
 
 scan() if($MODE eq "scan");
