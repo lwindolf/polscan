@@ -239,7 +239,7 @@ results_to_json() {
 		(
 			for hg in $hgs; do
 				printf '"%s": ["' "$hg"
-				grep -h "^$hg " "${JSON_DIR}/hgs" | awk '{print $2}' | xargs | sed 's/ /","/g;s/$/"],/'
+				grep -h "^$hg[[:space:]]" "${JSON_DIR}/hgs" | awk '{print $2}' | xargs | sed 's/ /","/g;s/$/"],/'
 			done
 		) | write_json hash host_groups results
 		rm ${JSON_DIR}/hgs
