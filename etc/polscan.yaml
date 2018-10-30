@@ -1,0 +1,86 @@
+---
+# HOST_LIST_PROVIDER:
+#
+# Defines which host list provider to use to determine
+# which hosts you want to check. Check subdirectory
+# lib/host-list-providers/ for supported variants
+#
+# You can provide multiple providers. For example:
+#
+#    HOST_LIST_PROVIDER=Puppet
+#    HOST_LIST_PROVIDER="Puppet PreviousDay"
+#
+# If you do not mind polscan probing set to "auto_detect"
+HOST_LIST_PROVIDER: auto_detect
+
+# HOST_GROUP_PROVIDERS:
+#
+# Define which host group provider(s) to use to determine
+# which host-hostgroup relations there are.
+#
+# You can provide multiple providers
+#
+#    HOST_GROUP_PROVIDERS="Nagios Chef"
+#
+# If you do not mind polscan probing and collecting as much
+# groups as possible set this to "auto_detect"
+HOST_GROUP_PROVIDERS: auto_detect
+
+# SCAN_CONCURRENCY
+#
+# Set to a non-zero number to define how many remote scans are run in parallel.
+SCAN_CONCURRENCY: 50
+
+# SSH_CMD
+#
+# The SSH command to be used. Change this if you want
+# different timeouts, keys...
+#
+# Examples:
+#
+#   SSH_CMD="ssh"
+#   SSH_CMD="ssh -i my_special_key/id_rsa"
+#   SSH_CMD="ssh -F polscan_ssh_config"
+SSH_CMD: "timeout -k 15 10 ssh -o StrictHostKeyChecking=no -o PreferredAuthentications=publickey -o ConnectTimeout=3"
+
+# SSH_USER:
+#
+# The default user to use to connect remotely. If a
+# host list provider returns user@host values this user
+# is not used.
+#
+# Don't use this if you have different users for accessing
+# your hosts. In this case provide an SSH config in SSH_CMD
+# above
+SSH_USER:
+
+# SUDO_CMD:
+#
+# A command used to elevate privileges on remote node.
+# If you do not want this and use only scanners that do
+# not care you can set it to empty to prevent sudo.
+SUDO_CMD: sudo
+
+# RESULT_BASE_DIR:
+#
+# Set to any data dir location you want. Will default
+# to $BASE/results if empty.
+RESULT_BASE_DIR:
+
+# RESULT_JSON_GZIP:
+#
+# polscan_html can run "gzip -9" on the produced output
+# to minimized data size. Compression ratio is 1:20 as there
+# is a lot of duplication. If enabled result files are named
+# .jsongz instead of .json and you need to configure your
+# webserver to deliver them with correct Content-Encoding
+# and JSON mime type. See vhost examples in extra/ subdir.
+#
+# Set to 1 to enable compression
+RESULT_JSON_GZIP: 0
+
+# REMOTE_STDERR_WHITELIST
+#
+# egrep expression of stuff to ignore on stderr when running remote scanner.
+# Everything else will be logged as a finding in group "Polscan"
+REMOTE_STDERR_WHITELIST: 'Warning: Permanently added.*to the list of known hosts.'
