@@ -8,7 +8,7 @@
         "url": "https://github.com/lwindolf/polscan.git"
     },
     "dependencies": {
-        "express": "~4.1.0",
+        "express": ">=4.5.0",
 	"promise": "~8.0.0",
 	"stateful-process-command-proxy": "~1.0.1"
     }
