@@ -4,7 +4,7 @@ FROM ubuntu:16.04
 MAINTAINER lars.windolf@gmx.de
 
 RUN apt-get update
-RUN apt-get install -y bash bats
+RUN apt-get install -y bash bats libjson-perl libyaml-perl libipc-run-perl
 
 RUN mkdir -p /src/
 WORKDIR /src/
