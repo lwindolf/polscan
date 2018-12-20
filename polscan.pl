@@ -21,8 +21,10 @@ use strict;
 
 use JSON;
 use YAML;
+use File::Copy qw(copy);
 use File::Basename qw(dirname);
 use File::Path qw(make_path);
+use IPC::Run qw(run);
 
 my $SCHEMA_VERSION = 1;
 my $BASE = dirname($0);
@@ -43,14 +45,10 @@ if ($BASE eq "/usr/bin") {
 # Load config
 my $config = YAML::LoadFile("$CONF_DIR/polscan.yaml") or die "Failed to parse '$CONF_DIR/polscan.yaml' ($!)";
 
-if(defined($config->{RESULT_BASE_DIR}) and $config->{RESULT_BASE_DIR} ne "") {
-	$RESULT_DIR = $config->{RESULT_BASE_DIR} ."/results";
-} else {
-	$RESULT_DIR = "$BASE/results";
-}
-
 my $DATE = `date +%Y/%m/%d`;
 chomp $DATE;
+
+$config->{RESULT_BASE_DIR} = $BASE unless(defined($config->{RESULT_BASE_DIR}) and $config->{RESULT_BASE_DIR} ne "");
 
 # FIXME: implement syntax help
 # FIXME: proper getops
@@ -77,10 +75,12 @@ if ($#ARGV > 0 and $ARGV[0] eq "-t") {
 	shift(@ARGV);
 }
 
+$RESULT_DIR .= $config->{RESULT_BASE_DIR}."/results/". $DATE;
+
 # Determine previous scan date (going back up to 7 days)
 my $i = 1;
 my $ONE_DAY_AGO = "nonsense";
-while((! -d "$RESULT_DIR/$ONE_DAY_AGO") && ($i < 30)) {
+while((! -d $config->{RESULT_BASE_DIR}."/$ONE_DAY_AGO") && ($i < 30)) {
 	$ONE_DAY_AGO = `date -d "$DATE $i day ago" +%Y/%m/%d`;
 	chomp $ONE_DAY_AGO;
 	$i++;
@@ -91,6 +91,27 @@ while((! -d "$RESULT_DIR/$ONE_DAY_AGO") && ($i < 30)) {
 ################################################################################
 
 ################################################################################
+# Extract meta data from scanner files
+#
+# $1    file name
+#
+# Returns hash of meta data
+################################################################################
+sub get_policy_info($) {
+    my %i = ();
+    my $filename = $_[0];
+
+    open my $SF, "<", $filename || die($!);
+    my $script = do { local $/; <$SF> };
+    foreach my $l (split(/\n/, $script)) {
+        next unless($l =~ /^#\s+(\w+):\s+(.+)$/);
+        $i{$1} = $2;
+    }
+
+    return \%i;
+}
+
+################################################################################
 # Scanner mode
 ################################################################################
 
@@ -98,7 +119,7 @@ while((! -d "$RESULT_DIR/$ONE_DAY_AGO") && ($i < 30)) {
 # Uses global $HOST_LIST or configured host group providers to produce a list
 # of hosts to be scanned
 #
-# Returns a newline separated list of hosts
+# Returns a ref on an array of hosts
 ################################################################################
 sub get_host_list() {
 	my $result = $HOST_LIST;
@@ -106,7 +127,7 @@ sub get_host_list() {
 	# 1. If none given determine host list automatically
 	if($HOST_LIST eq "") {
 		# Some host list providers might want to the following env vars
-		$ENV{RESULT_BASE_DIR} = $RESULT_DIR;
+		$ENV{RESULT_BASE_DIR} = $config->{RESULT_BASE_DIR};
 		$ENV{ONE_DAY_AGO} = $ONE_DAY_AGO;
 
 		foreach my $h (@{$config->{HOST_LIST_PROVIDER}}) {
@@ -119,7 +140,8 @@ sub get_host_list() {
 	}
 	die "ERROR: Could not find any hosts! Aborting." if($result eq "");
 	print "Host list: $result\n";
-	return $result;
+	my @result = split(/[\n\s]+/, $result);
+	return \@result;
 }
 
 ################################################################################
@@ -149,7 +171,8 @@ sub get_scanner_list() {
 		$list = $TEST;
 	}
 
-	return $list;
+	my @list = split(/\n/, $list);
+	return \@list;
 }
 
 ################################################################################
@@ -158,11 +181,60 @@ sub get_scanner_list() {
 sub scan() {
 
 	# 0. Prepare output dir
-	make_path $RESULT_DIR unless(-d $RESULT_DIR) or die "Failed to mkdir '$RESULT_DIR' ($!)";
+	unless (-d $RESULT_DIR) {
+    	make_path $RESULT_DIR or die "Failed to mkdir '$RESULT_DIR' ($!)";
+    }
 
 	my $hosts = get_host_list();
 	my $scanners = get_scanner_list();
 
+    # 2. Build remote scanner script
+    my $scannerfile = "/tmp/polscan-remote-scanner.$$";
+    my $scannercode = `cat "$LIB_DIR/scanner-header.inc" "$LIB_DIR/scanner-functions.inc"`;
+	foreach my $scanner (@$scanners) {
+		my $file = "$LIB_DIR/scanners/$scanner";
+		unless(-f $file) {
+			warn "WARNING: Unknown policy '$scanner'!";
+		} else {
+			my $i = get_policy_info ($file);
+			$scannercode .= "\npolicy_name='$i->{name}'; policy_group='$i->{group}'";
+			$scannercode .= "\n". `cat "$file"`;
+		}
+    }
+	# Add marker result for completed scan
+	$scannercode .= "\npolicy_name=\'Polscan remote scan\' policy_group=Polscan result_ok\n";
+
+	open my $RSS, ">$scannerfile" || die ($!);
+	print $RSS $scannercode;
+	close $RSS;
+
+	print "Running remote scans...\n";
+
+	# We usually suffix sudo...
+    my $remotes = "@$hosts";
+	if($config->{SUDO_CMD} ne "") {
+	    $remotes = join ("\n", map { $_ . " " . $config->{SUDO_CMD} } @$hosts);
+	}
+
+	# And run parallelized with xargs
+	my ($out, $err);
+	if($TEST eq "") {
+    	$out="${RESULT_DIR}/\${host/ */}";
+		$err="${RESULT_DIR}/\${host/ */}.err";
+    } else {
+		$out="&1";
+		$err="&2";
+    }
+	eval {
+    	run(
+	        ["xargs", "-n1", "--replace={}", "-n", "1", "-P", $config->{SCAN_CONCURRENCY},
+    	     "/bin/bash", "-c", "host='{}';printf '%s\n' \"\${host/ */}\" && $config->{SSH_CMD} {} \"/bin/bash < <(/bin/cat -)\" <${scannerfile} >$out 2>$err || printf 'SSH to host failed!\n' >$err"],
+    	    "<", \$remotes
+    	);
+    };
+    die $@ if($@);
+
+	unlink $scannerfile;
 }
 
 scan() if($MODE eq "scan");
