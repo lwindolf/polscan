@@ -2,7 +2,7 @@
 
 # Polscan: a Debian policy scanner
 
-# Copyright (C) 2015-2018  Lars Windolf <lars.windolf@gmx.de>
+# Copyright (C) 2015-2019  Lars Windolf <lars.windolf@gmx.de>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -76,6 +76,7 @@ if ($#ARGV > 0 and $ARGV[0] eq "-t") {
 }
 
 $RESULT_DIR .= $config->{RESULT_BASE_DIR}."/results/". $DATE;
+my $JSON_DIR = $config->{RESULT_BASE_DIR}."/results/json/". $DATE;
 
 # Determine previous scan date (going back up to 7 days)
 my $i = 1;
@@ -235,6 +236,18 @@ sub scan() {
     die $@ if($@);
 
 	unlink $scannerfile;
+}
+
+################################################################################
+# Compile results to JSON
+################################################################################
+sub report() {
+
+	# 0. Prepare output dir
+	die "ERROR: No results in '$RESULT_DIR'" unless(-d $RESULT_DIR);
+	unless (-d $JSON_DIR) {
+    	make_path $JSON_DIR or die "Failed to mkdir '$JSON_DIR' ($!)";
+    }
 }
 
 scan() if($MODE eq "scan");
