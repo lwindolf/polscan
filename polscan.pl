@@ -25,6 +25,7 @@ use File::Copy qw(copy);
 use File::Basename qw(dirname);
 use File::Path qw(make_path);
 use IPC::Run qw(run);
+use Env qw(RESULT_DIR);
 
 my $SCHEMA_VERSION = 1;
 my $BASE = dirname($0);
@@ -76,6 +77,7 @@ if ($#ARGV > 0 and $ARGV[0] eq "-t") {
 }
 
 $RESULT_DIR .= $config->{RESULT_BASE_DIR}."/results/". $DATE;
+my $JSON_DIR .= $config->{RESULT_BASE_DIR}."/results/json/". $DATE;
 
 # Determine previous scan date (going back up to 7 days)
 my $i = 1;
@@ -235,6 +237,64 @@ sub scan() {
     die $@ if($@);
 
 	unlink $scannerfile;
+
+	report();
+}
+
+################################################################################
+# Reporting mode: Compile results to JSON
+################################################################################
+
+################################################################################
+# Dump a result structure to JSON file and add standard meta fields
+#
+# $1    data ref
+# $2    file name
+# $3    root key
+################################################################################
+sub write_json($$$) {
+    my ($data, $name, $root) = @_;
+    my $dump = {
+        date => $DATE,
+        schema => $SCHEMA_VERSION,
+        $root => $data
+    };
+
+    open(my $FILE, ">", "$JSON_DIR/$name.json") || die "Failed to write to '$JSON_DIR/$name.json' ($!)";
+    print $FILE encode_json($dump);
+}
+
+sub report() {
+
+ 	# 0. Prepare output dir
+	die "No results for this day!" unless(-d $RESULT_DIR);
+ 	unless(-d $JSON_DIR) {
+     	make_path $JSON_DIR or die "Failed to mkdir '$JSON_DIR' ($!)";
+    }
+
+    # Determine host list from input result dir
+    # FIXME: perlify
+    my $hosts = `cd "$RESULT_DIR" && ls`;
+
+    # Never overwrite host groups without need
+    unless(-f "${JSON_DIR}/host_groups.json") {
+        # Determine host group names
+        #
+        # Note: $RESULT_DIR global var is exported to Env
+        # as some host group providers might want to use it
+        #
+        # FIXME: Account for multiple host group providers!
+		my $hgs = `$LIB_DIR/host-group-providers/$config->{HOST_GROUP_PROVIDERS}[0] | sort -u`;
+		my %hostgroups = ();
+		foreach my $hg (split(/\n/, $hgs)) {
+		    next unless($hg =~ /^([\w:]+)\s+(.+)$/);
+		    $hostgroups{$1} = [] unless(defined($hostgroups{$1}));
+		    push(@{$hostgroups{$1}}, $2);
+        }
+        write_json(\%hostgroups, "host_groups", "results");
+    } else {
+        print "Using existing host_groups.json.\n";
+    }
 }
 
 scan() if($MODE eq "scan");
