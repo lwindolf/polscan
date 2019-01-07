@@ -261,6 +261,7 @@ sub write_json($$$) {
     };
 
     open(my $FILE, ">", "$JSON_DIR/$name.json") || die "Failed to write to '$JSON_DIR/$name.json' ($!)";
+	print "Writing $name.json...\n";
     print $FILE encode_json($dump);
 }
 
@@ -274,7 +275,8 @@ sub report() {
 
     # Determine host list from input result dir
     # FIXME: perlify
-    my $hosts = `cd "$RESULT_DIR" && ls`;
+    chdir($RESULT_DIR) or die "Cannot chdir ($!)!";
+    my $hosts = `ls`;
 
     # Never overwrite host groups without need
     unless(-f "${JSON_DIR}/host_groups.json") {
@@ -295,18 +297,19 @@ sub report() {
     } else {
         print "Using existing host_groups.json.\n";
     }
-}
 
-################################################################################
-# Compile results to JSON
-################################################################################
-sub report() {
-
-	# 0. Prepare output dir
-	die "ERROR: No results in '$RESULT_DIR'" unless(-d $RESULT_DIR);
-	unless (-d $JSON_DIR) {
-    	make_path $JSON_DIR or die "Failed to mkdir '$JSON_DIR' ($!)";
-    }
+	# Produce vulnerability index
+	my $vulns = `ls | xargs -n1 grep -H "^Security VULN "`;
+	my @vulns = ();
+	foreach my $v (split(/\n/, $vulns)) {
+		# Parse syntax
+		#    myhost:Security VULN |||$pkg||| {"cve": "$cve", "pkg": "$pkg", "tags": ["${tags}"]}
+		next unless($v =~ /([^:]*):.*\|\|\| (\{.+)$/);
+		eval {
+			push(@vulns, { host => $1, %{from_json($2)} });
+		};
+	}
+	write_json(\@vulns, "vulnerabilities", "results");
 }
 
 scan() if($MODE eq "scan");
