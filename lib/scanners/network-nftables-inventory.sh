@@ -6,11 +6,12 @@
 
 # Check for kernel modules
 #
+# - ebtables
 # - ip_tables (indicating iptables)
 # - iptable_nat (to indicate iptables with NAT active)
 # - nf_tables (to indicate active nf_tables
 
-modules=$(lsmod|grep -E "^(nf_tables|ip_tables|iptable_nat)" | awk '{print $1}')
+modules=$(lsmod|grep -E "^(ebtables|nf_tables|ip_tables|iptable_nat)" | awk '{print $1}')
 
 result_inventory "Firewall Modules" $modules
 
@@ -29,6 +30,14 @@ result_inventory "nf_tables Rule Count" $(
 (
 	if [[ $modules =~ nf_tables ]]; then
 		nft list tables
+	fi
+) | wc -l
+)
+
+result_inventory "ebtables Rule Count" $(
+(
+	if [[ $modules =~ ebtables ]]; then
+		ebtables -L
 	fi
 ) | wc -l
 )
