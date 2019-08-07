@@ -1,8 +1,5 @@
 #!/bin/bash
 
-#!/bin/bash
-
-
 # group: Network
 # name: Connections
 # description: Pseudo scanner collecting connections using "netstat -talp --numeric-hosts". Results are used for graphing host connections. This scanner enables the 'Net Map' feature. If scanners run as root/sudo will resolve local program names.
