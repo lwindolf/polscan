@@ -1,3 +1,21 @@
+
+# Provide easy jq wrapper
+JQ=$(which jq)
+jq() {
+	printf "%s" "$1" | "$JQ" -r "$2"
+}
+
+# Provide k8s context iterating to be used for k8s standalone scanners
+foreach_kube_context() {
+	cmd="$1"
+	shift
+	for t in $(echo "$TARGET_LIST" | grep "^K8S " | cut -d" " -f2); do
+		kubectl config use-context "$t" >&2 || exit 1
+		$cmd
+	done
+	kubectl config unset current-context >&2 || exit 1
+}
+
 # Override "echo" to prefix current host and policy infos
 echo() {
 	/bin/echo $current_host $policy_group "$@"
@@ -54,7 +72,7 @@ EOT
 puppet_enabled() {
 	test "$puppet_report" != ""
 	return $?
-} 
+}
 
 puppet_run_ok() {
 	grep -q "^  status: failed" $puppet_report 2>/dev/null

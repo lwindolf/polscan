@@ -24,11 +24,12 @@ Detecting automation issues...
 
 Product     | Host Discovery | Resource Coverage
 ----------- | -------------- | -----------------
+kube-bench  | y              | kube-bench results per host
 Puppet2/3/4 | y              | Mounts, Users, SSH Keys, ulimit, sysctl, sudoers, 3rd party APT repos, Crons 
 Chef        | y              | %
 Ansible     | y              | %
 SaltStack   | y              | %
-Mcollective | y | %
+Mcollective | y              | %
 
 Detecting package issues...
 
@@ -39,11 +40,12 @@ dpkg      | %         | %             | yes         | yes (debsecan)
 Gem       | yes       | yes           | 
 PECL      | yes       | yes           | 
 PIP       | yes       | yes           | 
-CPAN      | no         | 
-NPM       | no         | 
+CPAN      | no        | 
+NPM       | no        | 
 
 Collects inventories for
 
+* kubernetes clusters (node count, sizing)
 * NTP / DNS Servers
 * OS Releases,  Kernel Version
 * External IPs, IPv6 Adresses

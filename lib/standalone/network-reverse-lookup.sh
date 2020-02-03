@@ -10,9 +10,9 @@ for h in $HOST_LIST; do
 	if [ "$ip" != "" ]; then
 		reverse=$(dig +short -x $ip)
 		if ! echo "${reverse}" | grep -q "^${h}\."; then
-			echo "$h FAILED Reverse lookup failed. Unexpected result '$reverse'."
+			echo "$h Network FAILED |||Host Reverse Lookup||| Reverse lookup failed. Unexpected result '$reverse'."
 		else
-			echo "$h OK"
+			echo "$h Network OK |||Host Reverse Lookup||| Reverse lookup is ok"
 		fi
 	fi
 done

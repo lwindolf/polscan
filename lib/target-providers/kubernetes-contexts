@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# name: kubernetes-contexts
+# type: kubectxt
+# description: Provide a list of kubernetes contexts that we scan
+
+# Dirty kubectl context listing
+(
+kubectl config view | grep -A5 "^- context:" |grep " *name:" | sed "s/ *name: //" 2>/dev/null
+) | sed "s/^/K8S /"

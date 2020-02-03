@@ -8,7 +8,7 @@ NETWORK_DEFAULT_RBL_LIST="
 cbl.abuseat.org
 bl.spamcop.net
 ix.dnsbl.manitu.net
-zen.spamhaus.org 
+zen.spamhaus.org
 b.barracudacentral.org
 "
 NETWORK_RBL_LOOKUP_RATE=${NETWORK_RBL_LOOKUP_RATE-25}
@@ -33,11 +33,11 @@ for i in $ips; do
 	done
 
 	if [ "$results" != "" ]; then
-		echo "Global FAILED DNS black listing of $i: $results"
+		echo "Global Network FAILED |||RBL Listings||| DNS black listing of $i: $results"
 		failed=1
 	fi
 done
 
 if [ $failed -eq 0 ]; then
-	echo "Global OK All external IPs are fine with RBLs: $NETWORK_RBL_LIST"
+	echo "Global Network OK |||RBL Listings||| All external IPs are fine with RBLs: $NETWORK_RBL_LIST"
 fi

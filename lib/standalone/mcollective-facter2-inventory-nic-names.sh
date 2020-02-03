@@ -6,7 +6,7 @@
 
 mco inventory --script <(/bin/echo "
 inventory do
-  format '%s INVENTORY %s'
+  format '%s System INVENTORY |||NIC Names||| %s'
   fields { [ identity, facts['interfaces']] }
 end
-") 2>/dev/null | sed "s/,/ /g;s/ lo//" | grep -v 'INVENTORY $'
+") 2>/dev/null | sed "s/,/ /g;s/ lo//" | grep -v '\|\|\| $'

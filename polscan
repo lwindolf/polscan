@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Polscan: a Debian policy scanner
+# Polscan: a multi-purpose policy scanner
 
-# Copyright (C) 2015-2017  Lars Windolf <lars.windolf@gmx.de>
+# Copyright (C) 2015-2020  Lars Windolf <lars.windolf@gmx.de>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -48,9 +48,27 @@ scan() {
 
 	fi
 
-	# 1. If none given determine host list automatically
-	if [ "$HOST_LIST" == "" ]; then 
-		export RESULT_BASE_DIR ONE_DAY_AGO  # Some host list providers might want to use it
+	# Some host/target list providers might want to use it
+	export RESULT_BASE_DIR ONE_DAY_AGO
+
+	# 1. Determine general targets automatically
+	for t in $TARGET_PROVIDER; do
+		echo "Resolving target list (provider '$t')..."
+		TLP="$LIB_DIR/target-providers/$t"
+		if [ ! -f "$TLP" ]; then
+		echo "ERROR: Could not find target provider $TLP"
+		exit 1
+		fi
+		export TARGET_LIST="${TARGET_LIST}
+$($TLP)"
+		if [ $? -ne 0 ]; then
+			echo "ERROR: Could not determine '$t' target list!"
+			exit 1
+		fi
+	done
+
+	# 2. If none given determine host list automatically
+	if [ "$HOST_LIST" == "" ]; then
 		for h in $HOST_LIST_PROVIDER; do
 		        echo "Fetching host list (provider '$h')..."
 		        HLP="$LIB_DIR/host-list-providers/$h"
@@ -67,10 +85,11 @@ $($HLP)"
 		done
 	fi
 
-	if [ "$HOST_LIST" == "" ]; then
-		echo "ERROR: Could not find any hosts! Aborting."
+	if [ "$HOST_LIST" == "" -a "$TARGET_LIST" == "" ]; then
+		echo "ERROR: Could not find any hosts or targets! Aborting."
 		exit 1
 	else
+		echo "Target list:" $TARGET_LIST
 		echo "Host list:" $HOST_LIST
 	fi
 
@@ -81,7 +100,7 @@ $($HLP)"
 	fi
 	if [ "$REMOTE_SCANNER_LIST" != "" ]; then
 
-		# 2. Build remote scanner script
+		# 3. Build remote scanner script
 		RSS=/tmp/polscan-remote-scanner.$$
 		cat "$LIB_DIR/scanner-header.inc" >$RSS || exit 1
 		cat "$LIB_DIR/scanner-functions.inc" >>$RSS || exit 1
@@ -106,7 +125,7 @@ $($HLP)"
 			# Suffix host names with sudo command
 			remotes=$(echo $remotes | xargs -n 1 | sed "s/\$/ ${SUDO_CMD}/")
 		fi
-		
+
 		if [ "$TEST" == "" ]; then
 			out="${RESULT_DIR}/\${host/ */}"
 			err="${RESULT_DIR}/\${host/ */}.err"
@@ -146,12 +165,9 @@ $($HLP)"
 		echo "Running standalone scanners..."
 		for scanner in $STANDALONE_SCANNER_LIST; do
 			echo " -> Running '$scanner'..."
-			scanner_file=$LIB_DIR/standalone/$scanner
-			group=$(get_policy_info "$scanner_file" group)
-			policy=$(get_policy_info "$scanner_file" name)
-			$scanner_file |\
-			while read host severity data; do
-				echo "$group $severity |||$policy||| $data" >>"$RESULT_DIR/$host"
+			$LIB_DIR/standalone/$scanner |\
+			while read host group severity data; do
+				echo "$group $severity $data" >>"$RESULT_DIR/$host"
 			done
 		done
 	fi

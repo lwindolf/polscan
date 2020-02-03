@@ -6,9 +6,7 @@
 
 mco inventory --script <(/bin/echo "
 inventory do
-  format '%s INVENTORY %s'
+  format '%s System INVENTORY |||Disk Devices||| %s'
   fields { [ identity, facts['disks']] }
 end
-") 2>/dev/null | grep -v 'INVENTORY $'
-
-
+") 2>/dev/null | grep -v '\|\|\| $'
