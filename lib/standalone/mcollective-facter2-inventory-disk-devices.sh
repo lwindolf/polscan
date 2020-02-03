@@ -9,6 +9,6 @@ inventory do
   format '%s INVENTORY %s'
   fields { [ identity, facts['disks']] }
 end
-") | grep -v 'INVENTORY $'
+") 2>/dev/null | grep -v 'INVENTORY $'
 
 
