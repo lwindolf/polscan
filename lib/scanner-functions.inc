@@ -1,7 +1,7 @@
 
 # Provide easy jq wrapper
 JQ=$(which jq)
-jq() {
+json() {
 	printf "%s" "$1" | "$JQ" -r "$2"
 }
 
