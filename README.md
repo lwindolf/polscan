@@ -35,6 +35,7 @@ Detecting package issues...
 
 Providers | Detection | Upgrade Check | Error Check | CVE Check
 --------- | --------- | ------------- | ----------- | ---------
+Helm2     | yes       | no            |
 apt       | %         | yes           | yes
 dpkg      | %         | %             | yes         | yes (debsecan)
 Gem       | yes       | yes           | 
