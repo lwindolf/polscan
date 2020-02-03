@@ -7,12 +7,12 @@
 source $(dirname $0)/../scanner-functions.inc
 
 k8s_kube_bench() {
-	# kube-bench documentation says to run two crons, one for workers, one
-	# for master nodes. We check the result pod if it ran and its log output
-
 	# As polscan doesn't support cluster results yet, we report
 	# all findings against the first master node
 	HOST=$(kubectl get nodes --selector='node-role.kubernetes.io/master' -o json | jq -r '.items[].metadata.name' | head -1)
+
+	# kube-bench documentation says to run two crons, one for workers, one
+	# for master nodes. We check the result pod if it ran and its log output
 	for type in master node; do
 		# How to get pods older than (adapted to crons)
 		# https://stackoverflow.com/questions/48934491/kubernetes-how-to-delete-pods-based-on-time-age-creation
