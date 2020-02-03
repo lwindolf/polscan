@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# group: System
+# group: Kubernetes
 # name: Inventory
 # description: Inventory for kubernetes nodes
 
@@ -22,7 +22,7 @@ k8s_node_size() {
 			echo "|||Region|||" "$(json "$JSON" '.items[] | select(.metadata.name == "'$n'") | .metadata.labels["failure-domain.beta.kubernetes.io/region"]')"
 			echo "|||Zone|||" "$(json "$JSON" '.items[] | select(.metadata.name == "'$n'") | .metadata.labels["failure-domain.beta.kubernetes.io/zone"]')"
 			echo "|||Instance Type|||" "$(json "$JSON" '.items[] | select(.metadata.name == "'$n'") | .metadata.labels["beta.kubernetes.io/instance-type"]')"
-		) | sed "s/^/$n System INVENTORY /"
+		) | sed "s/^/$n Kubernetes INVENTORY /"
 	done
 }
 
