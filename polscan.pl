@@ -1,8 +1,8 @@
 #!/usr/bin/perl -w
 
-# Polscan: a Debian policy scanner
+# Polscan: a Debian / kubernetes policy scanner
 
-# Copyright (C) 2015-2019  Lars Windolf <lars.windolf@gmx.de>
+# Copyright (C) 2015-2020  Lars Windolf <lars.windolf@gmx.de>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ use YAML;
 use File::Copy qw(copy);
 use File::Basename qw(dirname);
 use File::Path qw(make_path);
+use List::MoreUtils qw(uniq);
 use IPC::Run qw(run);
 use Env qw(RESULT_DIR);
 
@@ -49,7 +50,7 @@ my $config = YAML::LoadFile("$CONF_DIR/polscan.yaml") or die "Failed to parse '$
 my $DATE = `date +%Y/%m/%d`;
 chomp $DATE;
 
-$config->{RESULT_BASE_DIR} = $BASE unless(defined($config->{RESULT_BASE_DIR}) and $config->{RESULT_BASE_DIR} ne "");
+$config->{RESULT_BASE_DIR} = "${BASE}/results" unless(defined($config->{RESULT_BASE_DIR}) and $config->{RESULT_BASE_DIR} ne "");
 
 # FIXME: implement syntax help
 # FIXME: proper getops
@@ -284,11 +285,12 @@ sub report() {
         #
         # Note: $RESULT_DIR global var is exported to Env
         # as some host group providers might want to use it
-        #
-        # FIXME: Account for multiple host group providers!
-		my $hgs = `$LIB_DIR/host-group-providers/$config->{HOST_GROUP_PROVIDERS}[0] | sort -u`;
+		my $hgs = "";
+		foreach my $hgp (@{$config->{HOST_GROUP_PROVIDERS}}) {
+			$hgs .= `RESULT_DIR=$RESULT_DIR $LIB_DIR/host-group-providers/$hgp`;
+		}
 		my %hostgroups = ();
-		foreach my $hg (split(/\n/, $hgs)) {
+		foreach my $hg (uniq(split(/\n/, $hgs))) {
 		    next unless($hg =~ /^([\w:]+)\s+(.+)$/);
 		    $hostgroups{$1} = [] unless(defined($hostgroups{$1}));
 		    push(@{$hostgroups{$1}}, $2);
@@ -310,6 +312,25 @@ sub report() {
 		};
 	}
 	write_json(\@vulns, "vulnerabilities", "results");
+
+	# Produce inventory indices
+	printf "Compiling inventories...\n";
+	#while read host group severity details; do
+#		inventory=${details/#|||/}
+#		inventory=${inventory/|||*/}
+#		message=${details/*|||/}
+#		echo -n '{"host": "'$host'", "values": "'"${message//\"/\'}"'"},' >> "$JSON_DIR/$group ${inventory}.json.tmp"
+#		inventory_types["$group_${inventory// /_}"]="$group $inventory"
+#	done < <(
+#		ls | xargs -n1 egrep -H "^[a-zA-Z0-9_-][a-zA-Z0-9_-]* INVENTORY " |\
+#		sed 's/:/ /'
+#	)
+#
+#	for key in ${!inventory_types[*]}; do
+#		name=${inventory_types[$key]}
+#		cat "$JSON_DIR/${name}.json.tmp" | write_json list "inventory $name" results
+#		rm "$JSON_DIR/${name}.json.tmp"
+#	done
 }
 
 scan() if($MODE eq "scan");

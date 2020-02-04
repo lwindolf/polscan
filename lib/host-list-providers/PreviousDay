@@ -8,6 +8,8 @@ if [ -d "$RESULT_BASE_DIR/$ONE_DAY_AGO" ]; then
 	ls | while read name; do
 		if [ "$(dig +short $name)" != "" ]; then
 			echo $name
+		else
+			printf "Skipping %s (doesn't resolve)...\n" "$name" >&2
 		fi
 	done
 else
