@@ -3,6 +3,7 @@
 # group: Kubernetes
 # name: kube-bench
 # description: Check all namespaces for kube-bench crons kube-bench-worker and kube-bench-master, to see if they are run daily and if it reports any problems
+# reference: https://github.com/aquasecurity/kube-bench#running-in-a-kubernetes-cluster
 
 source $(dirname $0)/../scanner-functions.inc
 
