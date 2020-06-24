@@ -1,6 +1,6 @@
 {
     "name": "polscan-backend",
-    "main": "main.js",
+    "main": "server.js",
     "description": "Polscan backend to perform live queries against monitoring APIs and remote connection stats",
     "license": "GPL-3.0",
     "repository": {
