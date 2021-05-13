@@ -1,4 +1,4 @@
-// vim: set ts=4 sw=4: 
+// vim: set ts=4 sw=4:
 // The overview...
 
 renderers.dashboard = function dashboardRenderer() { };
@@ -19,7 +19,20 @@ renderers.dashboard.prototype.addTopChanges = function(changes, type) {
 renderers.dashboard.prototype.render = function(id, data, params) {
 	var r = this;
 
-	$(id).append('<div id="dashboard"><div id="overviewCalendar"/><div id="scanInfoBox"><h3>Scan Info</h3><div id="scanInfo"/></div><div id="topChangesBox"><h3>Top Changes</h3><div id="topChanges"></div></div><div id="overviewHistogram"/></div>');
+	$(id).append(`
+	    <div id="dashboard">
+	        <div id="overviewCalendar"></div>
+	        <div id="scanInfoBox">
+		    <h3>Scan Info</h3>
+		    <div id="scanInfo"/></div>
+		</div>
+		<div id="topChangesBox">
+		    <h3>Top Changes</h3>
+		    <div id="topChanges"></div>
+		</div>
+		<div id="overviewHistogram"/></div>
+	    </div>
+	`);
 
 	getData("overview", function(data) {
 			addCalendar("#overviewCalendar", data.date);
@@ -61,10 +74,10 @@ renderers.dashboard.prototype.render = function(id, data, params) {
 						tmp += ' <span class="compliant problems" title="100% compliance for this group">compliant</span>';
 					}
 				}
-				
+
 				// Add report meta
 				$('#scanInfo').html('<table><tr><td>Scan Time</td><td>'+Date(data.scanTime).toLocaleString()+'</td></tr><tr><td>Report Creation</td><td>'+Date(data.reportTime).toLocaleString()+'</td></tr></table>');
-								
+
 				// Add scan buttons for most recent day or today
 				if(data.date === new Date().toISOString().replace(/T.*/,'').replace(/-/g, "/")) {
 				    $('#scanInfo table').append('<tr><td colspan="2"><br/><p>If you have fixed issues you might want to rescan some or all hosts.</p><input type="button" value="Rescan Specific Host(s)"/> <input type="button" value="Rescan All"/></td></tr>');
