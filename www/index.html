@@ -672,40 +672,36 @@ a.resolve {
 					var valueIndex;
 					$.each(data.histogram, function(i, set) {
 						if(set.id && set.id == name) {
-							console.log("Found histogram data set at "+i);
+						        console.log("Found histogram data set at "+i);
 							valueIndex = i;
 						}
 					});
 
 					if(valueIndex) {
-						$.each(data.labels, function(i, name) {
-							chartData.labels[i] = name;
-						});
-						chartData.datasets[0] = {
-							data: data.histogram[valueIndex].FAILED,
-							label: name,
-							strokeColor: "rgba(220,50,50,1)",
-							fillColor: "rgba(250,250,250,0.2)",
-							pointHighlightFill: "rgba(250,50,50,1)"
-						}
-						chartData.datasets[1] = {
-							data: data.histogram[valueIndex].WARNING,
-							label: name,
-							strokeColor: "#cc0",
-							fillColor: "rgba(250,250,250,0.2)",
-							pointHighlightFill: "#cc0"
-						}
+					        const config = {
+						    type: 'line',
+						    data: {
+							labels: data.labels,
+						        datasets: [
+							{
+								data: data.histogram[valueIndex].FAILED,
+								label: "Failed",
+								backgroundColor: "#f77",
+								borderColor: "#e66"
+							},
+							{
+								data: data.histogram[valueIndex].WARNING,
+								label: "Warnings",
+								backgroundColor: "#ec0",
+								borderColor: "#db0"
+							}
+							]
+						    },
+						    options: {}
+						};
+						$(id).append('<div class="chart"><div class="chartTitle">Issue Trends: '+(policy?policy:group)+'</div><canvas id="histogramChart" width="600" height="216"></canvas></div>');
+						var myLineChart = new Chart(document.getElementById('histogramChart'), config);
 
-						$(id).append('<div class="chart"><div class="chartTitle">Issue Trends: '+(policy?policy:group)+'</div><canvas id="histogramChart" width="600" height="176"></canvas></div>');
-						var ctx = $("#histogramChart").get(0).getContext("2d");
-						var myLineChart = new Chart(ctx).Line(chartData, {
-							animation: false,
-							datasetFill: true,
-							showTooltips: true
-						});
-						$('#histogramChart').click(function(e) {
-							setLocationHash({ d: myLineChart.getPointsAtEvent(e)[0].label });
-						});
 					} else {
 						console.log("Could not find value set for group="+group+" policy="+policy);
 					}
