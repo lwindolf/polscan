@@ -178,7 +178,7 @@ renderers.netmap.prototype.probeConnectionsResultCb = function(probe, host, res)
 		   line[4].indexOf('127') === 0)
 			return false;
 		if(line[5] === 'LISTEN') {
-			if(undefined !== line[6])
+			if(undefined !== line[6] && '-' != line[6])
 				listen_port_to_program[line[3].split(/:+/)[1]] = line[6].split(/\//)[1];
 			return false;
 		}
