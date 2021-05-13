@@ -1,109 +1,89 @@
-// vim: set ts=4 sw=4: 
+// vim: set ts=4 sw=4:
 // 3d.js based renderer for displaying finding details in a tree map
 
 renderers.treemap = function treemapRenderer() {
-	var fader = function(color) { return d3.interpolateRgb(color, "#fff")(0.8); };
+    var fader = function(color) { return d3.interpolateRgb(color, "#fff")(0.8); };
 
-	this.offset = 0;
-    this.color = d3.scale.ordinal(["#a6cee3","#1f78b4","#b2df8a","#33a02c","#fb9a99","#e0e0e0","#fdbf6f","#ff7f00","#cab2d6"].map(fader));
+    this.offset = 0;
+    this.color = d3.scaleOrdinal(["#a6cee3","#1f78b4","#b2df8a","#33a02c","#fb9a99","#e0e0e0","#fdbf6f","#ff7f00","#cab2d6"].map(fader));
 };
 
-renderers.treemap.prototype.createMap = function(data, width, height) {
-	var renderer = this;
-	    var paddingAllowance = 1;
-	var treemap = d3.layout.treemap()
-        .size([width, height])
-        .padding([18, 0, 0, 0])
-        .value(function(d) {
-            return d.value;
-        });
+// FIXME: global id helper should not be here
+var count = 0;
 
-    var svg = d3.select("#treemap").append("svg")
+function Id(id) {
+    this.id = id;
+    this.href = new URL(`#${id}`, location) + "";
+}
+
+Id.prototype.toString = function() {
+    return "url(" + this.href + ")";
+};
+
+function newId() {
+    return new Id("O-" + (name == null ? "" : name + "-") + ++count);
+}
+
+renderers.treemap.prototype.createMap = function(data, width, height) {
+    const format = d3.format(",d");
+    var treemap = d3.treemap()
+	.tile(d3.treemapSquarify)
+	.size([width, height])
+	.padding(1)
+	.round(true)
+
+    const root = d3.hierarchy(data)
+	.sum(d => d.value)
+	.sort((a, b) => b.value - a.value);
+
+    treemap(root);
+
+    const svg = d3.select("#treemap").append("svg")
+        .attr("viewBox", [0, 0, width, height])
+        .style("font", "10px sans-serif")
         .style("position", "relative")
         .style("width", width + "px")
         .style("height", height + "px")
         .append("g")
         .attr("transform", "translate(-.5,-.5)");
 
-	      var cell = svg.data([data]).selectAll("g")
-            .data(treemap)
-            .enter().append("g")
-            .attr("class", "cell")
-            .attr("transform", function(d) {
-                return "translate(" + d.x + "," + d.y + ")";
-            });
+    const leaf = svg.selectAll("g")
+        .data(root.leaves())
+        .join("g")
+        .attr("class", "cell")
+        .attr("transform", d => `translate(${d.x0},${d.y0})`);
 
-        cell.append("rect")
-            .attr("width", function(d) {
-                return d.dx;
-            })
-            .attr("height", function(d) {
-                return d.dy;
-            })
-            .style("fill", function(d) {
-                if('all' === d.name)
-        			return '#aaa';
-                if(1 === d.depth)
-        			return '#777';
-				if(undefined !== d.color)
-					return d.color;
-				return 'white';
-				//return d3.interpolateRgb(color(d.parent.name), "#fff")(0.8);
-            });
+    leaf.append("rect")
+	.attr("id", d => (d.leafUid = newId("leaf")))
+	.attr("width", d => d.x1 - d.x0)
+	.attr("height", d => d.y1 - d.y0)
+	.style("fill", function(d) {
+	    if('all' === d.name)
+		return '#aaa';
+	    if(1 === d.depth)
+	        return '#777';
+	    if(undefined !== d.color) {
+	    console.log("color! "+d.color);
+	        return d.color;
+	        }
+	    return 'white';
+	    //return d3.interpolateRgb(color(d.parent.name), "#fff")(0.8);
+	});
 
-        if (window['isIE']) { // IE sucks so you have to manually truncate the labels here
-            cell.append("text")
-                .attr("class", "foreignObject")
-                .attr("transform", "translate(3, 13)")
-                .text(function(d) {
-                    return (d.dy < 16 ? "" : d.name);
-                })
-                .filter(function(d) {
-                    d.tw = this.getComputedTextLength();
-                    return d.dx < d.tw;
-                })
-                .each(function(d) { // ridiculous routine where we test to see if label is short enough to fit
-                    var proposedLabel = d.name;
-                    var proposedLabelArray = proposedLabel.split('');
-                    while (d.tw > d.dx && proposedLabelArray.length) {
-                        // pull out 3 chars at a time to speed things up (one at a time is too slow)
-                        proposedLabelArray.pop(); proposedLabelArray.pop(); proposedLabelArray.pop();
-                        if (proposedLabelArray.length===0) {
-                            proposedLabel = "";
-                        } else {
-                            proposedLabel = proposedLabelArray.join('') + "..."; // manually truncate with ellipsis
-                        }
-                        d3.select(this).text(proposedLabel);
-                        d.tw = this.getComputedTextLength();
-                    }
-                });
-        } else {
-            // normal browsers use these labels; using foreignObject inside SVG allows use of wrapping text inside
-            // divs rather than less-flexible svg-text labels
-            cell.append("foreignObject")
-				.attr("class", function(d) {
-					return "foreignObject depth"+d.depth;
-				})
-                .attr("width", function(d) {
-                    return d.dx - paddingAllowance;
-                })
-                .attr("height", function(d) {
-                    return Math.max(d.dy - paddingAllowance, 0);
-                })
-                .append("xhtml:body")
-                .attr("class", "labelbody")
-                .append("div")
-                .attr("class", "label")
-                .text(function(d) {
-                    return d.name;
-                })
-                .attr("text-anchor", "middle")
-        }
-      /*.each(function(d) { d.node = this; })
-      .on("mouseover", renderer.hovered(true))
-      .on("mouseout", renderer.hovered(false))
-      .text(function(d) { return d.id.substring(d.id.lastIndexOf(".") + 1).split(/(?=[A-Z][^A-Z])/g).join("\u200b"); });
-	*/
+    leaf.append("clipPath")
+	.attr("id", d => (d.clipUid = newId("clip")))
+	.append("use")
+	.attr("xlink:href", d => d.leafUid.href);
+
+    leaf.append("text")
+	.attr("clip-path", d => d.clipUid)
+	.selectAll("tspan")
+	.data(d => d.data.name.split(/(?=[A-Z][a-z])|\s+/g).concat(format(d.value)))
+	.join("tspan")
+	.attr("x", 3)
+	.attr("y", (d, i, nodes) => `${(i === nodes.length - 1) * 0.3 + 1.1 + i * 0.9}em`)
+	.attr("fill-opacity", (d, i, nodes) => i === nodes.length - 1 ? 0.7 : null)
+	.text(d => d);
 };
 
 renderers.treemap.prototype.hovered = function(hover) {
@@ -116,11 +96,9 @@ renderers.treemap.prototype.hovered = function(hover) {
 renderers.treemap.prototype.isNumeric = function(n) {
   return !isNaN(parseFloat(n)) && isFinite(n);
 };
-        
+
 renderers.treemap.prototype.render = function(id, data, params) {
 	var r = this;
-	var sizes = [];
-    var grps = {};
 	var nr = 0;
 
 	$(id).append('<div id="treemapContainer"><div id="treemap"/></div>');
@@ -135,7 +113,7 @@ console.log(data.legend.selectedValue);
 	// 3 times failed and 1 warning
 	$.each(data.results, function(i, item) {
 		// For policy findings
-		if(undefined !== item.severity) 
+		if(undefined !== item.severity)
 			findingsByHost[item.host] += item.severity.substring(0,1);
 		// For vulnerabilities
 		if(undefined !== item.cve) {
@@ -151,7 +129,7 @@ console.log(data.legend.selectedValue);
 				findingsByHost[item.host] = undefined;
 		}
 	});
-
+console.log(findingsByHost);
 	var nodeByName = {};
 	var tree = {
 		name: "all",
@@ -193,7 +171,7 @@ console.log(data.legend.selectedValue);
 			}
 		}
 		nodeByName[key].value++;
-    });
+        });
 
 	$.each(nodeByName, function(name, v) {
 		// Perform color mapping
