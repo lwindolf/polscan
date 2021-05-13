@@ -13,19 +13,21 @@
 		<script type="text/javascript" src="api.js"></script>
 		<script type="text/javascript" src="probeapi.js"></script>
 		<script type="text/javascript" src="renderers/proberender.js"></script>
-		<script type="text/javascript" src="lib/d3.min.js"></script>
-		<script type="text/javascript" src="lib/pixi.min.js"></script>
-		<script type="text/javascript" src="lib/dagre.min.js"></script>
-		<script type="text/javascript" src="lib/dagre-d3.min.js"></script>
-		<script type="text/javascript" src="lib/jquery-2.1.4.min.js"></script>
-		<script type="text/javascript" src="lib/jquery.tablesorter.min.js"></script>
-		<script type="text/javascript" src="lib/Chart.min.js"></script>
-		<script type="text/javascript" src="lib/jquery-ui.min.js"></script>
-		<script type="text/javascript" src="lib/handlebars.min-latest.js"></script>
-		<script type="text/javascript" src="lib/jquery.sparkline.min.js"></script>
-		<script type="text/javascript" src="lib/split.min.js"></script>
+		<script type="text/javascript" src="lib/d3/dist/d3.min.js"></script>
+		<script type="text/javascript" src="lib/d3-scale/dist/d3-scale.min.js"></script>
+	        <script type="text/javascript" src="lib/d3-scale-chromatic/dist/d3-scale-chromatic.min.js"></script>
+		<script type="text/javascript" src="lib/pixi.js/dist/browser/pixi.min.js"></script>
+		<script type="text/javascript" src="lib/dagre/dist/dagre.min.js"></script>
+		<script type="text/javascript" src="lib/dagre-d3/dist/dagre-d3.min.js"></script>
+		<script type="text/javascript" src="lib/jquery/dist/jquery.min.js"></script>
+		<script type="text/javascript" src="lib/jquery-ui/ui/widgets/datepicker.js"></script>
+		<script type="text/javascript" src="lib/tablesorter/dist/js/jquery.tablesorter.min.js"></script>
+		<script type="text/javascript" src="lib/jquery-sparkline/jquery.sparkline.min.js"></script>
+		<script type="text/javascript" src="lib/chart.js/dist/chart.min.js"></script>
+		<script type="text/javascript" src="lib/handlebars/dist/handlebars.min.js"></script>
+		<script type="text/javascript" src="lib/split.js/dist/split.min.js"></script>
 
-		<link rel="stylesheet" href="lib/jquery-ui.min.css">
+		<link rel="stylesheet" href="lib/jquery-ui/themes/base/all.css">
 		<link rel="stylesheet" href="styles.css">
 		<style type="text/css">
 			#row1, #row2 {
@@ -230,6 +232,7 @@ text {
 
 .edgePath path {
   stroke: #333;
+  fill: #000;
   stroke-width: 1.5px;
 }
 
@@ -434,8 +437,8 @@ a.resolve {
 			var loading = 0;
 			var warning = 0;
 			var failed = 0;
-			//var color = d3.scaleOrdinal(d3.schemeCategory20);
-			var color = d3.scale.category20();
+
+			var color = d3.scaleOrdinal(d3.schemePaired);
 
 			function error(text) {
 				$('#errors').html('<div class="errorbox"><b>Error:</b> '+text+'</div>');

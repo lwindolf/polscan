@@ -8,8 +8,20 @@
         "url": "https://github.com/lwindolf/polscan.git"
     },
     "dependencies": {
+        "chart.js": "^3.2.1",
+        "d3": "^6.7.0",
+        "d3-scale": "^3.3.0",
+        "dagre": "^0.8.5",
+        "dagre-d3": "^0.6.4",
         "express": ">=4.5.0",
+        "handlebars": "^4.7.7",
+        "jquery": "^3.6.0",
+        "jquery-sparkline": "^2.4.0",
+        "jquery-ui": "^1.10.5",
+        "pixi.js": "^6.0.4",
         "promise": "~8.0.0",
-        "stateful-process-command-proxy": "~1.0.1"
+        "split.js": "^1.6.4",
+        "stateful-process-command-proxy": "~1.0.1",
+        "tablesorter": "^2.31.3"
     }
 }

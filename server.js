@@ -1,17 +1,17 @@
-// vim: set ts=4 sw=4: 
+// vim: set ts=4 sw=4:
 /*
-  Copyright (C) 2015-2018  Lars Windolf <lars.windolf@gmx.de>
- 
+  Copyright (C) 2015-2021  Lars Windolf <lars.windolf@gmx.de>
+
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
- 
+
   This program is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
- 
+
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
@@ -38,13 +38,13 @@ process.on('uncaughtException', function(err) {
 // Query PuppetDB API
 var puppetdb_rest = undefined;
 try {
-puppetdb_rest = { 
+puppetdb_rest = {
     hostname: config["api"]["puppetdb"]["hostname"],
     port:     config["api"]["puppetdb"]["port"],
     method: 'GET'
-//    key: fs.readFileSync(config["api"]["puppetdb"]["ssl_key"]), 
+//    key: fs.readFileSync(config["api"]["puppetdb"]["ssl_key"]),
 //    cert: fs.readFileSync(config["api"]["puppetdb"]["ssl_cert"])
-}; 
+};
 } catch(e) {
     console.log("No PuppetDB API configured.");
 }
@@ -59,35 +59,35 @@ function puppetdb_api(request, response) {
            var param = api["params"][p];
            rest.path = rest.path.replace("{{"+param+"}}", request.query[param]);
        }
-   } 
+   }
 
-   var req = https.request(rest, function(res) { 
-       res.on('data', function(data) { 
-           response.write(data); 
-       }); 
-       res.on('end', function(data) { 
-	   response.end(); 
-       }); 
-   }); 
+   var req = https.request(rest, function(res) {
+       res.on('data', function(data) {
+           response.write(data);
+       });
+       res.on('end', function(data) {
+	   response.end();
+       });
+   });
 
    req.end();
 
-   req.on('error', function(e) { 
-     console.error(e); 
+   req.on('error', function(e) {
+     console.error(e);
      response.end("Internal error");
    });
 }
 
 var icinga2_rest = undefined;
 try {
-icinga2_rest = { 
+icinga2_rest = {
     hostname: config["api"]["monitoring"]["hostname"],
     port:     config["api"]["monitoring"]["port"],
     path:     config["api"]["monitoring"]["path"],
     method: 'GET',
-    key: fs.readFileSync(config["api"]["monitoring"]["ssl_key"]), 
+    key: fs.readFileSync(config["api"]["monitoring"]["ssl_key"]),
     cert: fs.readFileSync(config["api"]["monitoring"]["ssl_cert"])
-}; 
+};
 } catch(e) {
     console.log("No Icinga2 monitoring API configured.");
 }
@@ -122,7 +122,7 @@ function probe(request, response) {
 		  response.end(JSON.stringify({error:'No such probe'}));
 		  return;
 	   }
-	   
+
 	   var cmd = probes[probe].command;
 	   var proxy = new StatefulProcessCommandProxy(
 		{
@@ -191,19 +191,19 @@ function probe(request, response) {
 // Query Icinga2 API
 function monitoring_api(request, response) {
    response.writeHead(200, {'Content-Type': 'application/json'});
-   var req = https.request(icinga2_rest, function(res) { 
-       res.on('data', function(data) { 
-           response.write(data); 
-       }); 
-       res.on('end', function(data) { 
-	   response.end(); 
-       }); 
-   }); 
+   var req = https.request(icinga2_rest, function(res) {
+       res.on('data', function(data) {
+           response.write(data);
+       });
+       res.on('end', function(data) {
+	   response.end();
+       });
+   });
 
    req.end();
 
-   req.on('error', function(e) { 
-     console.error(e); 
+   req.on('error', function(e) {
+     console.error(e);
      response.end("Internal error");
    });
 }
@@ -211,9 +211,9 @@ function monitoring_api(request, response) {
 function static_content(type, path, response) {
    try {
       response.writeHead(200, {'Content-Type': 'application/json'});
-      fs.readFileSync(config["static"][type]+path), 
-      response.write(data); 
-      response.end(); 
+      fs.readFileSync(config["static"][type]+path),
+      response.write(data);
+      response.end();
    } catch(e) {
       response.writeHead(404);
       response.end("File not found");
@@ -239,6 +239,23 @@ app.get('/api/puppetdb/:method', function(req, res) {
 });
 
 app.use(express.static(path.join(__dirname, config["static"]["rootdir"])));
+[
+    'jquery',
+    'jquery-ui',
+    'jquery-sparkline',
+    'tablesorter',
+    'handlebars',
+    'split.js',
+    'chart.js',
+    'd3',
+    'd3-scale',
+    'd3-scale-chromatic',
+    'dagre',
+    'dagre-d3',
+    'pixi.js'
+].forEach(function(name) {
+    app.use(`/lib/${name}`, [ express.static(path.join(__dirname, 'node_modules', name)) ]);
+});
 app.use("/results", express.static(path.join(__dirname, config["static"]["results"])));
 
 app.all('*', function(req, res) {
@@ -246,5 +263,6 @@ app.all('*', function(req, res) {
 });
 
 http.createServer(app).listen(8081);
+process.title = 'PolscanBackend';
 
 console.log('Server running at http://127.0.0.1:8081/');
