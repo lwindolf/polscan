@@ -1,5 +1,7 @@
 // vim: set ts=4 sw=4: 
-/* A view showing per-service connections for a single host in a
+/* IPv4 only netmap renderer
+
+   A view showing per-service connections for a single host in a
    directed graph with inbound and outbound connections for the host
    allowing to traverse the connections */
 
@@ -21,6 +23,7 @@ function lookupIp(ip) {
 	})
 }
 
+// FIXME
 var viewBoxX = 0;
 var viewBoxY = 0;
 
@@ -68,9 +71,6 @@ renderers.netmap.prototype.updateGraph = function() {
 		if(l.source === undefined || l.target === undefined)
 			return;
 		var props = { lineInterpolate: 'basis' };
-//		if(l.weigth)
-//			props.style = "stroke-width: "+Math.ceil(Math.log10(l.weigth))+"px";
-//			props.style = "stroke: #f66; stroke-width: 3px; stroke-dasharray: 5, 5;";
  		if(l.source === 0)
 			props.style = "display:none";
  		if(l.dPort && l.dPort !== "high") {
@@ -81,8 +81,12 @@ renderers.netmap.prototype.updateGraph = function() {
 		g.setEdge(l.source, l.target, props);
 	});
 
-	var render = new dagreD3.render();
-	render(nodeArea, g);
+	try {
+		var render = new dagreD3.render();
+		render(nodeArea, g);
+	} catch(e) {
+		console.error(e);
+	}
 
 	var xCenterOffset = (svg.attr("width") - g.graph().width) / 2;
 	nodeArea.attr('transform', 'translate(' + xCenterOffset + ',40)');
@@ -97,24 +101,32 @@ renderers.netmap.prototype.addGraphNode = function(service, direction) {
 		var remote = service[direction].join(",") + direction;
 		var nId = d.nodes.length;
 		var tmp = "";
+		var truncate = false;
 		$.each(service[direction], function(i, name) {
+			if(tmp.includes(name))
+				return;
+			if(name == "")
+				return;
 			if (i < 6) {
-				if (name.match(/^(10\.|172\.|192\.)/))
-					tmp += name+"<br/> ";
+				if (name.match(/^(10\.|172\.(1[6-9]|2.|3[0-1])|192\.168)/))
+					tmp += name+"\n";
 				else if (name.match(/^[0-9]/))
-					tmp += '<a class="resolve" href="javascript:lookupIp(\''+name+'\')" title="Click to resolve IP">'+name+"</a><br/> ";
+					tmp += '<a class="resolve" href="javascript:lookupIp(\''+name+'\')" title="Click to resolve IP">'+name+"</a>\n";
 				else {
 					tmp += "<a ";
 					if(name == view.previousNode)
 						console.log("prev="+name);
 					if(name == view.previousNode)
 						tmp += "class='previousNode' ";
-					tmp += "class='host_"+name.replace(/[.\-]/g,'_')+"' href='javascript:changeLocationHash({pN:\""+view.currentNode+"\",h:\""+name+"\"});'>"+name+"</a><br/> ";
+					tmp += "class='host_"+name.replace(/[.\-]/g,'_')+"' href='javascript:changeLocationHash({pN:\""+view.currentNode+"\",h:\""+name+"\"});'>"+name+"</a>\n";
 				}
 			}
 			if (i == 6)
-				tmp += "<span style='color:#444; font-size:small'>("+(service[direction].length - 6)+" more ...)</span>";
+				truncate = true;
 		});
+		tmp = tmp.split(/\n/).sort().filter(s => s != "").join("<br/>");
+		if(truncate)
+			tmp += "<br/><span style='color:#777; font-size:small'>("+(service[direction].length - 6)+" more ...)</span>";
 
 		d.nodes.push({
 			"label": tmp
